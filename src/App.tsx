@@ -7,7 +7,9 @@ import { AppLayout } from "@/components/AppLayout";
 import Rankings from "./pages/Rankings";
 import FundDetail from "./pages/FundDetail";
 import Categories from "./pages/Categories";
-import TrusteeCompare from "./pages/TrusteeCompare";
+import SearchFunds from "./pages/SearchFunds";
+import CompareFunds from "./pages/CompareFunds";
+import RetirementCalc from "./pages/RetirementCalc";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,8 +24,10 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Rankings />} />
             <Route path="/fund/:id" element={<FundDetail />} />
+            <Route path="/search" element={<SearchFunds />} />
+            <Route path="/compare" element={<CompareFunds />} />
             <Route path="/categories" element={<Categories />} />
-            <Route path="/trustees" element={<TrusteeCompare />} />
+            <Route path="/retirement" element={<RetirementCalc />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>
