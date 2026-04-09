@@ -4,48 +4,54 @@
 
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 95%;
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 95%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
     --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 6%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 95%;
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 217 33% 14%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 95%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 20%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
     --ring: 217 91% 60%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --positive: 142 71% 45%;
-    --positive-foreground: 142 71% 95%;
+    --positive-foreground: 142 71% 25%;
     --negative: 0 84% 60%;
-    --negative-foreground: 0 84% 95%;
+    --negative-foreground: 0 84% 40%;
 
-    --sidebar-background: 222 47% 5%;
-    --sidebar-foreground: 210 40% 95%;
+    --chart-blue: 217 91% 60%;
+    --chart-green: 142 71% 45%;
+    --chart-yellow: 45 93% 47%;
+    --chart-purple: 262 83% 58%;
+    --chart-orange: 24 95% 53%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 14%;
-    --sidebar-accent-foreground: 210 40% 95%;
-    --sidebar-border: 217 33% 17%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
     --sidebar-ring: 217 91% 60%;
   }
 }
@@ -59,4 +65,20 @@
     @apply bg-background text-foreground;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
   }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
 }
