@@ -6,20 +6,20 @@ interface TimePeriodSelectorProps {
   onChange: (period: TimePeriod) => void;
 }
 
-const periods: TimePeriod[] = ['daily', 'weekly', 'monthly', 'mtd', 'ytd', '3m', '6m', '1y', '3y', '5y', '10y'];
+const periods: TimePeriod[] = ['1y', '5y', '10y', 'ytd', '2025', '2024', '2023', '2022', '2021'];
 
 export function TimePeriodSelector({ selected, onChange }: TimePeriodSelectorProps) {
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-2">
       {periods.map((p) => (
         <button
           key={p}
           onClick={() => onChange(p)}
           className={cn(
-            'px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+            'px-4 py-2 rounded-full text-sm font-medium transition-all',
             selected === p
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-muted-foreground hover:text-foreground hover:bg-accent'
+              ? 'bg-primary text-primary-foreground shadow-sm'
+              : 'bg-card text-muted-foreground hover:text-foreground border border-border hover:border-primary/30'
           )}
         >
           {TIME_PERIOD_LABELS[p]}
