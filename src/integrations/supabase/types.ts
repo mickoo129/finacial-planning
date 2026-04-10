@@ -14,7 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      mpf_funds: {
+        Row: {
+          category: string | null
+          created_at: string
+          data_date: string | null
+          etnet_fund_id: string
+          etnet_plan_id: string | null
+          etnet_provider_id: string | null
+          id: string
+          name: string
+          return_1y: number | null
+          return_3m: number | null
+          return_3y: number | null
+          return_ytd: number | null
+          risk_level: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          data_date?: string | null
+          etnet_fund_id: string
+          etnet_plan_id?: string | null
+          etnet_provider_id?: string | null
+          id?: string
+          name: string
+          return_1y?: number | null
+          return_3m?: number | null
+          return_3y?: number | null
+          return_ytd?: number | null
+          risk_level?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          data_date?: string | null
+          etnet_fund_id?: string
+          etnet_plan_id?: string | null
+          etnet_provider_id?: string | null
+          id?: string
+          name?: string
+          return_1y?: number | null
+          return_3m?: number | null
+          return_3y?: number | null
+          return_ytd?: number | null
+          risk_level?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mpf_scrape_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          funds_count: number | null
+          id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          funds_count?: number | null
+          id?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          funds_count?: number | null
+          id?: string
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
