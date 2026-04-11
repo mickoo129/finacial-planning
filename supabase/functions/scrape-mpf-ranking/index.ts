@@ -40,16 +40,16 @@ function extractFundIdFromUrl(url: string): { fund: string; plan: string | null;
 
 function parseRankingHtml(html: string, category: string): FundData[] {
   const funds: FundData[] = [];
-  
+
   // Match table rows with fund data
   const rowRegex = /<tr[^>]*>\s*<td[^>]*>.*?<\/td>\s*<td[^>]*><a[^>]*href="([^"]*)"[^>]*>([^<]+)<\/a><\/td>\s*<td[^>]*>([^<]*)<\/td>\s*<td[^>]*><span[^>]*>([^<]*)<\/span><\/td>\s*<td[^>]*><span[^>]*>([^<]*)<\/span><\/td>\s*<td[^>]*><span[^>]*>([^<]*)<\/span><\/td>\s*<td[^>]*><span[^>]*>([^<]*)<\/span><\/td>\s*<td[^>]*>([^<]*)<\/td>/g;
-  
+
   let match;
   while ((match = rowRegex.exec(html)) !== null) {
     const url = match[1].replace(/&amp;/g, '&');
     const ids = extractFundIdFromUrl(url);
     if (!ids.fund) continue;
-    
+
     funds.push({
       etnet_fund_id: ids.fund,
       etnet_plan_id: ids.plan,
@@ -64,19 +64,18 @@ function parseRankingHtml(html: string, category: string): FundData[] {
       data_date: match[8].trim().replace(/\//g, '-') || null,
     });
   }
-  
+
   return funds;
 }
 
 // Fallback: simpler regex for different table structures
 function parseRankingHtmlFallback(html: string, category: string): FundData[] {
   const funds: FundData[] = [];
-  
-  // Find all fund links
+
   const linkRegex = /<a[^>]*href="[^"]*fund_detail\.php\?fund=([^&"]+)(?:&amp;plan=([^&"]+))?(?:&amp;provider=([^&"]+))?[^"]*"[^>]*class="MPFLink"[^>]*>([^<]+)<\/a>/g;
-  
+
   let linkMatch;
-  const allLinks: Array<{fund: string; plan: string|null; provider: string|null; name: string; index: number}> = [];
+  const allLinks: Array<{ fund: string; plan: string | null; provider: string | null; name: string; index: number }> = [];
   while ((linkMatch = linkRegex.exec(html)) !== null) {
     allLinks.push({
       fund: linkMatch[1],
@@ -86,16 +85,14 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
       index: linkMatch.index,
     });
   }
-  
-  // For each found link, look for return values nearby
+
   const spanRegex = /<span class="(?:up|down)">([^<]+)<\/span>/g;
-  
+
   for (const link of allLinks) {
-    // Search for spans after this link
     const searchStart = link.index;
     const searchEnd = html.indexOf('</tr>', searchStart);
     if (searchEnd === -1) continue;
-    
+
     const rowHtml = html.substring(searchStart, searchEnd);
     const spans: string[] = [];
     let spanMatch;
@@ -103,15 +100,13 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
     while ((spanMatch = localSpanRegex.exec(rowHtml)) !== null) {
       spans.push(spanMatch[1]);
     }
-    
-    // Extract risk level
+
     const riskMatch = rowHtml.match(/<td[^>]*align="center"[^>]*>([^<]*)<\/td>/);
     const risk = riskMatch ? riskMatch[1].trim() : null;
-    
-    // Extract date
+
     const dateMatch = rowHtml.match(/(\d{4}\/\d{2}\/\d{2})/);
     const date = dateMatch ? dateMatch[1].replace(/\//g, '-') : null;
-    
+
     if (spans.length >= 4) {
       funds.push({
         etnet_fund_id: link.fund,
@@ -128,12 +123,38 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
       });
     }
   }
-  
+
   return funds;
 }
 
+// Map etnet plan IDs to trustee names
+const PLAN_TRUSTEE_MAP: Record<string, { trustee: string; scheme: string }> = {
+  ETNSI1: { trustee: '銀聯信託', scheme: '積金之選' },
+  ETNSI2: { trustee: '銀聯信託', scheme: '行業計劃' },
+  ETNSI16: { trustee: '匯豐', scheme: '智選計劃' },
+  ETNSI21: { trustee: '宏利', scheme: '環球精選' },
+  ETNSI25: { trustee: '信安', scheme: '800系列' },
+  ETNSI26: { trustee: '交通銀行', scheme: '愉盈退休' },
+  ETNSI31: { trustee: '友邦', scheme: '優選計劃' },
+  ETNSI33: { trustee: '永明', scheme: '彩虹計劃' },
+  ETNSI34: { trustee: '中銀保誠', scheme: '簡易強積金' },
+  ETNSI35: { trustee: '中銀保誠', scheme: '我的強積金' },
+  ETNSI37: { trustee: '海通', scheme: 'MPF計劃' },
+  ETNSI39: { trustee: '銀聯信託', scheme: '策略計劃' },
+  ETNSI42: { trustee: '東亞', scheme: '集成信託' },
+  ETNSI43: { trustee: '東亞', scheme: '行業計劃' },
+  ETNSI44: { trustee: 'AMTD', scheme: '強積金計劃' },
+  ETNSI45: { trustee: '中國人壽', scheme: '強積金計劃' },
+  ETNSI47: { trustee: '恒生', scheme: '智選計劃' },
+  ETNSI50: { trustee: '富達', scheme: '退休集成' },
+  ETNSI52: { trustee: '宏利', scheme: '退休精選' },
+  ETNSI53: { trustee: '萬通', scheme: '萬全計劃' },
+  ETNSI60: { trustee: '東亞', scheme: '享惠計劃' },
+  ETNSI65: { trustee: '信安', scheme: '明智之選' },
+  ETNSI66: { trustee: '信安', scheme: '易富之選' },
+};
+
 const SUBTYPES = [
-  { id: 'ALL', name: '全部' },
   { id: 'ETNSI19', name: '強積金保守' },
   { id: 'ETNSI18', name: '貨幣市場' },
   { id: 'ETNSI14', name: '保證' },
@@ -162,7 +183,6 @@ Deno.serve(async (req) => {
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-  // Create log entry
   const { data: logEntry } = await supabase
     .from('mpf_scrape_logs')
     .insert({ status: 'running' })
@@ -173,17 +193,17 @@ Deno.serve(async (req) => {
     const allFunds: FundData[] = [];
     const seenFundIds = new Set<string>();
 
-    // Scrape the ALL ranking page (contains top 10 + bottom 5)
+    // Scrape the ALL ranking page first
     const url = `https://www.etnet.com.hk/www/tc/mpf/ranking.php?subtype=ALL&sortby=1Y`;
     console.log(`Fetching: ${url}`);
-    
+
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept-Language': 'zh-TW,zh;q=0.9',
       },
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch ranking page: ${response.status}`);
     }
@@ -191,7 +211,6 @@ Deno.serve(async (req) => {
     const html = await response.text();
     console.log(`Fetched ${html.length} chars`);
 
-    // Try primary parser first, fallback if needed
     let funds = parseRankingHtml(html, '全部');
     if (funds.length === 0) {
       console.log('Primary parser found 0, trying fallback...');
@@ -206,30 +225,28 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Also scrape individual category pages for more comprehensive data
+    // Scrape individual category pages
     for (const subtype of SUBTYPES) {
-      if (subtype.id === 'ALL') continue;
-      
       try {
         const catUrl = `https://www.etnet.com.hk/www/tc/mpf/ranking.php?subtype=${subtype.id}&sortby=1Y`;
         console.log(`Fetching category: ${subtype.name}`);
-        
+
         const catResponse = await fetch(catUrl, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             'Accept-Language': 'zh-TW,zh;q=0.9',
           },
         });
-        
+
         if (!catResponse.ok) continue;
         const catHtml = await catResponse.text();
-        
+
         let catFunds = parseRankingHtml(catHtml, subtype.name);
         if (catFunds.length === 0) {
           catFunds = parseRankingHtmlFallback(catHtml, subtype.name);
         }
         console.log(`  ${subtype.name}: ${catFunds.length} funds`);
-        
+
         for (const fund of catFunds) {
           if (!seenFundIds.has(fund.etnet_fund_id)) {
             seenFundIds.add(fund.etnet_fund_id);
@@ -237,9 +254,8 @@ Deno.serve(async (req) => {
             allFunds.push(fund);
           }
         }
-        
-        // Small delay to be polite
-        await new Promise(r => setTimeout(r, 500));
+
+        await new Promise(r => setTimeout(r, 300));
       } catch (e) {
         console.error(`Error scraping ${subtype.name}:`, e);
       }
@@ -247,24 +263,29 @@ Deno.serve(async (req) => {
 
     console.log(`Total unique funds: ${allFunds.length}`);
 
-    // Upsert all funds
+    // Upsert all funds with trustee mapping
     if (allFunds.length > 0) {
       const { error: upsertError } = await supabase
         .from('mpf_funds')
         .upsert(
-          allFunds.map(f => ({
-            etnet_fund_id: f.etnet_fund_id,
-            etnet_plan_id: f.etnet_plan_id,
-            etnet_provider_id: f.etnet_provider_id,
-            name: f.name,
-            risk_level: f.risk_level,
-            category: f.category,
-            return_ytd: f.return_ytd,
-            return_3m: f.return_3m,
-            return_1y: f.return_1y,
-            return_3y: f.return_3y,
-            data_date: f.data_date,
-          })),
+          allFunds.map(f => {
+            const planMapping = f.etnet_plan_id ? PLAN_TRUSTEE_MAP[f.etnet_plan_id] : null;
+            return {
+              etnet_fund_id: f.etnet_fund_id,
+              etnet_plan_id: f.etnet_plan_id,
+              etnet_provider_id: f.etnet_provider_id,
+              name: f.name,
+              risk_level: f.risk_level,
+              category: f.category,
+              return_ytd: f.return_ytd,
+              return_3m: f.return_3m,
+              return_1y: f.return_1y,
+              return_3y: f.return_3y,
+              data_date: f.data_date,
+              trustee_name: planMapping?.trustee || null,
+              scheme_name: planMapping?.scheme || null,
+            };
+          }),
           { onConflict: 'etnet_fund_id' }
         );
 
@@ -273,7 +294,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Update log
     if (logEntry) {
       await supabase
         .from('mpf_scrape_logs')
@@ -287,7 +307,7 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error('Scrape error:', error);
-    
+
     if (logEntry) {
       await supabase
         .from('mpf_scrape_logs')
