@@ -85,7 +85,7 @@ export default function Rankings() {
           </thead>
           <tbody className="divide-y divide-border/50">
             {data.map((fund, i) => {
-              const trustee = fund.trustee_name || getTrusteeByPlanId(fund.etnet_plan_id);
+              const trustee = fund.trustee_name || getTrusteeFromPlanId(fund.etnet_plan_id);
               return (
                 <tr key={fund.etnet_fund_id} className="group">
                   <td className="px-4 py-2.5">
