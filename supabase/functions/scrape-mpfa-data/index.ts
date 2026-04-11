@@ -258,63 +258,41 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Update existing funds in database with MPFA data
-    // Match by fund name similarity
-    const { data: existingFunds } = await supabase
-      .from('mpf_funds')
-      .select('id, name, etnet_fund_id');
-
-    let updated = 0;
-    let newFunds = 0;
-
-    for (const mpfaFund of funds) {
+    // Batch upsert all MPFA funds - use generated etnet_fund_id for new ones
+    const upsertData = funds.map(mpfaFund => {
       const { category, subCategory } = mapFundType(mpfaFund.fund_type);
       const trusteeName = mapTrustee(mpfaFund.trustee);
+      const fundId = `MPFA_${mpfaFund.scheme}_${mpfaFund.fund_name}`.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 100);
       
-      // Try to match with existing fund by name similarity
-      const existing = existingFunds?.find(ef => {
-        const efName = ef.name.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
-        const mpfaName = mpfaFund.fund_name.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
-        return efName === mpfaName || efName.includes(mpfaName) || mpfaName.includes(efName);
-      });
+      return {
+        etnet_fund_id: fundId,
+        name: mpfaFund.fund_name,
+        category,
+        sub_category: subCategory,
+        trustee_name: trusteeName !== '其他' ? trusteeName : null,
+        scheme_name: mpfaFund.scheme,
+        risk_level: mpfaFund.risk_class,
+        fee_ratio: mpfaFund.fer,
+        return_5y: mpfaFund.return_5y_ann,
+        return_10y: mpfaFund.return_10y_ann,
+        return_2024: mpfaFund.return_2024,
+        return_2023: mpfaFund.return_2023,
+        return_2022: mpfaFund.return_2022,
+        return_2021: mpfaFund.return_2021,
+      };
+    });
 
-      if (existing) {
-        // Update existing fund with MPFA long-term data
-        const updateData: Record<string, any> = {
-          category,
-          sub_category: subCategory,
-          fee_ratio: mpfaFund.fer,
-          return_2024: mpfaFund.return_2024,
-          return_2023: mpfaFund.return_2023,
-          return_2022: mpfaFund.return_2022,
-          return_2021: mpfaFund.return_2021,
-        };
-        // Only update 5y/10y from MPFA (long-term data)
-        if (mpfaFund.return_5y_ann != null) updateData.return_5y = mpfaFund.return_5y_ann;
-        if (mpfaFund.return_10y_ann != null) updateData.return_10y = mpfaFund.return_10y_ann;
-        if (trusteeName && trusteeName !== '其他') updateData.trustee_name = trusteeName;
-
-        await supabase.from('mpf_funds').update(updateData).eq('id', existing.id);
-        updated++;
+    // Batch upsert in chunks of 50
+    let upserted = 0;
+    for (let i = 0; i < upsertData.length; i += 50) {
+      const chunk = upsertData.slice(i, i + 50);
+      const { error } = await supabase
+        .from('mpf_funds')
+        .upsert(chunk, { onConflict: 'etnet_fund_id' });
+      if (error) {
+        console.error(`Upsert chunk ${i} error:`, error.message);
       } else {
-        // Insert new fund from MPFA
-        const { error } = await supabase.from('mpf_funds').insert({
-          etnet_fund_id: `MPFA_${mpfaFund.scheme}_${mpfaFund.fund_name}`.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 100),
-          name: mpfaFund.fund_name,
-          category,
-          sub_category: subCategory,
-          trustee_name: trusteeName,
-          scheme_name: mpfaFund.scheme,
-          risk_level: mpfaFund.risk_class,
-          fee_ratio: mpfaFund.fer,
-          return_5y: mpfaFund.return_5y_ann,
-          return_10y: mpfaFund.return_10y_ann,
-          return_2024: mpfaFund.return_2024,
-          return_2023: mpfaFund.return_2023,
-          return_2022: mpfaFund.return_2022,
-          return_2021: mpfaFund.return_2021,
-        });
-        if (!error) newFunds++;
+        upserted += chunk.length;
       }
     }
 
