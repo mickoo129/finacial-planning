@@ -23,7 +23,11 @@ export type Database = {
           etnet_plan_id: string | null
           etnet_provider_id: string | null
           fee_ratio: number | null
+          fer: number | null
+          fund_size: number | null
           id: string
+          launch_date: string | null
+          mpfa_name: string | null
           name: string
           name_zh: string | null
           return_10y: number | null
@@ -37,6 +41,7 @@ export type Database = {
           return_3m: number | null
           return_3y: number | null
           return_5y: number | null
+          return_since_launch: number | null
           return_ytd: number | null
           risk_level: string | null
           scheme_name: string | null
@@ -52,7 +57,11 @@ export type Database = {
           etnet_plan_id?: string | null
           etnet_provider_id?: string | null
           fee_ratio?: number | null
+          fer?: number | null
+          fund_size?: number | null
           id?: string
+          launch_date?: string | null
+          mpfa_name?: string | null
           name: string
           name_zh?: string | null
           return_10y?: number | null
@@ -66,6 +75,7 @@ export type Database = {
           return_3m?: number | null
           return_3y?: number | null
           return_5y?: number | null
+          return_since_launch?: number | null
           return_ytd?: number | null
           risk_level?: string | null
           scheme_name?: string | null
@@ -81,7 +91,11 @@ export type Database = {
           etnet_plan_id?: string | null
           etnet_provider_id?: string | null
           fee_ratio?: number | null
+          fer?: number | null
+          fund_size?: number | null
           id?: string
+          launch_date?: string | null
+          mpfa_name?: string | null
           name?: string
           name_zh?: string | null
           return_10y?: number | null
@@ -95,6 +109,7 @@ export type Database = {
           return_3m?: number | null
           return_3y?: number | null
           return_5y?: number | null
+          return_since_launch?: number | null
           return_ytd?: number | null
           risk_level?: string | null
           scheme_name?: string | null

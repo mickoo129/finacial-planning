@@ -27,6 +27,11 @@ export interface MpfFund {
   return_1m: number | null;
   name_zh: string | null;
   data_date: string | null;
+  fund_size: number | null;
+  launch_date: string | null;
+  fer: number | null;
+  return_since_launch: number | null;
+  mpfa_name: string | null;
   updated_at: string;
 }
 

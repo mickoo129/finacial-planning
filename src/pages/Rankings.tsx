@@ -55,13 +55,12 @@ export default function Rankings() {
   const handleScrapeDetail = async () => {
     setScraping(true);
     try {
-      const { data, error } = await supabase.functions.invoke('scrape-mpf-detail');
+      const { data, error } = await supabase.functions.invoke('scrape-mpfa-data');
       if (error) throw error;
-      toast({ title: '年度數據更新', description: `已更新 ${data?.updated ?? 0} 隻，剩餘 ${data?.remaining ?? '?'} 隻` });
+      toast({ title: 'MPFA 數據更新', description: `已抓取 ${data?.total_parsed ?? 0} 隻基金（${data?.matched ?? 0} 配對，${data?.new_funds ?? 0} 新增）` });
       refetch();
     } catch (e: any) {
-      toast({ title: '更新中...', description: '正在抓取年度數據，請稍後再按一次' });
-      refetch();
+      toast({ title: '更新失敗', description: e.message, variant: 'destructive' });
     } finally {
       setScraping(false);
     }
@@ -154,7 +153,7 @@ export default function Rankings() {
             className="text-[11px] h-8"
           >
             <RefreshCw className={`h-3 w-3 mr-1 ${scraping ? 'animate-spin' : ''}`} />
-            {scraping ? '更新中...' : '補充年度'}
+            {scraping ? '更新中...' : 'MPFA 數據'}
           </Button>
           <Button
             variant="outline"
