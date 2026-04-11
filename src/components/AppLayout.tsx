@@ -1,13 +1,16 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { BarChart3, Search, GitCompare, PieChart, Calculator, Crown } from 'lucide-react';
+import { BarChart3, Search, GitCompare, PieChart, Calculator, Crown, Building2, Briefcase, Zap } from 'lucide-react';
 
 const navItems = [
-  { to: '/', label: '基金排名', icon: Crown },
-  { to: '/search', label: '搜尋基金', icon: Search },
-  { to: '/compare', label: '比較基金', icon: GitCompare },
-  { to: '/categories', label: '類別比較', icon: PieChart },
-  { to: '/retirement', label: '退休計算', icon: Calculator },
+  { to: '/', label: '排名', icon: Crown },
+  { to: '/search', label: '搜尋', icon: Search },
+  { to: '/compare', label: '比較', icon: GitCompare },
+  { to: '/trustee', label: '受託人', icon: Building2 },
+  { to: '/portfolio', label: '模擬器', icon: Briefcase },
+  { to: '/radar', label: 'RADAR', icon: Zap },
+  { to: '/categories', label: '類別', icon: PieChart },
+  { to: '/retirement', label: '退休', icon: Calculator },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {

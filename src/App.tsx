@@ -10,6 +10,9 @@ import Categories from "./pages/Categories";
 import SearchFunds from "./pages/SearchFunds";
 import CompareFunds from "./pages/CompareFunds";
 import RetirementCalc from "./pages/RetirementCalc";
+import TrusteeCompare from "./pages/TrusteeCompare";
+import PortfolioSimulator from "./pages/PortfolioSimulator";
+import RadarSignals from "./pages/RadarSignals";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +31,9 @@ const App = () => (
             <Route path="/compare" element={<CompareFunds />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/retirement" element={<RetirementCalc />} />
+            <Route path="/trustee" element={<TrusteeCompare />} />
+            <Route path="/portfolio" element={<PortfolioSimulator />} />
+            <Route path="/radar" element={<RadarSignals />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>
