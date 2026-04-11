@@ -244,13 +244,10 @@ function matchScore(mpfaFundName: string, etnetFundName: string, sameScheme: boo
   // Bonus for same scheme
   if (sameScheme && score > 0) score += 5;
   
-  // Class matching bonus/penalty
+  // Class matching bonus (no penalty for mismatch - many class variants map to same etnet fund)
   const mpfaClass = getClassSuffix(mpfaFundName);
   const etnetClass = getClassSuffix(etnetFundName);
-  if (mpfaClass && etnetClass) {
-    if (mpfaClass === etnetClass) score += 10;
-    else score -= 20; // strong penalty for class mismatch
-  }
+  if (mpfaClass && etnetClass && mpfaClass === etnetClass) score += 10;
   
   return score;
 }
