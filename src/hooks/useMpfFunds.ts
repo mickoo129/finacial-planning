@@ -23,6 +23,8 @@ export interface MpfFund {
   return_2023: number | null;
   return_2022: number | null;
   return_2021: number | null;
+  return_1m: number | null;
+  name_zh: string | null;
   data_date: string | null;
   updated_at: string;
 }
