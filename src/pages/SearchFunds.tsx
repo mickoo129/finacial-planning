@@ -1,8 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { ReturnValue } from '@/components/ReturnValue';
-import { useMpfFunds } from '@/hooks/useMpfFunds';
-import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
+import { CascadingFundFilter } from '@/components/CascadingFundFilter';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowUpDown, RefreshCw, Database } from 'lucide-react';
 
@@ -20,39 +19,20 @@ const SORT_LABELS: Record<SortPeriod, string> = {
 
 export default function SearchFunds() {
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState('all');
-  const [trustee, setTrustee] = useState('all');
   const [sortBy, setSortBy] = useState<SortPeriod>('return_1y');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const { data: funds, isLoading } = useMpfFunds();
+  const [cascadeFiltered, setCascadeFiltered] = useState<MpfFund[]>([]);
 
-  const categories = useMemo(() => {
-    if (!funds) return [];
-    const cats = new Set(funds.map(f => f.category).filter(Boolean));
-    return Array.from(cats).sort();
-  }, [funds]);
-
-  const trustees = useMemo(() => {
-    if (!funds) return [];
-    const ts = new Set(funds.map(f => f.trustee_name || getTrusteeFromPlanId(f.etnet_plan_id)).filter(Boolean));
-    return Array.from(ts).sort();
-  }, [funds]);
+  const handleFilterChange = useCallback((filtered: MpfFund[]) => {
+    setCascadeFiltered(filtered);
+  }, []);
 
   const filteredFunds = useMemo(() => {
-    if (!funds) return [];
-    let result = [...funds];
+    let result = [...cascadeFiltered];
     if (query) {
       const q = query.toLowerCase();
       result = result.filter(f => f.name.toLowerCase().includes(q) || (f.name_zh && f.name_zh.toLowerCase().includes(q)));
-    }
-    if (category !== 'all') {
-      result = result.filter(f => f.category === category);
-    }
-    if (trustee !== 'all') {
-      result = result.filter(f => {
-        const t = f.trustee_name || getTrusteeFromPlanId(f.etnet_plan_id);
-        return t === trustee;
-      });
     }
     result.sort((a, b) => {
       const av = a[sortBy] ?? -9999;
@@ -60,7 +40,7 @@ export default function SearchFunds() {
       return sortDir === 'desc' ? bv - av : av - bv;
     });
     return result;
-  }, [funds, query, category, trustee, sortBy, sortDir]);
+  }, [cascadeFiltered, query, sortBy, sortDir]);
 
   const toggleSort = (field: SortPeriod) => {
     if (sortBy === field) setSortDir(d => d === 'desc' ? 'asc' : 'desc');
@@ -102,28 +82,7 @@ export default function SearchFunds() {
             className="pl-10 h-9 text-sm"
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-[10px] text-muted-foreground mb-1 block">基金類別</label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="全部" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部類別</SelectItem>
-                {categories.map(c => <SelectItem key={c} value={c!}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-[10px] text-muted-foreground mb-1 block">受託人</label>
-            <Select value={trustee} onValueChange={setTrustee}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="全部" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部受託人</SelectItem>
-                {trustees.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} />
         <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
           {(Object.entries(SORT_LABELS) as [SortPeriod, string][]).map(([key, label]) => (
             <button
@@ -164,28 +123,25 @@ export default function SearchFunds() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
-              {filteredFunds.map((fund, i) => {
-                const trusteeName = fund.trustee_name || getTrusteeFromPlanId(fund.etnet_plan_id);
-                return (
-                  <tr key={fund.id || fund.etnet_fund_id}>
-                    <td className="px-3 py-2 text-[10px] text-muted-foreground">{i + 1}</td>
-                    <td className="px-3 py-2">
-                      <div className="text-sm font-medium text-foreground leading-tight">{fund.name_zh || fund.name}</div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5 md:hidden">{trusteeName}</div>
-                    </td>
-                    <td className="px-3 py-2 hidden md:table-cell text-xs text-muted-foreground">{trusteeName}</td>
-                    <td className="px-3 py-2 hidden lg:table-cell">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.category || '—'}</span>
-                    </td>
-                    <td className="px-3 py-2 text-right"><ReturnValue value={fund.return_ytd} /></td>
-                    <td className="px-3 py-2 text-right hidden sm:table-cell"><ReturnValue value={fund.return_1y} /></td>
-                    <td className="px-3 py-2 text-right hidden lg:table-cell"><ReturnValue value={fund.return_3y} /></td>
-                    <td className="px-3 py-2 text-right hidden xl:table-cell text-xs text-muted-foreground">
-                      {fund.fee_ratio != null ? `${fund.fee_ratio.toFixed(2)}%` : '—'}
-                    </td>
-                  </tr>
-                );
-              })}
+              {filteredFunds.map((fund, i) => (
+                <tr key={fund.id || fund.etnet_fund_id}>
+                  <td className="px-3 py-2 text-[10px] text-muted-foreground">{i + 1}</td>
+                  <td className="px-3 py-2">
+                    <div className="text-sm font-medium text-foreground leading-tight">{fund.name_zh || fund.name}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5 md:hidden">{fund.trustee_name}</div>
+                  </td>
+                  <td className="px-3 py-2 hidden md:table-cell text-xs text-muted-foreground">{fund.trustee_name}</td>
+                  <td className="px-3 py-2 hidden lg:table-cell">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.category || '—'}</span>
+                  </td>
+                  <td className="px-3 py-2 text-right"><ReturnValue value={fund.return_ytd} /></td>
+                  <td className="px-3 py-2 text-right hidden sm:table-cell"><ReturnValue value={fund.return_1y} /></td>
+                  <td className="px-3 py-2 text-right hidden lg:table-cell"><ReturnValue value={fund.return_3y} /></td>
+                  <td className="px-3 py-2 text-right hidden xl:table-cell text-xs text-muted-foreground">
+                    {fund.fee_ratio != null ? `${fund.fee_ratio.toFixed(2)}%` : '—'}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

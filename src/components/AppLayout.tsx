@@ -5,9 +5,9 @@ import { useMpfFunds } from '@/hooks/useMpfFunds';
 
 const navItems = [
   { to: '/', label: '排名', icon: Crown },
-  { to: '/search', label: '搜尋', icon: Search },
-  { to: '/compare', label: '比較', icon: GitCompare },
-  { to: '/trustee', label: '受託人', icon: Building2 },
+  { to: '/search', label: '基金搜尋', icon: Search },
+  { to: '/compare', label: '基金比較', icon: GitCompare },
+  { to: '/trustee', label: '受托人比較', icon: Building2 },
   { to: '/portfolio', label: '模擬器', icon: Briefcase },
   { to: '/radar', label: 'RADAR', icon: Zap },
   { to: '/categories', label: '類別', icon: PieChart },

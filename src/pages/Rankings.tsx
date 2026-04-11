@@ -1,14 +1,13 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds } from '@/hooks/useMpfFunds';
-import { TrendingUp, TrendingDown, RefreshCw, Database, ChevronRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
 
-type SortPeriod = 'return_ytd' | 'return_1m' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y';
+type SortPeriod = 'return_ytd' | 'return_1m' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y' | 'return_2024' | 'return_2023' | 'return_2022' | 'return_2021';
 
 const SORT_LABELS: Record<SortPeriod, string> = {
   return_ytd: '年初至今',
@@ -18,6 +17,10 @@ const SORT_LABELS: Record<SortPeriod, string> = {
   return_3y: '3年',
   return_5y: '5年',
   return_10y: '10年',
+  return_2024: '2024年',
+  return_2023: '2023年',
+  return_2022: '2022年',
+  return_2021: '2021年',
 };
 
 export default function Rankings() {
@@ -148,7 +151,7 @@ export default function Rankings() {
         </Button>
       </div>
 
-      {/* Period selector - banking pill style */}
+      {/* Period selector */}
       <div className="flex flex-wrap gap-1 bg-card rounded-lg border border-border p-1.5">
         {(Object.entries(SORT_LABELS) as [SortPeriod, string][]).map(([key, label]) => (
           <button
