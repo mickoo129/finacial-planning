@@ -79,6 +79,10 @@
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Hide scrollbar for mobile nav */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--muted-foreground) / 0.2);
   border-radius: 3px;

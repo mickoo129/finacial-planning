@@ -1,174 +1,190 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { TimePeriodSelector } from '@/components/TimePeriodSelector';
 import { ReturnValue } from '@/components/ReturnValue';
-import { TimePeriod } from '@/types/mpf';
-import { searchFunds, getCategories, getSubCategories, TRUSTEES, getAllFunds } from '@/data/mockData';
+import { useMpfFunds } from '@/hooks/useMpfFunds';
+import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowUpDown } from 'lucide-react';
+import { Search, ArrowUpDown, RefreshCw, Database } from 'lucide-react';
+
+type SortPeriod = 'return_ytd' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y';
+
+const SORT_LABELS: Record<SortPeriod, string> = {
+  return_ytd: '年初至今',
+  return_3m: '3個月',
+  return_1y: '1年',
+  return_3y: '3年',
+  return_5y: '5年',
+  return_10y: '10年',
+};
 
 export default function SearchFunds() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
-  const [subCategory, setSubCategory] = useState('all');
   const [trustee, setTrustee] = useState('all');
-  const [period, setPeriod] = useState<TimePeriod>('1y');
-  const [sortBy, setSortBy] = useState<'return' | 'fee' | 'risk'>('return');
+  const [sortBy, setSortBy] = useState<SortPeriod>('return_1y');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const { data: funds, isLoading } = useMpfFunds();
 
-  const categories = useMemo(() => getCategories(), []);
-  const subCategories = useMemo(() => getSubCategories(), []);
-  const totalFunds = useMemo(() => getAllFunds().length, []);
+  const categories = useMemo(() => {
+    if (!funds) return [];
+    const cats = new Set(funds.map(f => f.category).filter(Boolean));
+    return Array.from(cats).sort();
+  }, [funds]);
+
+  const trustees = useMemo(() => {
+    if (!funds) return [];
+    const ts = new Set(funds.map(f => f.trustee_name || getTrusteeFromPlanId(f.etnet_plan_id)).filter(Boolean));
+    return Array.from(ts).sort();
+  }, [funds]);
 
   const filteredFunds = useMemo(() => {
-    let funds = searchFunds(query, {
-      category: category !== 'all' ? category : undefined,
-      subCategory: subCategory !== 'all' ? subCategory : undefined,
-      trustee: trustee !== 'all' ? trustee : undefined,
+    if (!funds) return [];
+    let result = [...funds];
+    if (query) {
+      const q = query.toLowerCase();
+      result = result.filter(f => f.name.toLowerCase().includes(q));
+    }
+    if (category !== 'all') {
+      result = result.filter(f => f.category === category);
+    }
+    if (trustee !== 'all') {
+      result = result.filter(f => {
+        const t = f.trustee_name || getTrusteeFromPlanId(f.etnet_plan_id);
+        return t === trustee;
+      });
+    }
+    result.sort((a, b) => {
+      const av = a[sortBy] ?? -9999;
+      const bv = b[sortBy] ?? -9999;
+      return sortDir === 'desc' ? bv - av : av - bv;
     });
-    funds.sort((a, b) => {
-      let diff = 0;
-      if (sortBy === 'return') diff = b.returns[period] - a.returns[period];
-      else if (sortBy === 'fee') diff = a.managementFee - b.managementFee;
-      else diff = a.riskLevel - b.riskLevel;
-      return sortDir === 'desc' ? diff : -diff;
-    });
-    return funds;
-  }, [query, category, subCategory, trustee, period, sortBy, sortDir]);
+    return result;
+  }, [funds, query, category, trustee, sortBy, sortDir]);
 
-  const selectedPeriods: TimePeriod[] = ['1y', '5y', '10y'];
+  const toggleSort = (field: SortPeriod) => {
+    if (sortBy === field) setSortDir(d => d === 'desc' ? 'asc' : 'desc');
+    else { setSortBy(field); setSortDir('desc'); }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground/30" />
+      </div>
+    );
+  }
+
+  if (!funds?.length) {
+    return (
+      <div className="text-center py-20 text-muted-foreground text-sm">
+        <Database className="h-8 w-8 mx-auto mb-3 opacity-20" />
+        暫無數據，請先在排名頁面更新數據
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">基金一覽</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {filteredFunds.length} / {totalFunds} 隻基金 · 按積金局分類
-        </p>
+        <h1 className="text-lg font-bold text-foreground tracking-tight">基金搜尋</h1>
+        <p className="text-[11px] text-muted-foreground">{filteredFunds.length} / {funds.length} 隻基金</p>
       </div>
 
-      {/* Search and filters */}
-      <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+      {/* Filters */}
+      <div className="bg-card rounded-lg border border-border p-4 space-y-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="搜尋基金名稱..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-9 text-sm"
           />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">① 基金類別</label>
+            <label className="text-[10px] text-muted-foreground mb-1 block">基金類別</label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger><SelectValue placeholder="全部類別" /></SelectTrigger>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="全部" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全部類別</SelectItem>
-                {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                {categories.map(c => <SelectItem key={c} value={c!}>{c}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">② 基金種類</label>
-            <Select value={subCategory} onValueChange={setSubCategory}>
-              <SelectTrigger><SelectValue placeholder="先選基金類別" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部種類</SelectItem>
-                {subCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">③ 受託人</label>
+            <label className="text-[10px] text-muted-foreground mb-1 block">受託人</label>
             <Select value={trustee} onValueChange={setTrustee}>
-              <SelectTrigger><SelectValue placeholder="全部受託人" /></SelectTrigger>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="全部" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全部受託人</SelectItem>
-                {TRUSTEES.map(t => <SelectItem key={t.id} value={t.name}>{t.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">④ 計劃</label>
-            <Select value="all" disabled>
-              <SelectTrigger><SelectValue placeholder="先選受託人" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部計劃</SelectItem>
+                {trustees.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
         </div>
-        <div>
-          <div className="text-xs text-muted-foreground mb-2">選擇時間段（可多選，點擊欄標題排序）</div>
-          <TimePeriodSelector selected={period} onChange={setPeriod} />
+        <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
+          {(Object.entries(SORT_LABELS) as [SortPeriod, string][]).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => toggleSort(key)}
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all flex-1 ${
+                sortBy === key
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Results table */}
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
+      <div className="bg-card rounded-lg border border-border overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full banking-table">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground w-8">#</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">基金名稱</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">種類</th>
-                <th
-                  className="text-right px-4 py-3 font-medium text-muted-foreground cursor-pointer hover:text-foreground"
-                  onClick={() => { setSortBy('return'); setSortDir(d => d === 'desc' ? 'asc' : 'desc'); }}
-                >
-                  <span className="inline-flex items-center gap-1">
-                    1年 <ArrowUpDown className="h-3 w-3" />
-                  </span>
+                <th className="text-left px-3 py-2 text-muted-foreground w-8">#</th>
+                <th className="text-left px-3 py-2 text-muted-foreground">基金名稱</th>
+                <th className="text-left px-3 py-2 text-muted-foreground hidden md:table-cell">受託人</th>
+                <th className="text-left px-3 py-2 text-muted-foreground hidden lg:table-cell">類別</th>
+                <th className="text-right px-3 py-2 text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_ytd')}>
+                  <span className="inline-flex items-center gap-0.5">YTD <ArrowUpDown className="h-2.5 w-2.5" /></span>
                 </th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">5年</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">10年</th>
-                <th
-                  className="text-center px-4 py-3 font-medium text-muted-foreground hidden md:table-cell cursor-pointer hover:text-foreground"
-                  onClick={() => { setSortBy('risk'); setSortDir(d => d === 'desc' ? 'asc' : 'desc'); }}
-                >
-                  風險
+                <th className="text-right px-3 py-2 text-muted-foreground hidden sm:table-cell cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_1y')}>
+                  <span className="inline-flex items-center gap-0.5">1年 <ArrowUpDown className="h-2.5 w-2.5" /></span>
                 </th>
-                <th
-                  className="text-right px-4 py-3 font-medium text-muted-foreground hidden md:table-cell cursor-pointer hover:text-foreground"
-                  onClick={() => { setSortBy('fee'); setSortDir(d => d === 'desc' ? 'asc' : 'desc'); }}
-                >
-                  FER
+                <th className="text-right px-3 py-2 text-muted-foreground hidden lg:table-cell cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_3y')}>
+                  <span className="inline-flex items-center gap-0.5">3年 <ArrowUpDown className="h-2.5 w-2.5" /></span>
                 </th>
+                <th className="text-right px-3 py-2 text-muted-foreground hidden xl:table-cell">FER</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
-              {filteredFunds.map((fund, i) => (
-                <tr key={fund.id} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 text-muted-foreground text-xs">{i + 1}</td>
-                  <td className="px-4 py-3">
-                    <Link to={`/fund/${fund.id}`} className="hover:text-primary transition-colors">
-                      <div className="font-medium text-foreground">{fund.name}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {fund.trustee} · {fund.trusteePlan || fund.trustee + '強積金'}
-                      </div>
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
-                      {fund.subCategory || fund.category}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <ReturnValue value={fund.returns['1y']} />
-                  </td>
-                  <td className="px-4 py-3 text-right hidden lg:table-cell">
-                    <ReturnValue value={fund.returns['5y']} />
-                  </td>
-                  <td className="px-4 py-3 text-right hidden lg:table-cell">
-                    <ReturnValue value={fund.returns['10y']} />
-                  </td>
-                  <td className="px-4 py-3 text-center hidden md:table-cell text-muted-foreground">{fund.riskLevel}</td>
-                  <td className="px-4 py-3 text-right hidden md:table-cell text-muted-foreground">{fund.managementFee}%</td>
-                </tr>
-              ))}
+            <tbody className="divide-y divide-border/50">
+              {filteredFunds.map((fund, i) => {
+                const trusteeName = fund.trustee_name || getTrusteeFromPlanId(fund.etnet_plan_id);
+                return (
+                  <tr key={fund.id || fund.etnet_fund_id}>
+                    <td className="px-3 py-2 text-[10px] text-muted-foreground">{i + 1}</td>
+                    <td className="px-3 py-2">
+                      <div className="text-sm font-medium text-foreground leading-tight">{fund.name}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5 md:hidden">{trusteeName}</div>
+                    </td>
+                    <td className="px-3 py-2 hidden md:table-cell text-xs text-muted-foreground">{trusteeName}</td>
+                    <td className="px-3 py-2 hidden lg:table-cell">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.category || '—'}</span>
+                    </td>
+                    <td className="px-3 py-2 text-right"><ReturnValue value={fund.return_ytd} /></td>
+                    <td className="px-3 py-2 text-right hidden sm:table-cell"><ReturnValue value={fund.return_1y} /></td>
+                    <td className="px-3 py-2 text-right hidden lg:table-cell"><ReturnValue value={fund.return_3y} /></td>
+                    <td className="px-3 py-2 text-right hidden xl:table-cell text-xs text-muted-foreground">
+                      {fund.fee_ratio != null ? `${fund.fee_ratio.toFixed(2)}%` : '—'}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
