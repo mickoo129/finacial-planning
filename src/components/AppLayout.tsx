@@ -25,6 +25,75 @@ function formatDataDate(dateStr: string | null | undefined): string {
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
 }
 
+function MobileNav({ pathname }: { pathname: string }) {
+  const [showMore, setShowMore] = useState(false);
+  const isSecondaryActive = SECONDARY_NAV.some(item => item.to === pathname);
+
+  return (
+    <>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/98 backdrop-blur-xl safe-area-bottom">
+        <div className="grid grid-cols-5 py-1">
+          {PRIMARY_NAV.map((item) => {
+            const isActive = pathname === item.to;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => setShowMore(false)}
+                className={cn(
+                  'flex flex-col items-center gap-0.5 py-1.5 text-[10px] transition-colors',
+                  isActive ? 'text-primary font-medium' : 'text-muted-foreground'
+                )}
+              >
+                <item.icon className={cn('h-5 w-5', isActive && 'text-primary')} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setShowMore(!showMore)}
+            className={cn(
+              'flex flex-col items-center gap-0.5 py-1.5 text-[10px] transition-colors',
+              isSecondaryActive || showMore ? 'text-primary font-medium' : 'text-muted-foreground'
+            )}
+          >
+            <MoreHorizontal className={cn('h-5 w-5', (isSecondaryActive || showMore) && 'text-primary')} />
+            <span>更多</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* "More" drawer */}
+      {showMore && (
+        <>
+          <div className="md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setShowMore(false)} />
+          <div className="md:hidden fixed bottom-[60px] left-0 right-0 z-40 bg-card border-t border-border rounded-t-2xl shadow-xl animate-in slide-in-from-bottom-4 duration-200">
+            <div className="p-4 grid grid-cols-4 gap-3">
+              {SECONDARY_NAV.map((item) => {
+                const isActive = pathname === item.to;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setShowMore(false)}
+                    className={cn(
+                      'flex flex-col items-center gap-1.5 py-3 rounded-xl transition-colors',
+                      isActive ? 'text-primary bg-primary/8 font-medium' : 'text-muted-foreground hover:bg-muted'
+                    )}
+                  >
+                    <item.icon className={cn('h-6 w-6', isActive && 'text-primary')} />
+                    <span className="text-[11px]">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const { data: funds } = useMpfFunds();
