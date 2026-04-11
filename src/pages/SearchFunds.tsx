@@ -2,24 +2,13 @@ import { useState, useMemo, useCallback } from 'react';
 import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { CascadingFundFilter } from '@/components/CascadingFundFilter';
+import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowUpDown, RefreshCw, Database } from 'lucide-react';
 
-type SortPeriod = 'return_ytd' | 'return_1m' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y';
-
-const SORT_LABELS: Record<SortPeriod, string> = {
-  return_ytd: '年初至今',
-  return_1m: '1個月',
-  return_3m: '3個月',
-  return_1y: '1年',
-  return_3y: '3年',
-  return_5y: '5年',
-  return_10y: '10年',
-};
-
 export default function SearchFunds() {
   const [query, setQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortPeriod>('return_1y');
+  const [sortBy, setSortBy] = useState<ReturnField>('return_1y');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const { data: funds, isLoading } = useMpfFunds();
   const [cascadeFiltered, setCascadeFiltered] = useState<MpfFund[]>([]);
@@ -42,7 +31,7 @@ export default function SearchFunds() {
     return result;
   }, [cascadeFiltered, query, sortBy, sortDir]);
 
-  const toggleSort = (field: SortPeriod) => {
+  const toggleSort = (field: ReturnField) => {
     if (sortBy === field) setSortDir(d => d === 'desc' ? 'asc' : 'desc');
     else { setSortBy(field); setSortDir('desc'); }
   };
@@ -83,18 +72,18 @@ export default function SearchFunds() {
           />
         </div>
         <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} />
-        <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
-          {(Object.entries(SORT_LABELS) as [SortPeriod, string][]).map(([key, label]) => (
+        <div className="flex flex-wrap gap-1 bg-muted/50 rounded-lg p-1">
+          {RETURN_FIELDS.map(key => (
             <button
               key={key}
               onClick={() => toggleSort(key)}
-              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all flex-1 ${
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
                 sortBy === key
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {label}
+              {RETURN_LABELS[key]}
             </button>
           ))}
         </div>
@@ -132,7 +121,7 @@ export default function SearchFunds() {
                   </td>
                   <td className="px-3 py-2 hidden md:table-cell text-xs text-muted-foreground">{fund.trustee_name}</td>
                   <td className="px-3 py-2 hidden lg:table-cell">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.category || '—'}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.sub_category || fund.category || '—'}</span>
                   </td>
                   <td className="px-3 py-2 text-right"><ReturnValue value={fund.return_ytd} /></td>
                   <td className="px-3 py-2 text-right hidden sm:table-cell"><ReturnValue value={fund.return_1y} /></td>

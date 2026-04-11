@@ -1,25 +1,14 @@
 import { useState, useMemo } from 'react';
 import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds } from '@/hooks/useMpfFunds';
+import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2 } from 'lucide-react';
 
-type SortPeriod = 'return_ytd' | 'return_1m' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y';
-
-const SORT_LABELS: Record<SortPeriod, string> = {
-  return_ytd: '年初至今',
-  return_1m: '1個月',
-  return_3m: '3個月',
-  return_1y: '1年',
-  return_3y: '3年',
-  return_5y: '5年',
-  return_10y: '10年',
-};
-
 export default function TrusteeCompare() {
-  const [period, setPeriod] = useState<SortPeriod>('return_1y');
+  const [period, setPeriod] = useState<ReturnField>('return_1y');
   const { data: funds, isLoading } = useMpfFunds();
 
   const trusteeGroups = useMemo(() => {
@@ -37,7 +26,6 @@ export default function TrusteeCompare() {
         const avg = validFunds.length
           ? validFunds.reduce((s, f) => s + (f[period] ?? 0), 0) / validFunds.length
           : 0;
-        // Group by scheme
         const schemeMap = new Map<string, typeof groupFunds>();
         for (const f of groupFunds) {
           const s = f.scheme_name || '未分類';
@@ -138,10 +126,10 @@ export default function TrusteeCompare() {
               <tr key={fund.etnet_fund_id}>
                 <td className="px-4 py-2">
                   <div className="text-sm text-foreground leading-tight">{fund.name_zh || fund.name}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5 sm:hidden">{fund.category}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5 sm:hidden">{fund.sub_category || fund.category}</div>
                 </td>
                 <td className="px-4 py-2 hidden sm:table-cell">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.category}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.sub_category || fund.category}</span>
                 </td>
                 <td className="px-4 py-2 text-right">
                   <ReturnValue value={fund[period]} />
@@ -175,8 +163,8 @@ export default function TrusteeCompare() {
             {trusteeNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
           </SelectContent>
         </Select>
-        <div className="flex gap-1 sm:ml-auto bg-card rounded-lg border border-border p-1">
-          {(Object.entries(SORT_LABELS) as [SortPeriod, string][]).map(([key, label]) => (
+        <div className="flex flex-wrap gap-1 sm:ml-auto bg-card rounded-lg border border-border p-1">
+          {RETURN_FIELDS.map(key => (
             <button
               key={key}
               onClick={() => setPeriod(key)}
@@ -186,7 +174,7 @@ export default function TrusteeCompare() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {label}
+              {RETURN_LABELS[key]}
             </button>
           ))}
         </div>
@@ -200,7 +188,7 @@ export default function TrusteeCompare() {
       {/* All trustees overview */}
       <Card className="shadow-sm">
         <CardHeader className="pb-2 px-4 pt-4">
-          <CardTitle className="text-sm">全部受託人排名（{SORT_LABELS[period]} 平均回報）</CardTitle>
+          <CardTitle className="text-sm">全部受託人排名（{RETURN_LABELS[period]} 平均回報）</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <table className="w-full banking-table">

@@ -2,26 +2,11 @@ import { useState, useMemo, useCallback } from 'react';
 import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { ReturnValue } from '@/components/ReturnValue';
 import { CascadingFundFilter } from '@/components/CascadingFundFilter';
+import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { Button } from '@/components/ui/button';
 import { Plus, X, GitCompare } from 'lucide-react';
 
 const CHART_COLORS = ['hsl(217, 91%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(24, 95%, 53%)', 'hsl(262, 83%, 58%)'];
-
-type ReturnField = 'return_ytd' | 'return_1m' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y' | 'return_2024' | 'return_2023' | 'return_2022' | 'return_2021';
-
-const RETURN_LABELS: Record<ReturnField, string> = {
-  return_ytd: '年初至今',
-  return_1m: '1個月',
-  return_3m: '3個月',
-  return_1y: '1年',
-  return_3y: '3年',
-  return_5y: '5年',
-  return_10y: '10年',
-  return_2024: '2024年',
-  return_2023: '2023年',
-  return_2022: '2022年',
-  return_2021: '2021年',
-};
 
 export default function CompareFunds() {
   const { data: funds, isLoading } = useMpfFunds();
@@ -49,8 +34,6 @@ export default function CompareFunds() {
   const removeFund = (id: string) => {
     setSelectedFunds(selectedFunds.filter(f => f.id !== id));
   };
-
-  const returnFields: ReturnField[] = ['return_ytd', 'return_1m', 'return_3m', 'return_1y', 'return_3y', 'return_5y', 'return_10y', 'return_2024', 'return_2023', 'return_2022', 'return_2021'];
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-64 text-muted-foreground">載入中...</div>;
@@ -149,7 +132,7 @@ export default function CompareFunds() {
                     </td>
                   ))}
                 </tr>
-                {returnFields.map(field => (
+                {RETURN_FIELDS.map(field => (
                   <tr key={field}>
                     <td className="px-3 sm:px-4 py-2.5 text-muted-foreground text-xs">{RETURN_LABELS[field]}</td>
                     {selectedFunds.map(f => (

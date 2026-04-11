@@ -1,51 +1,42 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { ReturnValue } from '@/components/ReturnValue';
-import { useMpfFunds } from '@/hooks/useMpfFunds';
+import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
+import { CascadingFundFilter } from '@/components/CascadingFundFilter';
+import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { TrendingUp, TrendingDown, RefreshCw, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
 
-type SortPeriod = 'return_ytd' | 'return_1m' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y' | 'return_2024' | 'return_2023' | 'return_2022' | 'return_2021';
-
-const SORT_LABELS: Record<SortPeriod, string> = {
-  return_ytd: '年初至今',
-  return_1m: '1個月',
-  return_3m: '3個月',
-  return_1y: '1年',
-  return_3y: '3年',
-  return_5y: '5年',
-  return_10y: '10年',
-  return_2024: '2024年',
-  return_2023: '2023年',
-  return_2022: '2022年',
-  return_2021: '2021年',
-};
-
 export default function Rankings() {
-  const [sortBy, setSortBy] = useState<SortPeriod>('return_1y');
+  const [sortBy, setSortBy] = useState<ReturnField>('return_1y');
   const { data: funds, isLoading, refetch } = useMpfFunds();
   const [scraping, setScraping] = useState(false);
   const { toast } = useToast();
+  const [cascadeFiltered, setCascadeFiltered] = useState<MpfFund[]>([]);
+
+  const handleFilterChange = useCallback((filtered: MpfFund[]) => {
+    setCascadeFiltered(filtered);
+  }, []);
 
   const hasRealData = funds && funds.length > 0;
 
+  const displayFunds = cascadeFiltered.length > 0 || !hasRealData ? cascadeFiltered : (funds || []);
+
   const topFunds = useMemo(() => {
-    if (!hasRealData) return [];
-    return [...funds]
+    return [...displayFunds]
       .filter(f => f[sortBy] != null)
       .sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0))
       .slice(0, 10);
-  }, [funds, sortBy, hasRealData]);
+  }, [displayFunds, sortBy]);
 
   const bottomFunds = useMemo(() => {
-    if (!hasRealData) return [];
-    return [...funds]
+    return [...displayFunds]
       .filter(f => f[sortBy] != null)
       .sort((a, b) => (a[sortBy] ?? 0) - (b[sortBy] ?? 0))
       .slice(0, 10);
-  }, [funds, sortBy, hasRealData]);
+  }, [displayFunds, sortBy]);
 
   const handleScrape = async () => {
     setScraping(true);
@@ -73,7 +64,7 @@ export default function Rankings() {
       <div className="px-4 py-3 border-b border-border flex items-center gap-2">
         <div className={`w-1 h-5 rounded-full ${colorClass}`} />
         <Icon className={`h-4 w-4 ${colorClass === 'bg-positive' ? 'text-positive' : 'text-negative'}`} />
-        <h2 className="font-semibold text-foreground text-sm">{title}（{SORT_LABELS[sortBy]}）</h2>
+        <h2 className="font-semibold text-foreground text-sm">{title}（{RETURN_LABELS[sortBy]}）</h2>
         <span className="text-[10px] text-muted-foreground ml-auto">{data.length} 隻基金</span>
       </div>
       <div className="overflow-x-auto">
@@ -102,14 +93,14 @@ export default function Rankings() {
                   <td className="px-4 py-2.5">
                     <div className="font-medium text-foreground text-sm leading-tight">{fund.name_zh || fund.name}</div>
                     <div className="text-[10px] text-muted-foreground mt-0.5 sm:hidden">
-                      {trustee} · {fund.category || '—'}
+                      {trustee} · {fund.sub_category || fund.category || '—'}
                     </div>
                   </td>
                   <td className="px-4 py-2.5 hidden sm:table-cell">
                     <span className="text-xs text-muted-foreground">{trustee}</span>
                   </td>
                   <td className="px-4 py-2.5 hidden md:table-cell">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.category || '—'}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.sub_category || fund.category || '—'}</span>
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <ReturnValue value={fund[sortBy] ?? 0} />
@@ -132,7 +123,7 @@ export default function Rankings() {
             {hasRealData ? (
               <>
                 <Database className="inline h-3 w-3 mr-1 opacity-50" />
-                {funds.length} 隻基金 · 數據截至 {dataDate}
+                {displayFunds.length} / {funds.length} 隻基金 · 數據截至 {dataDate}
               </>
             ) : (
               '暫無數據 · 點擊「更新數據」獲取 etnet 數據'
@@ -151,9 +142,16 @@ export default function Rankings() {
         </Button>
       </div>
 
+      {/* Cascading filter */}
+      {hasRealData && (
+        <div className="bg-card rounded-lg border border-border p-4">
+          <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} />
+        </div>
+      )}
+
       {/* Period selector */}
       <div className="flex flex-wrap gap-1 bg-card rounded-lg border border-border p-1.5">
-        {(Object.entries(SORT_LABELS) as [SortPeriod, string][]).map(([key, label]) => (
+        {RETURN_FIELDS.map(key => (
           <button
             key={key}
             onClick={() => setSortBy(key)}
@@ -163,7 +161,7 @@ export default function Rankings() {
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted'
             }`}
           >
-            {label}
+            {RETURN_LABELS[key]}
           </button>
         ))}
       </div>
