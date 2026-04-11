@@ -7,10 +7,11 @@ import { Plus, X, GitCompare } from 'lucide-react';
 
 const CHART_COLORS = ['hsl(217, 91%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(24, 95%, 53%)', 'hsl(262, 83%, 58%)'];
 
-type ReturnField = 'return_ytd' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y' | 'return_2024' | 'return_2023' | 'return_2022' | 'return_2021';
+type ReturnField = 'return_ytd' | 'return_1m' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y' | 'return_2024' | 'return_2023' | 'return_2022' | 'return_2021';
 
 const RETURN_LABELS: Record<ReturnField, string> = {
   return_ytd: '年初至今',
+  return_1m: '1個月',
   return_3m: '3個月',
   return_1y: '1年',
   return_3y: '3年',
