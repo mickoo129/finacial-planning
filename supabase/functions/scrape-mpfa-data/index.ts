@@ -92,8 +92,10 @@ const FUND_KEYWORDS: Array<{ en: RegExp; zh: string[]; weight: number }> = [
   { en: /Equity/i, zh: ['股票', '股'], weight: 5 },
   { en: /Bond/i, zh: ['債券', '債'], weight: 6 },
   { en: /Fixed Income/i, zh: ['固定收益'], weight: 10 },
-  { en: /Money Market/i, zh: ['貨幣'], weight: 12 },
+  { en: /Money Market/i, zh: ['貨幣', '流動'], weight: 12 },
   { en: /RMB|Renminbi/i, zh: ['人民幣'], weight: 12 },
+  { en: /Income/i, zh: ['收益', '入息'], weight: 6 },
+  { en: /RetireEasy|Retire Easy/i, zh: ['退休易'], weight: 15 },
   // Strategy
   { en: /Growth/i, zh: ['增長', '進取'], weight: 6 },
   { en: /Balanced/i, zh: ['均衡', '平衡'], weight: 8 },
