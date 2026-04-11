@@ -7,13 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, ChevronDown, ChevronUp } from 'lucide-react';
 
-type SortPeriod = 'return_ytd' | 'return_3m' | 'return_1y' | 'return_3y';
+type SortPeriod = 'return_ytd' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y';
 
 const SORT_LABELS: Record<SortPeriod, string> = {
   return_ytd: '年初至今',
   return_3m: '3個月',
   return_1y: '1年',
   return_3y: '3年',
+  return_5y: '5年',
+  return_10y: '10年',
 };
 
 export default function TrusteeCompare() {
