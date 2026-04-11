@@ -157,10 +157,29 @@ function parseMpfaDesktopZh(html: string): MpfaFund[] {
 // Normalize fund name for matching: remove trustee/scheme prefix and class suffix
 function normalizeName(name: string): string {
   return name
-    .replace(/^(友邦優選|友邦|恒生智選|滙豐智選|匯豐智選|宏利環球|宏利退休|宏利|富達|海通|永明彩虹|永明|萬通|信安|中銀保誠|中國人壽|東亞集成信託|東亞行業|東亞享惠|東亞|交通銀行愉盈|交通銀行|銀聯|BCT積金之選|BCT策略|BCT行業|BCT|AMTD\s*強積金|AMTD|新地|新鴻基|orientiertAMTD\s*強積金)/, '')
+    // Strip full trustee+scheme prefixes (longest first to avoid partial matches)
+    .replace(/^(?:orientiertAMTD\s*強積金|AMTD\s*強積金|AMTD\s*)/i, '')
+    .replace(/^(?:宏利退休精選|宏利環球精選|宏利退休|宏利環球|宏利)/, '')
+    .replace(/^(?:友邦優選|友邦)/, '')
+    .replace(/^(?:恒生強積金智選|恒生智選|恒生強積金)/, '')
+    .replace(/^(?:滙豐強積金智選|滙豐智選|匯豐強積金智選|匯豐智選|匯豐強積金|滙豐強積金)/, '')
+    .replace(/^(?:中銀保誠簡易強積金|中銀保誠我的強積金|中銀保誠簡易|中銀保誠我的|中銀保誠)/, '')
+    .replace(/^(?:東亞集成信託|東亞享惠|東亞行業|東亞（強積金）集成|東亞（強積金）行業|東亞（強積金）享惠|東亞)/, '')
+    .replace(/^(?:銀聯積金之選|銀聯策略景順|銀聯策略|銀聯行業|BCT積金之選|BCT策略|BCT行業|BCT（行業）|BCT|銀聯)/, '')
+    .replace(/^(?:交通銀行愉盈退休|交通銀行愉盈|交通銀行)/, '')
+    .replace(/^(?:富達退休集成|富達退休|富達)/, '')
+    .replace(/^(?:永明彩虹強積金|永明彩虹|永明)/, '')
+    .replace(/^(?:海通MPF退休金|海通MPF|海通)/, '')
+    .replace(/^(?:信安800系列|信安800|信安明智之選|信安明智|信安易富之選|信安易富|信安)/, '')
+    .replace(/^(?:萬通萬全|萬全|萬通)/, '')
+    .replace(/^(?:中國人壽強積金|中國人壽)/, '')
+    .replace(/^(?:新地強積金|新鴻基)/, '')
+    .replace(/^(?:景順)/, '') // Sub-manager prefix in BCT策略 funds
+    // Strip unit class suffix
     .replace(/\s*[-–—]\s*(?:單位)?(?:類別)?\s*[A-Z]\s*$/i, '')
     .replace(/\s*[-–—]\s*[A-Z]\s*$/, '')
     .replace(/^[（(].*?[）)]/, '')
+    .replace(/\s+/g, '')
     .trim();
 }
 

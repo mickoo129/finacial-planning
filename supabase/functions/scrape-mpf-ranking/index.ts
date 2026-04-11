@@ -108,6 +108,41 @@ const PLAN_TRUSTEE_MAP: Record<string, { trustee: string; scheme: string }> = {
   ETNSI66: { trustee: '信安', scheme: '易富之選' },
 };
 
+// Infer trustee/scheme from fund name when plan_id is missing
+const NAME_TRUSTEE_PATTERNS: Array<{ pattern: RegExp; trustee: string; scheme: string }> = [
+  { pattern: /^友邦優選/, trustee: '友邦', scheme: '優選計劃' },
+  { pattern: /^orientiertAMTD|^AMTD/, trustee: 'AMTD', scheme: '強積金計劃' },
+  { pattern: /^交通銀行愉盈/, trustee: '交通銀行', scheme: '愉盈退休' },
+  { pattern: /^銀聯積金之選|^BCT積金之選/, trustee: '銀聯信託', scheme: '積金之選' },
+  { pattern: /^銀聯行業|^BCT行業|^BCT（行業）/, trustee: '銀聯信託', scheme: '行業計劃' },
+  { pattern: /^銀聯策略|^BCT策略/, trustee: '銀聯信託', scheme: '策略計劃' },
+  { pattern: /^東亞集成信託|^東亞（強積金）集成/, trustee: '東亞', scheme: '集成信託' },
+  { pattern: /^東亞行業|^東亞（強積金）行業/, trustee: '東亞', scheme: '行業計劃' },
+  { pattern: /^東亞享惠|^東亞（強積金）享惠/, trustee: '東亞', scheme: '享惠計劃' },
+  { pattern: /^中銀保誠簡易/, trustee: '中銀保誠', scheme: '簡易強積金' },
+  { pattern: /^中銀保誠我的/, trustee: '中銀保誠', scheme: '我的強積金' },
+  { pattern: /^中國人壽/, trustee: '中國人壽', scheme: '強積金計劃' },
+  { pattern: /^富達退休/, trustee: '富達', scheme: '退休集成' },
+  { pattern: /^海通MPF/, trustee: '海通', scheme: 'MPF計劃' },
+  { pattern: /^恒生智選|^恒生強積金/, trustee: '恒生', scheme: '智選計劃' },
+  { pattern: /^滙豐智選|^匯豐智選|^滙豐強積金|^匯豐強積金/, trustee: '匯豐', scheme: '智選計劃' },
+  { pattern: /^宏利環球/, trustee: '宏利', scheme: '環球精選' },
+  { pattern: /^宏利退休/, trustee: '宏利', scheme: '退休精選' },
+  { pattern: /^萬通萬全|^萬全/, trustee: '萬通', scheme: '萬全計劃' },
+  { pattern: /^永明彩虹/, trustee: '永明', scheme: '彩虹計劃' },
+  { pattern: /^信安800/, trustee: '信安', scheme: '800系列' },
+  { pattern: /^信安明智/, trustee: '信安', scheme: '明智之選' },
+  { pattern: /^信安易富/, trustee: '信安', scheme: '易富之選' },
+  { pattern: /^新地強積金/, trustee: '新鴻基', scheme: '行業計劃' },
+];
+
+function inferTrusteeFromName(name: string): { trustee: string; scheme: string } | null {
+  for (const p of NAME_TRUSTEE_PATTERNS) {
+    if (p.pattern.test(name)) return { trustee: p.trustee, scheme: p.scheme };
+  }
+  return null;
+}
+
 const SUBTYPES = [
   { id: 'ETNSI19', name: '強積金保守' },
   { id: 'ETNSI18', name: '貨幣市場' },
@@ -202,6 +237,9 @@ Deno.serve(async (req) => {
         .upsert(
           allFunds.map(f => {
             const planMapping = f.etnet_plan_id ? PLAN_TRUSTEE_MAP[f.etnet_plan_id] : null;
+            const nameMapping = !planMapping ? inferTrusteeFromName(f.name) : null;
+            const trustee = planMapping?.trustee || nameMapping?.trustee || null;
+            const scheme = planMapping?.scheme || nameMapping?.scheme || null;
             return {
               etnet_fund_id: f.etnet_fund_id,
               etnet_plan_id: f.etnet_plan_id,
@@ -214,8 +252,8 @@ Deno.serve(async (req) => {
               return_1y: f.return_1y,
               return_3y: f.return_3y,
               data_date: f.data_date,
-              trustee_name: planMapping?.trustee || null,
-              scheme_name: planMapping?.scheme || null,
+              trustee_name: trustee,
+              scheme_name: scheme,
             };
           }),
           { onConflict: 'etnet_fund_id' }
