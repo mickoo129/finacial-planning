@@ -145,16 +145,28 @@ export default function Rankings() {
             )}
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleScrape}
-          disabled={scraping}
-          className="flex-shrink-0 text-[11px] h-8"
-        >
-          <RefreshCw className={`h-3 w-3 mr-1 ${scraping ? 'animate-spin' : ''}`} />
-          {scraping ? '更新中...' : '更新數據'}
-        </Button>
+        <div className="flex gap-2 flex-shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleScrapeDetail}
+            disabled={scraping}
+            className="text-[11px] h-8"
+          >
+            <RefreshCw className={`h-3 w-3 mr-1 ${scraping ? 'animate-spin' : ''}`} />
+            {scraping ? '更新中...' : '補充年度'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleScrape}
+            disabled={scraping}
+            className="text-[11px] h-8"
+          >
+            <RefreshCw className={`h-3 w-3 mr-1 ${scraping ? 'animate-spin' : ''}`} />
+            {scraping ? '更新中...' : '更新數據'}
+          </Button>
+        </div>
       </div>
 
       {/* Cascading filter */}
