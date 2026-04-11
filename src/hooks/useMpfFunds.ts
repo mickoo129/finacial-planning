@@ -19,6 +19,7 @@ export interface MpfFund {
   return_3y: number | null;
   return_5y: number | null;
   return_10y: number | null;
+  return_2025: number | null;
   return_2024: number | null;
   return_2023: number | null;
   return_2022: number | null;
