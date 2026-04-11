@@ -316,10 +316,17 @@ Deno.serve(async (req) => {
     for (const log of matchLog) console.log(log);
     console.log(`Match results: ${matched} matched, ${newCount} new`);
 
-    // Step 5: Batch upsert
+    // Step 5: Deduplicate by etnet_fund_id (keep last occurrence) then batch upsert
+    const deduped = new Map<string, Record<string, unknown>>();
+    for (const rec of upsertRecords) {
+      deduped.set(rec.etnet_fund_id as string, rec);
+    }
+    const uniqueRecords = [...deduped.values()];
+    console.log(`Deduplicated: ${upsertRecords.length} → ${uniqueRecords.length}`);
+
     let upserted = 0;
-    for (let i = 0; i < upsertRecords.length; i += 50) {
-      const batch = upsertRecords.slice(i, i + 50);
+    for (let i = 0; i < uniqueRecords.length; i += 50) {
+      const batch = uniqueRecords.slice(i, i + 50);
       const { error } = await supabase
         .from('mpf_funds')
         .upsert(batch, { onConflict: 'etnet_fund_id' });
