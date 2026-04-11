@@ -376,20 +376,10 @@ Deno.serve(async (req) => {
           matchDetails.push(`✓ "${mpfa.fund_name_zh}" → "${match.etnetFund.name}" (score:${match.score})`);
         }
       } else {
-        const trusteeName = schemeMapping?.trustee || mpfa.trustee_zh;
-        const schemeName = schemeMapping?.scheme || mpfa.scheme_zh;
-        const fundId = `MPFA_${mpfa.scheme_zh}_${mpfa.fund_name_zh}`.replace(/[^a-zA-Z0-9_\u4e00-\u9fff]/g, '_').substring(0, 100);
-
-        upsertRecords.push({
-          etnet_fund_id: fundId,
-          name: mpfa.fund_name_zh,
-          trustee_name: trusteeName,
-          scheme_name: schemeName,
-          ...mpfaData,
-        });
+        // Skip unmatched funds — do NOT create MPFA_ prefixed records to avoid duplicates
         unmatched++;
         if (unmatched <= 15) {
-          matchDetails.push(`✗ "${mpfa.scheme_zh}" / "${mpfa.fund_name_zh}" norm="${normalizeName(mpfa.fund_name_zh)}" (no match)`);
+          matchDetails.push(`✗ "${mpfa.scheme_zh}" / "${mpfa.fund_name_zh}" norm="${normalizeName(mpfa.fund_name_zh)}" (skipped, no etnet match)`);
         }
       }
     }
