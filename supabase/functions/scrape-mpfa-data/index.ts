@@ -142,46 +142,45 @@ function parseMpfaHtml(html: string): MpfaFund[] {
     const row = rows[i];
     
     // Extract scheme name from label
-    const labelMatch = row.match(/<label[^>]*>([^<]+)<\/label>/);
+    const labelMatch = row.match(/<label[^>]*>\s*([^<]+?)\s*<\/label>/);
     const scheme = labelMatch ? labelMatch[1].trim() : '';
     
-    // Extract fund name - first colspan="2" align="left" class="table"
-    const fundNameMatch = row.match(/colspan="2" align="left" class="table">([^<]+)<\//);
-    const fundName = fundNameMatch ? fundNameMatch[1].trim() : '';
+    // Extract all td contents with colspan="2" align="left" class="table"
+    const tdLeftMatches = [...row.matchAll(/colspan="2"\s+align="left"\s+class="table"\s*>([^<]*(?:<[^>]*>[^<]*)*?)<\/td>/g)];
+    const fundName = tdLeftMatches.length >= 1 ? tdLeftMatches[0][1].replace(/<[^>]*>/g, '').trim() : '';
+    const fundType = tdLeftMatches.length >= 2 ? tdLeftMatches[1][1].replace(/<[^>]*>/g, '').trim() : '';
     
     // Extract trustee abbreviation
-    const trusteeMatch = row.match(/<div align="center">([^<]+)<\//);
+    const trusteeMatch = row.match(/<div\s+align="center">\s*([^<\s]+)\s*<\/div>/);
     const trusteeAbbr = trusteeMatch ? trusteeMatch[1].trim() : '';
     
-    // Extract fund type - second occurrence
-    const fundTypeMatches = [...row.matchAll(/colspan="2" align="left" class="table">([^<]+)<\//g)];
-    const fundType = fundTypeMatches.length >= 2 ? fundTypeMatches[1][1].trim() : '';
-    
     // Extract launch date
-    const launchMatch = row.match(/align="center" class="table mpp_tab_green">([^<]+)<\//);
+    const launchMatch = row.match(/align="center"\s+class="table mpp_tab_green">\s*([^<]+?)\s*<\/td>/);
     const launchDate = launchMatch ? launchMatch[1].trim() : null;
     
-    // Extract fund size
-    const sizeMatch = row.match(/align="right" class="table mpp_tab_green">([^<]+)<\//);
-    const fundSize = sizeMatch ? parseNum(sizeMatch[1]) : null;
+    // Extract fund size and risk class - right-aligned green cells
+    const rightGreenMatches = [...row.matchAll(/align="right"\s+class="table mpp_tab_green">\s*([^<]+?)\s*<\/td>/g)];
+    const fundSize = rightGreenMatches.length >= 1 ? parseNum(rightGreenMatches[0][1]) : null;
+    const risk = rightGreenMatches.length >= 2 ? rightGreenMatches[1][1].trim() : null;
     
-    // Extract risk class - specific pattern after fund size
-    const riskMatches = [...row.matchAll(/align="right" class="table mpp_tab_green">([^<]+)<\//g)];
-    const risk = riskMatches.length >= 2 ? riskMatches[1][1].trim() : null;
-    
-    // Extract FER
-    const ferMatch = row.match(/colspan="2" align="right" class="table">\s*([\d.]+)\s*<\/td>/);
+    // Extract FER - right-aligned plain table cell with number
+    const ferMatch = row.match(/colspan="2"\s+align="right"\s+class="table">\s*([\d.]+)\s*<\/td>/);
     const fer = ferMatch ? parseNum(ferMatch[1]) : null;
     
-    // Extract annualized returns (1y, 5y, 10y, since launch) - arCol cells
-    const arMatches = [...row.matchAll(/class="arCol mpp_tab_green"[^>]*>([^<]*)<\/td>/g)];
+    // Extract annualized returns - arCol cells  
+    const arMatches = [...row.matchAll(/class="arCol\s+mpp_tab_green"[^>]*>\s*([^<]*?)\s*<\/td>/g)];
     const arValues = arMatches.map(m => m[1].trim());
     
-    // Extract calendar year returns (2025, 2024, 2023, 2022, 2021) - cyrCol cells
-    const cyrMatches = [...row.matchAll(/class="cyrCol mpp_tab_green"[^>]*>([^<]*)<\/td>/g)];
+    // Extract calendar year returns - cyrCol cells
+    const cyrMatches = [...row.matchAll(/class="cyrCol\s+mpp_tab_green"[^>]*>\s*([^<]*?)\s*<\/td>/g)];
     const cyrValues = cyrMatches.map(m => m[1].trim());
     
     if (!fundName && !scheme) continue;
+    
+    // Debug first few
+    if (i <= 3) {
+      console.log(`Row ${i}: scheme="${scheme}", fund="${fundName}", trustee="${trusteeAbbr}", type="${fundType}", fer=${fer}, arCount=${arValues.length}, cyrCount=${cyrValues.length}`);
+    }
     
     funds.push({
       scheme,
