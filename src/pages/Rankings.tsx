@@ -24,18 +24,23 @@ export default function Rankings() {
 
   const displayFunds = cascadeFiltered.length > 0 || !hasRealData ? cascadeFiltered : (funds || []);
 
-  const topFunds = useMemo(() => {
-    return [...displayFunds]
+  const { topFunds, bottomFunds } = useMemo(() => {
+    const sorted = [...displayFunds]
       .filter(f => f[sortBy] != null)
-      .sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0))
-      .slice(0, 10);
-  }, [displayFunds, sortBy]);
-
-  const bottomFunds = useMemo(() => {
-    return [...displayFunds]
-      .filter(f => f[sortBy] != null)
-      .sort((a, b) => (a[sortBy] ?? 0) - (b[sortBy] ?? 0))
-      .slice(0, 10);
+      .sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0));
+    
+    if (sorted.length <= 20) {
+      // If pool is small, split in half to avoid overlap
+      const half = Math.ceil(sorted.length / 2);
+      return {
+        topFunds: sorted.slice(0, half),
+        bottomFunds: [...sorted.slice(half)].reverse(),
+      };
+    }
+    return {
+      topFunds: sorted.slice(0, 10),
+      bottomFunds: [...sorted.slice(-10)].reverse(),
+    };
   }, [displayFunds, sortBy]);
 
   const handleScrape = async () => {
