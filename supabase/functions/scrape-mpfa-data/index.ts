@@ -120,8 +120,9 @@ function parseMpfaMarkdown(md: string): ParsedFund[] {
     if (!line.startsWith('|')) continue;
     // Skip separator/header rows
     if (/^[\s|:-]+$/.test(line)) continue;
-    if (/comparison_up|comparison_down|images\/general|images\/mpp/.test(line)) continue;
-    if (/\*\*計劃\*\*|\*\*受託人\*\*|\*\*基金類別\*\*|\*\*一年期\*\*|\*\*五年期\*\*/.test(line)) continue;
+    // Skip header rows with sort icons or bold column names (but NOT data rows with Icon_Document)
+    if (/comparison_up|comparison_down/.test(line)) continue;
+    if (/\*\*計劃\*\*|\*\*受託人\*\*|\*\*基金類別\*\*|\*\*一年期\*\*|\*\*五年期\*\*|\*\*推出日期\*\*/.test(line)) continue;
 
     const cells = line.split('|').map(c => c.trim()).filter(c => c !== '');
     if (cells.length < 20) continue;
