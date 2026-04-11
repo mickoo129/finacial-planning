@@ -8,7 +8,7 @@ const corsHeaders = {
 interface MpfaFund {
   scheme: string;
   fund_name: string;
-  trustee: string;
+  trustee_abbr: string;
   fund_type: string;
   launch_date: string | null;
   fund_size: number | null;
@@ -17,7 +17,7 @@ interface MpfaFund {
   return_1y_ann: number | null;
   return_5y_ann: number | null;
   return_10y_ann: number | null;
-  return_launch_ann: number | null;
+  return_since_launch_ann: number | null;
   return_2025: number | null;
   return_2024: number | null;
   return_2023: number | null;
@@ -32,186 +32,204 @@ function parseNum(text: string): number | null {
   return isNaN(val) ? null : val;
 }
 
-// Map MPFA trustee abbreviations to Chinese names
-const TRUSTEE_MAP: Record<string, string> = {
-  'AIAT': '友邦',
-  'AIA': '友邦',
-  'BCT': 'BCT',
-  'BCOM': '交通銀行',
-  'BEA': '東亞',
-  'BOCIP': '中銀保誠',
-  'BOCI': '中銀保誠',
-  'HSBC': '匯豐',
-  'Manulife': '宏利',
-  'MAN': '宏利',
-  'Principal': '信安',
-  'PRIN': '信安',
-  'StanChart': '渣打',
-  'SCT': '渣打',
-  'Sun Life': '永明',
-  'SUN': '永明',
-  'YF Life': '萬通',
-  'YFL': '萬通',
-  'China Life': '中國人壽',
-  'CL': '中國人壽',
-  'FIL': '富達',
-  'Fidelity': '富達',
-  'Haitong': '海通',
-  'HT': '海通',
-  'Hang Seng': '恒生',
-  'HS': '恒生',
-  'AMTD': 'AMTD',
-  'SHKP': '新鴻基',
+// MPFA scheme name → { trustee (Chinese), scheme (Chinese) }
+const SCHEME_MAP: Record<string, { trustee: string; scheme: string }> = {
+  'AIA MPF - Prime Value Choice': { trustee: '友邦', scheme: '優選計劃' },
+  'AMTD MPF Scheme': { trustee: 'AMTD', scheme: '強積金計劃' },
+  'BCOM Joyful Retirement MPF Scheme': { trustee: '交通銀行', scheme: '愉盈退休' },
+  'BCT (MPF) Industry Choice': { trustee: '銀聯信託', scheme: '行業計劃' },
+  'BCT (MPF) Pro Choice': { trustee: '銀聯信託', scheme: '積金之選' },
+  'BCT Strategic MPF Scheme': { trustee: '銀聯信託', scheme: '策略計劃' },
+  'BEA (MPF) Industry Scheme': { trustee: '東亞', scheme: '行業計劃' },
+  'BEA (MPF) Master Trust Scheme': { trustee: '東亞', scheme: '集成信託' },
+  'BEA (MPF) Value Scheme': { trustee: '東亞', scheme: '享惠計劃' },
+  'BOC-Prudential Easy-Choice Mandatory Provident Fund Scheme': { trustee: '中銀保誠', scheme: '簡易強積金' },
+  'China Life MPF Master Trust Scheme': { trustee: '中國人壽', scheme: '強積金計劃' },
+  'Fidelity Retirement Master Trust': { trustee: '富達', scheme: '退休集成' },
+  'Haitong MPF Retirement Fund': { trustee: '海通', scheme: 'MPF計劃' },
+  'Hang Seng Mandatory Provident Fund - SuperTrust Plus': { trustee: '恒生', scheme: '智選計劃' },
+  'HSBC Mandatory Provident Fund - SuperTrust Plus': { trustee: '匯豐', scheme: '智選計劃' },
+  'Manulife Global Select (MPF) Scheme': { trustee: '宏利', scheme: '環球精選' },
+  'Manulife RetireChoice (MPF) Scheme': { trustee: '宏利', scheme: '退休精選' },
+  'MASS Mandatory Provident Fund Scheme': { trustee: '萬通', scheme: '萬全計劃' },
+  'My Choice Mandatory Provident Fund Scheme': { trustee: '中銀保誠', scheme: '我的強積金' },
+  'Principal MPF - Simple Plan': { trustee: '信安', scheme: '易富之選' },
+  'Principal MPF - Smart Plan': { trustee: '信安', scheme: '明智之選' },
+  'Principal MPF Scheme Series 800': { trustee: '信安', scheme: '800系列' },
+  'SHKP MPF Employer Sponsored Scheme': { trustee: '新鴻基', scheme: '行業計劃' },
+  'Sun Life Rainbow MPF Scheme': { trustee: '永明', scheme: '彩虹計劃' },
 };
 
-function mapTrustee(abbr: string): string {
-  const trimmed = abbr.trim();
-  return TRUSTEE_MAP[trimmed] || trimmed;
-}
+// Fund name keyword matching: English keywords → Chinese keywords
+const FUND_KEYWORDS: Array<{ en: RegExp; zh: string[] }> = [
+  // DIS
+  { en: /Core Accumulation/i, zh: ['核心累積'] },
+  { en: /Age 65 Plus/i, zh: ['65歲後'] },
+  // Category-specific
+  { en: /MPF Conservative/i, zh: ['強積金保守'] },
+  { en: /Conservative/i, zh: ['保守'] },
+  { en: /Guaranteed/i, zh: ['保證'] },
+  // Region
+  { en: /Hong Kong.*Index/i, zh: ['香港指數', '恒指'] },
+  { en: /Greater China/i, zh: ['大中華'] },
+  { en: /China|Chinese/i, zh: ['中國', '中華'] },
+  { en: /Hong Kong/i, zh: ['香港'] },
+  { en: /Japan/i, zh: ['日本'] },
+  { en: /Asia Pacific/i, zh: ['亞太'] },
+  { en: /Asia/i, zh: ['亞洲', '亞太'] },
+  { en: /Europe/i, zh: ['歐洲', '歐'] },
+  { en: /United States|American|US Equity|North America/i, zh: ['美國', '美洲', '北美'] },
+  { en: /Global|World|International/i, zh: ['環球', '全球', '國際'] },
+  // Asset type
+  { en: /Growth/i, zh: ['增長', '進取'] },
+  { en: /Balanced/i, zh: ['均衡', '平衡'] },
+  { en: /Stable/i, zh: ['穩定', '穩健'] },
+  { en: /Bond|Fixed Income/i, zh: ['債券', '固定收益'] },
+  { en: /RMB|Renminbi/i, zh: ['人民幣'] },
+  { en: /Money Market/i, zh: ['貨幣'] },
+  { en: /Green|ESG|Sustainable/i, zh: ['綠色', 'ESG'] },
+  { en: /Dynamic/i, zh: ['靈活', '動態'] },
+  { en: /Target/i, zh: ['目標'] },
+];
 
-// Map MPFA fund types to MPFA-standard Chinese categories
+// Map MPFA fund types to Chinese categories
 function mapFundType(type: string): { category: string; subCategory: string } {
   const t = type.trim();
-  
+  if (t.includes('Default Investment Strategy')) {
+    if (t.includes('Core Accumulation')) return { category: '預設投資策略', subCategory: '預設投資-核心累積基金' };
+    if (t.includes('Age 65 Plus')) return { category: '預設投資策略', subCategory: '預設投資-65歲後基金' };
+    return { category: '預設投資策略', subCategory: '預設投資策略' };
+  }
   if (t.includes('Equity Fund')) {
-    let sub = '股票基金';
-    if (t.includes('Asia')) sub = '股票基金-亞洲';
-    else if (t.includes('China')) sub = '股票基金-中國';
-    else if (t.includes('Europe')) sub = '股票基金-歐洲';
-    else if (t.includes('Global')) sub = '股票基金-環球';
-    else if (t.includes('Greater China')) sub = '股票基金-大中華';
-    else if (t.includes('Hong Kong') && t.includes('Index')) sub = '股票基金-香港(指數追蹤)';
-    else if (t.includes('Hong Kong')) sub = '股票基金-香港';
-    else if (t.includes('Japan')) sub = '股票基金-日本';
-    else if (t.includes('United States')) sub = '股票基金-美國';
-    else sub = '股票基金-其他';
-    return { category: '股票基金', subCategory: sub };
+    if (t.includes('Asia')) return { category: '股票基金', subCategory: '股票基金-亞洲' };
+    if (t.includes('China')) return { category: '股票基金', subCategory: '股票基金-中國' };
+    if (t.includes('Europe')) return { category: '股票基金', subCategory: '股票基金-歐洲' };
+    if (t.includes('Greater China')) return { category: '股票基金', subCategory: '股票基金-大中華' };
+    if (t.includes('Hong Kong') && t.includes('Index')) return { category: '股票基金', subCategory: '股票基金-香港指數追蹤' };
+    if (t.includes('Hong Kong')) return { category: '股票基金', subCategory: '股票基金-香港' };
+    if (t.includes('Japan')) return { category: '股票基金', subCategory: '股票基金-日本' };
+    if (t.includes('United States')) return { category: '股票基金', subCategory: '股票基金-美國' };
+    if (t.includes('Global')) return { category: '股票基金', subCategory: '股票基金-環球' };
+    return { category: '股票基金', subCategory: '股票基金-其他' };
   }
   if (t.includes('Mixed Assets Fund')) {
-    let sub = '混合資產基金';
-    if (t.includes('Core Accumulation')) sub = '預設投資-核心累積基金';
-    else if (t.includes('Age 65 Plus')) sub = '預設投資-65歲後基金';
-    else if (t.includes('81% to 100%')) sub = '混合資產基金-81%至100%股票';
-    else if (t.includes('61% to 80%')) sub = '混合資產基金-61%至80%股票';
-    else if (t.includes('41% to 60%')) sub = '混合資產基金-41%至60%股票';
-    else if (t.includes('21% to 40%')) sub = '混合資產基金-21%至40%股票';
-    else sub = '混合資產基金-其他';
-    
-    if (t.includes('Default Investment Strategy') || t.includes('DIS')) {
-      return { category: '預設投資策略', subCategory: sub };
-    }
-    return { category: '混合資產基金', subCategory: sub };
+    if (t.includes('81% to 100%')) return { category: '混合資產基金', subCategory: '混合資產基金-81%至100%股票' };
+    if (t.includes('61% to 80%')) return { category: '混合資產基金', subCategory: '混合資產基金-61%至80%股票' };
+    if (t.includes('41% to 60%')) return { category: '混合資產基金', subCategory: '混合資產基金-41%至60%股票' };
+    if (t.includes('21% to 40%')) return { category: '混合資產基金', subCategory: '混合資產基金-21%至40%股票' };
+    return { category: '混合資產基金', subCategory: '混合資產基金-其他' };
   }
   if (t.includes('Bond Fund')) {
-    let sub = '債券基金';
-    if (t.includes('Asia')) sub = '債券基金-亞洲';
-    else if (t.includes('Global')) sub = '債券基金-環球';
-    else if (t.includes('Hong Kong Dollar')) sub = '債券基金-港元';
-    else if (t.includes('RMB')) sub = '債券基金-人民幣';
-    else sub = '債券基金-其他';
-    return { category: '債券基金', subCategory: sub };
+    if (t.includes('Asia')) return { category: '債券基金', subCategory: '債券基金-亞洲' };
+    if (t.includes('Global')) return { category: '債券基金', subCategory: '債券基金-環球' };
+    if (t.includes('Hong Kong Dollar')) return { category: '債券基金', subCategory: '債券基金-港元' };
+    if (t.includes('RMB')) return { category: '債券基金', subCategory: '債券基金-人民幣' };
+    return { category: '債券基金', subCategory: '債券基金-其他' };
   }
-  if (t.includes('Guaranteed')) {
-    return { category: '保證基金', subCategory: '保證基金' };
-  }
-  if (t.includes('Money Market') || t.includes('MPF Conservative')) {
-    if (t.includes('MPF Conservative') || t.includes('Conservative')) {
-      return { category: '強積金保守基金', subCategory: '強積金保守基金' };
-    }
-    return { category: '貨幣市場基金', subCategory: '貨幣市場基金' };
-  }
+  if (t.includes('Guaranteed')) return { category: '保證基金', subCategory: '保證基金' };
+  if (t.includes('MPF Conservative')) return { category: '強積金保守基金', subCategory: '強積金保守基金' };
+  if (t.includes('Money Market')) return { category: '貨幣市場基金', subCategory: '貨幣市場基金' };
   return { category: '其他', subCategory: '其他' };
 }
 
 function parseMpfaHtml(html: string): MpfaFund[] {
   const funds: MpfaFund[] = [];
   
-  // Find all fund rows - they start with <tr class="wr"
-  const rowRegex = /<tr class="wr"[^>]*>([\s\S]*?)<\/tr>/g;
-  let rowMatch;
+  // Split by <tr class="wr" to get each fund row
+  const rows = html.split(/<tr class="wr"/);
   
-  while ((rowMatch = rowRegex.exec(html)) !== null) {
-    const rowHtml = rowMatch[1];
-    
-    // Extract all td contents
-    const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
-    const tds: string[] = [];
-    let tdMatch;
-    while ((tdMatch = tdRegex.exec(rowHtml)) !== null) {
-      // Strip HTML tags and get text content
-      tds.push(tdMatch[1].replace(/<[^>]*>/g, '').trim());
-    }
-    
-    if (tds.length < 10) continue;
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
     
     // Extract scheme name from label
-    const labelMatch = rowHtml.match(/<label[^>]*>([^<]+)<\/label>/);
+    const labelMatch = row.match(/<label[^>]*>\s*([^<]+?)\s*<\/label>/);
     const scheme = labelMatch ? labelMatch[1].trim() : '';
     
-    // Extract fund name
-    const fundNameMatch = rowHtml.match(/border-left: solid 1px #FFFFFF;" colspan="2" align="left" class="table">([^<]+)</);
-    const fundName = fundNameMatch ? fundNameMatch[1].trim() : '';
+    // Extract all td contents with colspan="2" align="left" class="table"
+    const tdLeftMatches = [...row.matchAll(/colspan="2"\s+align="left"\s+class="table"\s*>([^<]*(?:<[^>]*>[^<]*)*?)<\/td>/g)];
+    const fundName = tdLeftMatches.length >= 1 ? tdLeftMatches[0][1].replace(/<[^>]*>/g, '').trim() : '';
+    const fundType = tdLeftMatches.length >= 2 ? tdLeftMatches[1][1].replace(/<[^>]*>/g, '').trim() : '';
     
-    // Extract trustee
-    const trusteeMatch = rowHtml.match(/<div align="center">\s*([^<\s]+)\s*<\/div>/);
-    const trustee = trusteeMatch ? trusteeMatch[1].trim() : '';
+    // Extract trustee abbreviation
+    const trusteeMatch = row.match(/<div\s+align="center">\s*([^<\s]+)\s*<\/div>/);
+    const trusteeAbbr = trusteeMatch ? trusteeMatch[1].trim() : '';
     
-    // Extract fund type - second occurrence of colspan="2" align="left" class="table"
-    const fundTypeMatches = rowHtml.match(/colspan="2" align="left" class="table">([^<]+)</g);
-    const fundType = fundTypeMatches && fundTypeMatches.length >= 2 
-      ? fundTypeMatches[1].replace('colspan="2" align="left" class="table">', '').trim() 
-      : '';
+    // Extract launch date
+    const launchMatch = row.match(/align="center"\s+class="table mpp_tab_green">\s*([^<]+?)\s*<\/td>/);
+    const launchDate = launchMatch ? launchMatch[1].trim() : null;
     
-    // Extract FER
-    const ferMatch = rowHtml.match(/colspan="2" align="right" class="table">\s*([\d.]+)\s*<\/td>/);
+    // Extract fund size and risk class - right-aligned green cells
+    const rightGreenMatches = [...row.matchAll(/align="right"\s+class="table mpp_tab_green">\s*([^<]+?)\s*<\/td>/g)];
+    const fundSize = rightGreenMatches.length >= 1 ? parseNum(rightGreenMatches[0][1]) : null;
+    const risk = rightGreenMatches.length >= 2 ? rightGreenMatches[1][1].trim() : null;
+    
+    // Extract FER - right-aligned plain table cell with number
+    const ferMatch = row.match(/colspan="2"\s+align="right"\s+class="table">\s*([\d.]+)\s*<\/td>/);
     const fer = ferMatch ? parseNum(ferMatch[1]) : null;
     
-    // Extract risk class
-    const riskMatch = rowHtml.match(/colspan="2" align="right" class="table mpp_tab_green">(\d+)</);
-    const risk = riskMatch ? riskMatch[1] : null;
+    // Extract annualized returns - arCol cells  
+    const arMatches = [...row.matchAll(/class="arCol\s+mpp_tab_green"[^>]*>\s*([^<]*?)\s*<\/td>/g)];
+    const arValues = arMatches.map(m => m[1].trim());
     
-    // Extract annualized returns (1y, 5y, 10y, since launch) - arCol cells
-    const arMatches: string[] = [];
-    const arRegex = /class="arCol mpp_tab_green"[^>]*>([^<]*(?:<[^>]*>[^<]*)*)<\/td>/g;
-    let arMatch;
-    while ((arMatch = arRegex.exec(rowHtml)) !== null) {
-      const val = arMatch[1].replace(/<[^>]*>/g, '').trim();
-      if (val) arMatches.push(val);
-    }
-    
-    // Extract calendar year returns (2025, 2024, 2023, 2022, 2021) - cyrCol cells
-    const cyrMatches: string[] = [];
-    const cyrRegex = /class="cyrCol mpp_tab_green"[^>]*>([^<]*(?:<[^>]*>[^<]*)*)<\/td>/g;
-    let cyrMatch;
-    while ((cyrMatch = cyrRegex.exec(rowHtml)) !== null) {
-      const val = cyrMatch[1].replace(/<[^>]*>/g, '').trim();
-      if (val) cyrMatches.push(val);
-    }
+    // Extract calendar year returns - cyrCol cells
+    const cyrMatches = [...row.matchAll(/class="cyrCol\s+mpp_tab_green"[^>]*>\s*([^<]*?)\s*<\/td>/g)];
+    const cyrValues = cyrMatches.map(m => m[1].trim());
     
     if (!fundName && !scheme) continue;
     
+    // Debug first few
+    if (i <= 3) {
+      console.log(`Row ${i}: scheme="${scheme}", fund="${fundName}", trustee="${trusteeAbbr}", type="${fundType}", fer=${fer}, arCount=${arValues.length}, cyrCount=${cyrValues.length}`);
+    }
+    
     funds.push({
       scheme,
-      fund_name: fundName || scheme,
-      trustee,
+      fund_name: fundName,
+      trustee_abbr: trusteeAbbr,
       fund_type: fundType,
-      launch_date: null,
-      fund_size: null,
+      launch_date: launchDate,
+      fund_size: fundSize,
       risk_class: risk,
       fer,
-      return_1y_ann: arMatches[0] ? parseNum(arMatches[0]) : null,
-      return_5y_ann: arMatches[1] ? parseNum(arMatches[1]) : null,
-      return_10y_ann: arMatches[2] ? parseNum(arMatches[2]) : null,
-      return_launch_ann: arMatches[3] ? parseNum(arMatches[3]) : null,
-      return_2025: cyrMatches[0] ? parseNum(cyrMatches[0]) : null,
-      return_2024: cyrMatches[1] ? parseNum(cyrMatches[1]) : null,
-      return_2023: cyrMatches[2] ? parseNum(cyrMatches[2]) : null,
-      return_2022: cyrMatches[3] ? parseNum(cyrMatches[3]) : null,
-      return_2021: cyrMatches[4] ? parseNum(cyrMatches[4]) : null,
+      return_1y_ann: arValues[0] ? parseNum(arValues[0]) : null,
+      return_5y_ann: arValues[1] ? parseNum(arValues[1]) : null,
+      return_10y_ann: arValues[2] ? parseNum(arValues[2]) : null,
+      return_since_launch_ann: arValues[3] ? parseNum(arValues[3]) : null,
+      return_2025: cyrValues[0] ? parseNum(cyrValues[0]) : null,
+      return_2024: cyrValues[1] ? parseNum(cyrValues[1]) : null,
+      return_2023: cyrValues[2] ? parseNum(cyrValues[2]) : null,
+      return_2022: cyrValues[3] ? parseNum(cyrValues[3]) : null,
+      return_2021: cyrValues[4] ? parseNum(cyrValues[4]) : null,
     });
   }
   
   return funds;
+}
+
+// Score how well an MPFA fund name matches an etnet fund name
+function matchScore(mpfaFundName: string, etnetFundName: string): number {
+  let score = 0;
+  
+  for (const kw of FUND_KEYWORDS) {
+    if (kw.en.test(mpfaFundName)) {
+      for (const zh of kw.zh) {
+        if (etnetFundName.includes(zh)) {
+          score += 10;
+          break;
+        }
+      }
+    }
+  }
+  
+  return score;
+}
+
+interface EtnetFund {
+  id: string;
+  etnet_fund_id: string;
+  name: string;
+  trustee_name: string | null;
+  scheme_name: string | null;
 }
 
 Deno.serve(async (req) => {
@@ -224,7 +242,7 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    // Fetch MPFA Fund Information Table (English, server-rendered)
+    // Step 1: Fetch MPFA page
     const url = 'https://mfp.mpfa.org.hk/mobile/eng/mpp_list.jsp';
     console.log(`Fetching MPFA: ${url}`);
 
@@ -235,76 +253,127 @@ Deno.serve(async (req) => {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch MPFA page: ${response.status}`);
-    }
-
+    if (!response.ok) throw new Error(`Failed to fetch MPFA: ${response.status}`);
     const html = await response.text();
-    console.log(`Fetched ${html.length} chars from MPFA`);
+    console.log(`Fetched ${html.length} chars`);
 
-    const funds = parseMpfaHtml(html);
-    console.log(`Parsed ${funds.length} funds from MPFA`);
+    const mpfaFunds = parseMpfaHtml(html);
+    console.log(`Parsed ${mpfaFunds.length} MPFA funds`);
 
-    if (funds.length === 0) {
-      // Try to find what went wrong
-      const tableMatch = html.match(/id="tableContent"/);
-      console.log(`Table found: ${!!tableMatch}`);
-      const rowCount = (html.match(/<tr class="wr"/g) || []).length;
-      console.log(`Row count: ${rowCount}`);
-      
+    if (mpfaFunds.length === 0) {
       return new Response(
-        JSON.stringify({ success: false, error: 'No funds parsed from MPFA', debug: { htmlLength: html.length, tableFound: !!tableMatch, rowCount } }),
+        JSON.stringify({ success: false, error: 'No funds parsed', htmlLen: html.length }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Batch upsert all MPFA funds - use generated etnet_fund_id for new ones
-    const upsertData = funds.map(mpfaFund => {
-      const { category, subCategory } = mapFundType(mpfaFund.fund_type);
-      const trusteeName = mapTrustee(mpfaFund.trustee);
-      const fundId = `MPFA_${mpfaFund.scheme}_${mpfaFund.fund_name}`.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 100);
+    // Step 2: Fetch all existing etnet funds from DB
+    const { data: etnetFunds, error: fetchErr } = await supabase
+      .from('mpf_funds')
+      .select('id, etnet_fund_id, name, trustee_name, scheme_name')
+      .like('etnet_fund_id', 'ETNSI%');
+
+    if (fetchErr) throw new Error(`DB fetch error: ${fetchErr.message}`);
+    console.log(`Loaded ${etnetFunds?.length || 0} etnet funds from DB`);
+
+    // Group etnet funds by trustee+scheme
+    const etnetByScheme = new Map<string, EtnetFund[]>();
+    for (const f of (etnetFunds || [])) {
+      const key = `${f.trustee_name}|${f.scheme_name}`;
+      if (!etnetByScheme.has(key)) etnetByScheme.set(key, []);
+      etnetByScheme.get(key)!.push(f as EtnetFund);
+    }
+
+    // Step 3: Match MPFA funds to etnet funds and build upsert records
+    let matched = 0;
+    let unmatched = 0;
+    const upsertRecords: Array<Record<string, unknown>> = [];
+    const usedEtnetIds = new Set<string>();
+
+    for (const mpfa of mpfaFunds) {
+      const schemeMapping = SCHEME_MAP[mpfa.scheme];
+      const { category, subCategory } = mapFundType(mpfa.fund_type);
       
-      return {
-        etnet_fund_id: fundId,
-        name: mpfaFund.fund_name,
+      let bestMatch: EtnetFund | null = null;
+      let bestScore = 0;
+
+      if (schemeMapping) {
+        const key = `${schemeMapping.trustee}|${schemeMapping.scheme}`;
+        const candidates = etnetByScheme.get(key) || [];
+        
+        for (const candidate of candidates) {
+          if (usedEtnetIds.has(candidate.etnet_fund_id)) continue;
+          const score = matchScore(mpfa.fund_name, candidate.name);
+          if (score > bestScore) {
+            bestScore = score;
+            bestMatch = candidate;
+          }
+        }
+      }
+
+      const mpfaData: Record<string, unknown> = {
         category,
         sub_category: subCategory,
-        trustee_name: trusteeName !== '其他' ? trusteeName : null,
-        scheme_name: mpfaFund.scheme,
-        risk_level: mpfaFund.risk_class,
-        fee_ratio: mpfaFund.fer,
-        return_5y: mpfaFund.return_5y_ann,
-        return_10y: mpfaFund.return_10y_ann,
-        return_2024: mpfaFund.return_2024,
-        return_2023: mpfaFund.return_2023,
-        return_2022: mpfaFund.return_2022,
-        return_2021: mpfaFund.return_2021,
+        fee_ratio: mpfa.fer,
+        return_5y: mpfa.return_5y_ann,
+        return_10y: mpfa.return_10y_ann,
+        return_2024: mpfa.return_2024,
+        return_2023: mpfa.return_2023,
+        return_2022: mpfa.return_2022,
+        return_2021: mpfa.return_2021,
       };
-    });
 
-    // Batch upsert in chunks of 50
-    let upserted = 0;
-    for (let i = 0; i < upsertData.length; i += 50) {
-      const chunk = upsertData.slice(i, i + 50);
-      const { error } = await supabase
-        .from('mpf_funds')
-        .upsert(chunk, { onConflict: 'etnet_fund_id' });
-      if (error) {
-        console.error(`Upsert chunk ${i} error:`, error.message);
+      if (bestMatch && bestScore >= 10) {
+        usedEtnetIds.add(bestMatch.etnet_fund_id);
+        upsertRecords.push({
+          etnet_fund_id: bestMatch.etnet_fund_id,
+          name: bestMatch.name,
+          trustee_name: bestMatch.trustee_name,
+          scheme_name: bestMatch.scheme_name,
+          ...mpfaData,
+        });
+        matched++;
       } else {
-        upserted += chunk.length;
+        const trusteeName = schemeMapping?.trustee || mpfa.trustee_abbr;
+        const schemeName = schemeMapping?.scheme || mpfa.scheme;
+        const fundId = `MPFA_${mpfa.scheme}_${mpfa.fund_name}`.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 100);
+        
+        upsertRecords.push({
+          etnet_fund_id: fundId,
+          name: mpfa.fund_name,
+          trustee_name: trusteeName,
+          scheme_name: schemeName,
+          ...mpfaData,
+        });
+        unmatched++;
       }
     }
 
-    console.log(`Upserted: ${upserted}`);
+    console.log(`Matched: ${matched}, Unmatched: ${unmatched}`);
+
+    // Step 4: Batch upsert all records
+    let upserted = 0;
+    for (let i = 0; i < upsertRecords.length; i += 50) {
+      const chunk = upsertRecords.slice(i, i + 50);
+      const { error } = await supabase
+        .from('mpf_funds')
+        .upsert(chunk, { onConflict: 'etnet_fund_id' });
+      if (!error) upserted += chunk.length;
+      else console.error(`Upsert chunk ${i} error: ${error.message}`);
+    }
+
+    const result = {
+      success: true,
+      total_parsed: mpfaFunds.length,
+      matched,
+      unmatched,
+      upserted,
+    };
+
+    console.log(`Done: ${JSON.stringify(result)}`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        total_parsed: funds.length, 
-        upserted,
-        sample: funds.slice(0, 3),
-      }),
+      JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
