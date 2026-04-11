@@ -296,16 +296,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Updated: ${updated}, New: ${newFunds}`);
+    console.log(`Upserted: ${upserted}`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         total_parsed: funds.length, 
-        updated, 
-        new_funds: newFunds,
+        upserted,
         sample: funds.slice(0, 3),
       }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
