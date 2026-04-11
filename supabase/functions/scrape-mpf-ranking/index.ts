@@ -13,6 +13,7 @@ interface FundData {
   risk_level: string | null;
   category: string;
   return_ytd: number | null;
+  return_1m: number | null;
   return_3m: number | null;
   return_1y: number | null;
   return_3y: number | null;
@@ -22,7 +23,7 @@ interface FundData {
 function parseReturn(text: string): number | null {
   if (!text) return null;
   const cleaned = text.replace(/[+%\s]/g, '');
-  if (cleaned === '-' || cleaned === 'N/A' || cleaned === '') return null;
+  if (cleaned === '-' || cleaned === 'N/A' || cleaned === '' || cleaned === '--') return null;
   const val = parseFloat(cleaned);
   return isNaN(val) ? null : val;
 }
@@ -38,40 +39,9 @@ function extractFundIdFromUrl(url: string): { fund: string; plan: string | null;
   };
 }
 
-function parseRankingHtml(html: string, category: string): FundData[] {
-  const funds: FundData[] = [];
-
-  // Match table rows with fund data
-  const rowRegex = /<tr[^>]*>\s*<td[^>]*>.*?<\/td>\s*<td[^>]*><a[^>]*href="([^"]*)"[^>]*>([^<]+)<\/a><\/td>\s*<td[^>]*>([^<]*)<\/td>\s*<td[^>]*><span[^>]*>([^<]*)<\/span><\/td>\s*<td[^>]*><span[^>]*>([^<]*)<\/span><\/td>\s*<td[^>]*><span[^>]*>([^<]*)<\/span><\/td>\s*<td[^>]*><span[^>]*>([^<]*)<\/span><\/td>\s*<td[^>]*>([^<]*)<\/td>/g;
-
-  let match;
-  while ((match = rowRegex.exec(html)) !== null) {
-    const url = match[1].replace(/&amp;/g, '&');
-    const ids = extractFundIdFromUrl(url);
-    if (!ids.fund) continue;
-
-    funds.push({
-      etnet_fund_id: ids.fund,
-      etnet_plan_id: ids.plan,
-      etnet_provider_id: ids.provider,
-      name: match[2].trim(),
-      risk_level: match[3].trim() || null,
-      category,
-      return_ytd: parseReturn(match[4]),
-      return_3m: parseReturn(match[5]),
-      return_1y: parseReturn(match[6]),
-      return_3y: parseReturn(match[7]),
-      data_date: match[8].trim().replace(/\//g, '-') || null,
-    });
-  }
-
-  return funds;
-}
-
-// Fallback: simpler regex for different table structures
+// Parse ranking page (YTD, 3M, 1Y, 3Y)
 function parseRankingHtmlFallback(html: string, category: string): FundData[] {
   const funds: FundData[] = [];
-
   const linkRegex = /<a[^>]*href="[^"]*fund_detail\.php\?fund=([^&"]+)(?:&amp;plan=([^&"]+))?(?:&amp;provider=([^&"]+))?[^"]*"[^>]*class="MPFLink"[^>]*>([^<]+)<\/a>/g;
 
   let linkMatch;
@@ -86,8 +56,6 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
     });
   }
 
-  const spanRegex = /<span class="(?:up|down)">([^<]+)<\/span>/g;
-
   for (const link of allLinks) {
     const searchStart = link.index;
     const searchEnd = html.indexOf('</tr>', searchStart);
@@ -95,8 +63,8 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
 
     const rowHtml = html.substring(searchStart, searchEnd);
     const spans: string[] = [];
-    let spanMatch;
     const localSpanRegex = /<span class="(?:up|down)">([^<]+)<\/span>/g;
+    let spanMatch;
     while ((spanMatch = localSpanRegex.exec(rowHtml)) !== null) {
       spans.push(spanMatch[1]);
     }
@@ -116,6 +84,7 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
         risk_level: risk,
         category,
         return_ytd: parseReturn(spans[0]),
+        return_1m: null, // Will be filled from detail pages
         return_3m: parseReturn(spans[1]),
         return_1y: parseReturn(spans[2]),
         return_3y: parseReturn(spans[3]),
@@ -125,6 +94,16 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
   }
 
   return funds;
+}
+
+// Extract 1-month return from fund detail page
+function parse1mFromDetail(html: string): number | null {
+  // Look for "1個月" row in the cumulative performance table
+  const match = html.match(/1個月<\/td>\s*<td[^>]*>\s*([\s\S]*?)<\/td>/);
+  if (!match) return null;
+  const valMatch = match[1].match(/([+-]?\d+\.?\d*)%/);
+  if (!valMatch) return null;
+  return parseReturn(valMatch[1] + '%');
 }
 
 // Map etnet plan IDs to trustee names
@@ -174,6 +153,11 @@ const SUBTYPES = [
   { id: 'ETNSI26', name: '其他' },
 ];
 
+const FETCH_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+  'Accept-Language': 'zh-TW,zh;q=0.9',
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -193,29 +177,15 @@ Deno.serve(async (req) => {
     const allFunds: FundData[] = [];
     const seenFundIds = new Set<string>();
 
-    // Scrape the ALL ranking page first
+    // Phase 1: Scrape ranking pages for YTD, 3M, 1Y, 3Y
     const url = `https://www.etnet.com.hk/www/tc/mpf/ranking.php?subtype=ALL&sortby=1Y`;
     console.log(`Fetching: ${url}`);
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept-Language': 'zh-TW,zh;q=0.9',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ranking page: ${response.status}`);
-    }
-
+    const response = await fetch(url, { headers: FETCH_HEADERS });
+    if (!response.ok) throw new Error(`Failed to fetch ranking page: ${response.status}`);
     const html = await response.text();
-    console.log(`Fetched ${html.length} chars`);
 
-    let funds = parseRankingHtml(html, '全部');
-    if (funds.length === 0) {
-      console.log('Primary parser found 0, trying fallback...');
-      funds = parseRankingHtmlFallback(html, '全部');
-    }
+    const funds = parseRankingHtmlFallback(html, '全部');
     console.log(`Parsed ${funds.length} funds from ALL ranking`);
 
     for (const fund of funds) {
@@ -225,26 +195,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Scrape individual category pages
+    // Scrape category pages
     for (const subtype of SUBTYPES) {
       try {
         const catUrl = `https://www.etnet.com.hk/www/tc/mpf/ranking.php?subtype=${subtype.id}&sortby=1Y`;
-        console.log(`Fetching category: ${subtype.name}`);
-
-        const catResponse = await fetch(catUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept-Language': 'zh-TW,zh;q=0.9',
-          },
-        });
-
+        const catResponse = await fetch(catUrl, { headers: FETCH_HEADERS });
         if (!catResponse.ok) continue;
         const catHtml = await catResponse.text();
-
-        let catFunds = parseRankingHtml(catHtml, subtype.name);
-        if (catFunds.length === 0) {
-          catFunds = parseRankingHtmlFallback(catHtml, subtype.name);
-        }
+        const catFunds = parseRankingHtmlFallback(catHtml, subtype.name);
         console.log(`  ${subtype.name}: ${catFunds.length} funds`);
 
         for (const fund of catFunds) {
@@ -254,16 +212,46 @@ Deno.serve(async (req) => {
             allFunds.push(fund);
           }
         }
-
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 200));
       } catch (e) {
         console.error(`Error scraping ${subtype.name}:`, e);
       }
     }
 
-    console.log(`Total unique funds: ${allFunds.length}`);
+    console.log(`Phase 1 done: ${allFunds.length} unique funds`);
 
-    // Upsert all funds with trustee mapping
+    // Phase 2: Fetch 1-month returns from fund detail pages
+    // Process in batches to avoid timeout
+    let fetched1m = 0;
+    const batchSize = 5;
+    for (let i = 0; i < allFunds.length; i += batchSize) {
+      const batch = allFunds.slice(i, i + batchSize);
+      const promises = batch.map(async (fund) => {
+        try {
+          const detailUrl = `https://www.etnet.com.hk/www/tc/mpf/fund_detail.php?fund=${fund.etnet_fund_id}` +
+            (fund.etnet_plan_id ? `&plan=${fund.etnet_plan_id}` : '') +
+            (fund.etnet_provider_id ? `&provider=${fund.etnet_provider_id}` : '');
+          const resp = await fetch(detailUrl, { headers: FETCH_HEADERS });
+          if (!resp.ok) return;
+          const detailHtml = await resp.text();
+          const return1m = parse1mFromDetail(detailHtml);
+          if (return1m !== null) {
+            fund.return_1m = return1m;
+            fetched1m++;
+          }
+        } catch (e) {
+          // Skip failed detail pages
+        }
+      });
+      await Promise.all(promises);
+      // Small delay between batches
+      if (i + batchSize < allFunds.length) {
+        await new Promise(r => setTimeout(r, 300));
+      }
+    }
+    console.log(`Phase 2 done: fetched 1M returns for ${fetched1m}/${allFunds.length} funds`);
+
+    // Upsert all funds
     if (allFunds.length > 0) {
       const { error: upsertError } = await supabase
         .from('mpf_funds')
@@ -278,6 +266,7 @@ Deno.serve(async (req) => {
               risk_level: f.risk_level,
               category: f.category,
               return_ytd: f.return_ytd,
+              return_1m: f.return_1m,
               return_3m: f.return_3m,
               return_1y: f.return_1y,
               return_3y: f.return_3y,
@@ -302,7 +291,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, funds_count: allFunds.length }),
+      JSON.stringify({ success: true, funds_count: allFunds.length, funds_with_1m: fetched1m }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
