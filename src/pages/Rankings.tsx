@@ -52,6 +52,21 @@ export default function Rankings() {
     }
   };
 
+  const handleScrapeDetail = async () => {
+    setScraping(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('scrape-mpf-detail');
+      if (error) throw error;
+      toast({ title: '年度數據更新', description: `已更新 ${data?.updated ?? 0} 隻，剩餘 ${data?.remaining ?? '?'} 隻` });
+      refetch();
+    } catch (e: any) {
+      toast({ title: '更新中...', description: '正在抓取年度數據，請稍後再按一次' });
+      refetch();
+    } finally {
+      setScraping(false);
+    }
+  };
+
   const dataDate = hasRealData ? funds[0]?.data_date : null;
 
   const RankingTable = ({ title, icon: Icon, data, colorClass }: {
