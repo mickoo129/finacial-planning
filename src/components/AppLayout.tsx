@@ -1,23 +1,97 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { BarChart3, Search, GitCompare, PieChart, Calculator, Crown, Building2, Briefcase, Zap } from 'lucide-react';
+import { BarChart3, Search, GitCompare, PieChart, Calculator, Crown, Building2, Briefcase, Zap, MoreHorizontal } from 'lucide-react';
 import { useMpfFunds } from '@/hooks/useMpfFunds';
+import { useState } from 'react';
 
 const navItems = [
   { to: '/', label: '排名', icon: Crown },
-  { to: '/search', label: '基金搜尋', icon: Search },
-  { to: '/compare', label: '基金比較', icon: GitCompare },
-  { to: '/trustee', label: '受托人比較', icon: Building2 },
+  { to: '/search', label: '搜尋', icon: Search },
+  { to: '/compare', label: '比較', icon: GitCompare },
+  { to: '/trustee', label: '受托人', icon: Building2 },
   { to: '/portfolio', label: '模擬器', icon: Briefcase },
   { to: '/radar', label: 'RADAR', icon: Zap },
   { to: '/categories', label: '類別', icon: PieChart },
   { to: '/retirement', label: '退休', icon: Calculator },
 ];
 
+// Mobile bottom nav: show top 4 + "more" drawer for the rest
+const PRIMARY_NAV = navItems.slice(0, 4);
+const SECONDARY_NAV = navItems.slice(4);
+
 function formatDataDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—';
   const d = new Date(dateStr);
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
+function MobileNav({ pathname }: { pathname: string }) {
+  const [showMore, setShowMore] = useState(false);
+  const isSecondaryActive = SECONDARY_NAV.some(item => item.to === pathname);
+
+  return (
+    <>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/98 backdrop-blur-xl safe-area-bottom">
+        <div className="grid grid-cols-5 py-1">
+          {PRIMARY_NAV.map((item) => {
+            const isActive = pathname === item.to;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => setShowMore(false)}
+                className={cn(
+                  'flex flex-col items-center gap-0.5 py-1.5 text-[10px] transition-colors',
+                  isActive ? 'text-primary font-medium' : 'text-muted-foreground'
+                )}
+              >
+                <item.icon className={cn('h-5 w-5', isActive && 'text-primary')} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setShowMore(!showMore)}
+            className={cn(
+              'flex flex-col items-center gap-0.5 py-1.5 text-[10px] transition-colors',
+              isSecondaryActive || showMore ? 'text-primary font-medium' : 'text-muted-foreground'
+            )}
+          >
+            <MoreHorizontal className={cn('h-5 w-5', (isSecondaryActive || showMore) && 'text-primary')} />
+            <span>更多</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* "More" drawer */}
+      {showMore && (
+        <>
+          <div className="md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setShowMore(false)} />
+          <div className="md:hidden fixed bottom-[60px] left-0 right-0 z-40 bg-card border-t border-border rounded-t-2xl shadow-xl animate-in slide-in-from-bottom-4 duration-200">
+            <div className="p-4 grid grid-cols-4 gap-3">
+              {SECONDARY_NAV.map((item) => {
+                const isActive = pathname === item.to;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setShowMore(false)}
+                    className={cn(
+                      'flex flex-col items-center gap-1.5 py-3 rounded-xl transition-colors',
+                      isActive ? 'text-primary bg-primary/8 font-medium' : 'text-muted-foreground hover:bg-muted'
+                    )}
+                  >
+                    <item.icon className={cn('h-6 w-6', isActive && 'text-primary')} />
+                    <span className="text-[11px]">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+    </>
+  );
 }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -73,26 +147,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Mobile nav - scrollable */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/98 backdrop-blur-xl">
-        <div className="flex overflow-x-auto no-scrollbar py-1.5 px-2 gap-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.to;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  'flex flex-col items-center gap-0.5 px-3 py-1 text-[9px] transition-colors rounded-md flex-shrink-0',
-                  isActive ? 'text-primary font-medium bg-primary/8' : 'text-muted-foreground'
-                )}
-              >
-                <item.icon className={cn('h-4 w-4', isActive && 'text-primary')} />
-                <span className="whitespace-nowrap">{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      <MobileNav pathname={location.pathname} />
 
       {/* Content */}
       <main className="container mx-auto px-4 py-5 pb-20 md:pb-6 max-w-7xl">
