@@ -6,7 +6,7 @@ import { TrendingUp, TrendingDown, RefreshCw, Database, ChevronRight } from 'luc
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { getTrusteeByPlanId } from '@/lib/trusteeMap';
+import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
 
 type SortPeriod = 'return_ytd' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y';
 
