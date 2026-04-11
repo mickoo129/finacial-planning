@@ -5,14 +5,14 @@ import { useMpfFunds } from '@/hooks/useMpfFunds';
 import { useState } from 'react';
 
 const navItems = [
-  { to: '/', label: '排名', icon: Crown },
-  { to: '/search', label: '搜尋', icon: Search },
-  { to: '/compare', label: '比較', icon: GitCompare },
+  { to: '/', label: '基金排名', icon: Crown },
+  { to: '/search', label: '基金搜尋', icon: Search },
+  { to: '/compare', label: '基金比較', icon: GitCompare },
+  { to: '/categories', label: '類別比較', icon: PieChart },
+  { to: '/retirement', label: '退休計算機', icon: Calculator },
   { to: '/trustee', label: '受托人', icon: Building2 },
   { to: '/portfolio', label: '模擬器', icon: Briefcase },
   { to: '/radar', label: 'RADAR', icon: Zap },
-  { to: '/categories', label: '類別', icon: PieChart },
-  { to: '/retirement', label: '退休', icon: Calculator },
 ];
 
 // Mobile bottom nav: show top 4 + "more" drawer for the rest
@@ -111,8 +111,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <BarChart3 className="h-4 w-4 text-primary-foreground" />
               </div>
               <div>
-                <span className="text-sm font-bold text-primary-foreground block leading-tight tracking-tight">MPF Compare</span>
-                <span className="text-[10px] text-primary-foreground/60">強積金比較平台</span>
+                <span className="text-sm font-bold text-primary-foreground block leading-tight tracking-tight">強積金比較系統</span>
+                <span className="text-[10px] text-primary-foreground/60">MPF Compare</span>
               </div>
             </Link>
             <div className="hidden md:flex items-center gap-0.5">
