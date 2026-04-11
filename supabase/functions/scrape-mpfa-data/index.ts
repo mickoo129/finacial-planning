@@ -247,16 +247,30 @@ Deno.serve(async (req) => {
       .from('mpf_funds')
       .select('id, etnet_fund_id, name, name_zh, trustee_name, scheme_name, mpfa_name');
 
-    // Build lookup maps
-    const etnetBySchemeNorm = new Map<string, typeof existingFunds extends (infer T)[] | null ? T : never>();
+    // Build lookup maps - multiple strategies
+    const etnetBySchemeAndName = new Map<string, any>();
+    const etnetByTrusteeAndName = new Map<string, any>();
+    const etnetByNormName = new Map<string, any>();
+    
     for (const ef of (existingFunds || [])) {
-      if (ef.scheme_name && ef.name) {
-        const key = `${ef.scheme_name}::${normalizeName(ef.name)}`;
-        etnetBySchemeNorm.set(key, ef);
+      // Strategy 1: scheme + normalized name (most precise)
+      if (ef.scheme_name && ef.name_zh) {
+        const key = `${ef.scheme_name}::${normalizeName(ef.name_zh)}`;
+        etnetBySchemeAndName.set(key, ef);
       }
-      if (ef.mpfa_name && ef.scheme_name) {
-        const key2 = `${ef.scheme_name}::${normalizeName(ef.mpfa_name)}`;
-        etnetBySchemeNorm.set(key2, ef);
+      // Strategy 2: trustee + exact name_zh
+      if (ef.trustee_name && ef.name_zh) {
+        const key = `${ef.trustee_name}::${ef.name_zh}`;
+        if (!etnetByTrusteeAndName.has(key)) {
+          etnetByTrusteeAndName.set(key, ef);
+        }
+      }
+      // Strategy 3: trustee + normalized name
+      if (ef.trustee_name && ef.name_zh) {
+        const key = `${ef.trustee_name}::${normalizeName(ef.name_zh)}`;
+        if (!etnetByNormName.has(key)) {
+          etnetByNormName.set(key, ef);
+        }
       }
     }
 
@@ -272,9 +286,14 @@ Deno.serve(async (req) => {
       const { category, sub_category } = splitCategory(fund.category_full);
       const fundNorm = normalizeName(fund.fund_name);
 
-      // Try to find existing etnet fund
-      const lookupKey = `${schemeName}::${fundNorm}`;
-      const existingFund = etnetBySchemeNorm.get(lookupKey);
+      // Try matching strategies in order of precision
+      const key1 = `${schemeName}::${fundNorm}`;
+      const key2 = `${trusteeName}::${fund.fund_name}`;
+      const key3 = `${trusteeName}::${fundNorm}`;
+      
+      const existingFund = etnetBySchemeAndName.get(key1) 
+        || etnetByTrusteeAndName.get(key2) 
+        || etnetByNormName.get(key3);
 
       let etnetFundId: string;
       if (existingFund) {
