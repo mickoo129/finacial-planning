@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { ReturnValue } from '@/components/ReturnValue';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CascadingFundFilter } from '@/components/CascadingFundFilter';
 import { Button } from '@/components/ui/button';
 import { Plus, X, GitCompare } from 'lucide-react';
 
@@ -26,27 +26,16 @@ const RETURN_LABELS: Record<ReturnField, string> = {
 export default function CompareFunds() {
   const { data: funds, isLoading } = useMpfFunds();
   const [selectedFunds, setSelectedFunds] = useState<MpfFund[]>([]);
-  const [category, setCategory] = useState('all');
-  const [trustee, setTrustee] = useState('all');
   const [fundId, setFundId] = useState('');
+  const [filteredFunds, setFilteredFunds] = useState<MpfFund[]>([]);
 
-  const categories = useMemo(() => {
-    if (!funds) return [];
-    return [...new Set(funds.map(f => f.sub_category || f.category).filter(Boolean))].sort() as string[];
-  }, [funds]);
+  const handleFilterChange = useCallback((filtered: MpfFund[]) => {
+    setFilteredFunds(filtered.filter(f => !selectedFunds.find(sf => sf.id === f.id)));
+  }, [selectedFunds]);
 
-  const trustees = useMemo(() => {
-    if (!funds) return [];
-    return [...new Set(funds.map(f => f.trustee_name).filter(Boolean))].sort() as string[];
-  }, [funds]);
-
-  const filteredFunds = useMemo(() => {
-    if (!funds) return [];
-    let filtered = funds;
-    if (category !== 'all') filtered = filtered.filter(f => (f.sub_category || f.category) === category);
-    if (trustee !== 'all') filtered = filtered.filter(f => f.trustee_name === trustee);
-    return filtered.filter(f => !selectedFunds.find(sf => sf.id === f.id));
-  }, [funds, category, trustee, selectedFunds]);
+  const handleFundSelect = (id: string) => {
+    setFundId(id);
+  };
 
   const addFund = () => {
     if (!fundId || selectedFunds.length >= 4) return;
@@ -61,67 +50,38 @@ export default function CompareFunds() {
     setSelectedFunds(selectedFunds.filter(f => f.id !== id));
   };
 
-  const returnFields: ReturnField[] = ['return_ytd', 'return_3m', 'return_1y', 'return_3y', 'return_5y', 'return_10y', 'return_2024', 'return_2023', 'return_2022', 'return_2021'];
+  const returnFields: ReturnField[] = ['return_ytd', 'return_1m', 'return_3m', 'return_1y', 'return_3y', 'return_5y', 'return_10y', 'return_2024', 'return_2023', 'return_2022', 'return_2021'];
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-64 text-muted-foreground">載入中...</div>;
   }
 
+  if (!funds?.length) {
+    return <div className="text-center py-20 text-muted-foreground text-sm">暫無數據，請先在排名頁面更新數據</div>;
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">比較基金</h1>
-        <p className="text-sm text-muted-foreground mt-1">最多比較 4 隻基金 · {funds?.length || 0} 隻基金可選</p>
+        <h1 className="text-lg sm:text-xl font-bold text-foreground">基金比較</h1>
+        <p className="text-xs text-muted-foreground mt-1">最多比較 4 隻基金 · {funds.length} 隻基金可選</p>
       </div>
 
-      {/* Selection panel */}
-      <div className="bg-card rounded-xl border border-border p-4 sm:p-5 space-y-4">
+      {/* Selection panel with cascading filters */}
+      <div className="bg-card rounded-lg border border-border p-4 space-y-4">
         <div className="text-sm font-medium text-muted-foreground">選擇基金（最多 4 隻）</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">基金類別</label>
-            <Select value={category} onValueChange={v => { setCategory(v); setFundId(''); }}>
-              <SelectTrigger><SelectValue placeholder="全部類別" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部類別</SelectItem>
-                {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">受託人</label>
-            <Select value={trustee} onValueChange={v => { setTrustee(v); setFundId(''); }}>
-              <SelectTrigger><SelectValue placeholder="全部受託人" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部受託人</SelectItem>
-                {trustees.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">選擇基金</label>
-          <div className="flex gap-2">
-            <Select value={fundId} onValueChange={setFundId}>
-              <SelectTrigger className="flex-1">
-                <SelectValue placeholder={`選擇基金 (${filteredFunds.length} 隻)`} />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredFunds.map(f => (
-                  <SelectItem key={f.id} value={f.id}>
-                    {f.name}
-                    <span className="text-muted-foreground ml-1 text-xs">({f.trustee_name})</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <CascadingFundFilter
+          funds={funds}
+          onFilteredFundsChange={handleFilterChange}
+          showFundSelector
+          selectedFundId={fundId}
+          onFundSelect={handleFundSelect}
+        />
         <Button
           onClick={addFund}
           disabled={!fundId || selectedFunds.length >= 4}
           className="w-full"
-          size="lg"
+          size="sm"
         >
           <Plus className="h-4 w-4 mr-2" /> 加入比較
         </Button>
@@ -137,7 +97,7 @@ export default function CompareFunds() {
               style={{ borderColor: CHART_COLORS[i], color: CHART_COLORS[i] }}
             >
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: CHART_COLORS[i] }} />
-              <span className="max-w-[120px] sm:max-w-[200px] truncate">{f.name}</span>
+              <span className="max-w-[120px] sm:max-w-[200px] truncate">{f.name_zh || f.name}</span>
               <button onClick={() => removeFund(f.id)} className="hover:opacity-70">
                 <X className="h-3 w-3" />
               </button>
@@ -147,7 +107,7 @@ export default function CompareFunds() {
       )}
 
       {selectedFunds.length > 0 ? (
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
+        <div className="bg-card rounded-lg border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -157,7 +117,7 @@ export default function CompareFunds() {
                     <th key={f.id} className="text-center px-2 sm:px-4 py-3 font-medium min-w-[110px]">
                       <div className="flex items-center justify-between">
                         <div className="text-left flex-1 min-w-0">
-                          <div className="text-foreground text-xs truncate">{f.name}</div>
+                          <div className="text-foreground text-xs truncate">{f.name_zh || f.name}</div>
                           <div className="text-[10px] text-muted-foreground truncate">{f.trustee_name} · {f.scheme_name}</div>
                         </div>
                         <button onClick={() => removeFund(f.id)} className="text-muted-foreground hover:text-destructive ml-1 flex-shrink-0">
@@ -204,10 +164,10 @@ export default function CompareFunds() {
           </div>
         </div>
       ) : (
-        <div className="bg-card rounded-xl border border-border p-8 sm:p-12 text-center">
+        <div className="bg-card rounded-lg border border-border p-8 sm:p-12 text-center">
           <GitCompare className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
           <p className="text-muted-foreground">選擇基金開始比較</p>
-          <p className="text-xs text-muted-foreground mt-1">篩選類別和受託人後，選擇想比較的基金</p>
+          <p className="text-xs text-muted-foreground mt-1">透過類別、種類、受託人和計劃篩選後選擇基金</p>
         </div>
       )}
     </div>
