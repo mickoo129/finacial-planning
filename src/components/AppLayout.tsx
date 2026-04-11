@@ -72,9 +72,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Mobile nav */}
+      {/* Mobile nav - scrollable */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/98 backdrop-blur-xl">
-        <div className="flex justify-around py-1.5 px-1">
+        <div className="flex overflow-x-auto no-scrollbar py-1.5 px-2 gap-1">
           {navItems.map((item) => {
             const isActive = location.pathname === item.to;
             return (
@@ -82,12 +82,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  'flex flex-col items-center gap-0.5 px-1.5 py-1 text-[9px] transition-colors rounded-md min-w-0',
-                  isActive ? 'text-primary font-medium' : 'text-muted-foreground'
+                  'flex flex-col items-center gap-0.5 px-3 py-1 text-[9px] transition-colors rounded-md flex-shrink-0',
+                  isActive ? 'text-primary font-medium bg-primary/8' : 'text-muted-foreground'
                 )}
               >
                 <item.icon className={cn('h-4 w-4', isActive && 'text-primary')} />
-                <span className="truncate">{item.label}</span>
+                <span className="whitespace-nowrap">{item.label}</span>
               </Link>
             );
           })}
