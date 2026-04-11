@@ -13,7 +13,6 @@ interface FundData {
   risk_level: string | null;
   category: string;
   return_ytd: number | null;
-  return_1m: number | null;
   return_3m: number | null;
   return_1y: number | null;
   return_3y: number | null;
@@ -28,18 +27,6 @@ function parseReturn(text: string): number | null {
   return isNaN(val) ? null : val;
 }
 
-function extractFundIdFromUrl(url: string): { fund: string; plan: string | null; provider: string | null } {
-  const fundMatch = url.match(/fund=([^&]+)/);
-  const planMatch = url.match(/plan=([^&]+)/);
-  const providerMatch = url.match(/provider=([^&]+)/);
-  return {
-    fund: fundMatch ? fundMatch[1] : '',
-    plan: planMatch ? planMatch[1] : null,
-    provider: providerMatch ? providerMatch[1] : null,
-  };
-}
-
-// Parse ranking page (YTD, 3M, 1Y, 3Y)
 function parseRankingHtmlFallback(html: string, category: string): FundData[] {
   const funds: FundData[] = [];
   const linkRegex = /<a[^>]*href="[^"]*fund_detail\.php\?fund=([^&"]+)(?:&amp;plan=([^&"]+))?(?:&amp;provider=([^&"]+))?[^"]*"[^>]*class="MPFLink"[^>]*>([^<]+)<\/a>/g;
@@ -84,7 +71,6 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
         risk_level: risk,
         category,
         return_ytd: parseReturn(spans[0]),
-        return_1m: null, // Will be filled from detail pages
         return_3m: parseReturn(spans[1]),
         return_1y: parseReturn(spans[2]),
         return_3y: parseReturn(spans[3]),
@@ -96,17 +82,6 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
   return funds;
 }
 
-// Extract 1-month return from fund detail page
-function parse1mFromDetail(html: string): number | null {
-  // Look for "1個月" row in the cumulative performance table
-  const match = html.match(/1個月<\/td>\s*<td[^>]*>\s*([\s\S]*?)<\/td>/);
-  if (!match) return null;
-  const valMatch = match[1].match(/([+-]?\d+\.?\d*)%/);
-  if (!valMatch) return null;
-  return parseReturn(valMatch[1] + '%');
-}
-
-// Map etnet plan IDs to trustee names
 const PLAN_TRUSTEE_MAP: Record<string, { trustee: string; scheme: string }> = {
   ETNSI1: { trustee: '銀聯信託', scheme: '積金之選' },
   ETNSI2: { trustee: '銀聯信託', scheme: '行業計劃' },
@@ -177,7 +152,7 @@ Deno.serve(async (req) => {
     const allFunds: FundData[] = [];
     const seenFundIds = new Set<string>();
 
-    // Phase 1: Scrape ranking pages for YTD, 3M, 1Y, 3Y
+    // Scrape the ALL ranking page
     const url = `https://www.etnet.com.hk/www/tc/mpf/ranking.php?subtype=ALL&sortby=1Y`;
     console.log(`Fetching: ${url}`);
 
@@ -195,7 +170,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Scrape category pages
+    // Scrape individual category pages
     for (const subtype of SUBTYPES) {
       try {
         const catUrl = `https://www.etnet.com.hk/www/tc/mpf/ranking.php?subtype=${subtype.id}&sortby=1Y`;
@@ -218,38 +193,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Phase 1 done: ${allFunds.length} unique funds`);
-
-    // Phase 2: Fetch 1-month returns from fund detail pages
-    // Process in batches to avoid timeout
-    let fetched1m = 0;
-    const batchSize = 5;
-    for (let i = 0; i < allFunds.length; i += batchSize) {
-      const batch = allFunds.slice(i, i + batchSize);
-      const promises = batch.map(async (fund) => {
-        try {
-          const detailUrl = `https://www.etnet.com.hk/www/tc/mpf/fund_detail.php?fund=${fund.etnet_fund_id}` +
-            (fund.etnet_plan_id ? `&plan=${fund.etnet_plan_id}` : '') +
-            (fund.etnet_provider_id ? `&provider=${fund.etnet_provider_id}` : '');
-          const resp = await fetch(detailUrl, { headers: FETCH_HEADERS });
-          if (!resp.ok) return;
-          const detailHtml = await resp.text();
-          const return1m = parse1mFromDetail(detailHtml);
-          if (return1m !== null) {
-            fund.return_1m = return1m;
-            fetched1m++;
-          }
-        } catch (e) {
-          // Skip failed detail pages
-        }
-      });
-      await Promise.all(promises);
-      // Small delay between batches
-      if (i + batchSize < allFunds.length) {
-        await new Promise(r => setTimeout(r, 300));
-      }
-    }
-    console.log(`Phase 2 done: fetched 1M returns for ${fetched1m}/${allFunds.length} funds`);
+    console.log(`Total unique funds: ${allFunds.length}`);
 
     // Upsert all funds
     if (allFunds.length > 0) {
@@ -266,7 +210,6 @@ Deno.serve(async (req) => {
               risk_level: f.risk_level,
               category: f.category,
               return_ytd: f.return_ytd,
-              return_1m: f.return_1m,
               return_3m: f.return_3m,
               return_1y: f.return_1y,
               return_3y: f.return_3y,
@@ -291,7 +234,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, funds_count: allFunds.length, funds_with_1m: fetched1m }),
+      JSON.stringify({ success: true, funds_count: allFunds.length }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
