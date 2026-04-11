@@ -33,6 +33,7 @@ export type Database = {
           return_2022: number | null
           return_2023: number | null
           return_2024: number | null
+          return_2025: number | null
           return_3m: number | null
           return_3y: number | null
           return_5y: number | null
@@ -61,6 +62,7 @@ export type Database = {
           return_2022?: number | null
           return_2023?: number | null
           return_2024?: number | null
+          return_2025?: number | null
           return_3m?: number | null
           return_3y?: number | null
           return_5y?: number | null
@@ -89,6 +91,7 @@ export type Database = {
           return_2022?: number | null
           return_2023?: number | null
           return_2024?: number | null
+          return_2025?: number | null
           return_3m?: number | null
           return_3y?: number | null
           return_5y?: number | null
