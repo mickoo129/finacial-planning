@@ -284,11 +284,11 @@ Deno.serve(async (req) => {
       etnetByScheme.get(key)!.push(f as EtnetFund);
     }
 
-    // Step 3: Match MPFA funds to etnet funds
+    // Step 3: Match MPFA funds to etnet funds and build upsert records
     let matched = 0;
     let unmatched = 0;
-    const updates: Array<{ id: string; data: Record<string, unknown> }> = [];
-    const newFunds: Array<Record<string, unknown>> = [];
+    const upsertRecords: Array<Record<string, unknown>> = [];
+    const usedEtnetIds = new Set<string>();
 
     for (const mpfa of mpfaFunds) {
       const schemeMapping = SCHEME_MAP[mpfa.scheme];
@@ -302,6 +302,7 @@ Deno.serve(async (req) => {
         const candidates = etnetByScheme.get(key) || [];
         
         for (const candidate of candidates) {
+          if (usedEtnetIds.has(candidate.etnet_fund_id)) continue;
           const score = matchScore(mpfa.fund_name, candidate.name);
           if (score > bestScore) {
             bestScore = score;
@@ -323,17 +324,21 @@ Deno.serve(async (req) => {
       };
 
       if (bestMatch && bestScore >= 10) {
-        // Update existing etnet record with MPFA long-term data
-        updates.push({ id: bestMatch.id, data: mpfaData });
+        usedEtnetIds.add(bestMatch.etnet_fund_id);
+        upsertRecords.push({
+          etnet_fund_id: bestMatch.etnet_fund_id,
+          name: bestMatch.name,
+          trustee_name: bestMatch.trustee_name,
+          scheme_name: bestMatch.scheme_name,
+          ...mpfaData,
+        });
         matched++;
-        console.log(`✓ Matched: "${mpfa.fund_name}" → "${bestMatch.name}" (score: ${bestScore})`);
       } else {
-        // Create new record for unmatched MPFA fund
         const trusteeName = schemeMapping?.trustee || mpfa.trustee_abbr;
         const schemeName = schemeMapping?.scheme || mpfa.scheme;
         const fundId = `MPFA_${mpfa.scheme}_${mpfa.fund_name}`.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 100);
         
-        newFunds.push({
+        upsertRecords.push({
           etnet_fund_id: fundId,
           name: mpfa.fund_name,
           trustee_name: trusteeName,
@@ -341,32 +346,20 @@ Deno.serve(async (req) => {
           ...mpfaData,
         });
         unmatched++;
-        console.log(`✗ Unmatched: "${mpfa.scheme}" / "${mpfa.fund_name}" (best score: ${bestScore})`);
       }
     }
 
-    // Step 4: Apply updates in batches
-    let updateCount = 0;
-    for (const u of updates) {
+    console.log(`Matched: ${matched}, Unmatched: ${unmatched}`);
+
+    // Step 4: Batch upsert all records
+    let upserted = 0;
+    for (let i = 0; i < upsertRecords.length; i += 50) {
+      const chunk = upsertRecords.slice(i, i + 50);
       const { error } = await supabase
         .from('mpf_funds')
-        .update(u.data)
-        .eq('id', u.id);
-      if (!error) updateCount++;
-      else console.error(`Update error for ${u.id}: ${error.message}`);
-    }
-
-    // Step 5: Insert new MPFA-only funds
-    let insertCount = 0;
-    if (newFunds.length > 0) {
-      for (let i = 0; i < newFunds.length; i += 50) {
-        const chunk = newFunds.slice(i, i + 50);
-        const { error } = await supabase
-          .from('mpf_funds')
-          .upsert(chunk, { onConflict: 'etnet_fund_id' });
-        if (!error) insertCount += chunk.length;
-        else console.error(`Insert chunk error: ${error.message}`);
-      }
+        .upsert(chunk, { onConflict: 'etnet_fund_id' });
+      if (!error) upserted += chunk.length;
+      else console.error(`Upsert chunk ${i} error: ${error.message}`);
     }
 
     const result = {
@@ -374,9 +367,7 @@ Deno.serve(async (req) => {
       total_parsed: mpfaFunds.length,
       matched,
       unmatched,
-      updated: updateCount,
-      inserted: insertCount,
-      sample_matches: updates.slice(0, 5).map(u => u.id),
+      upserted,
     };
 
     console.log(`Done: ${JSON.stringify(result)}`);
