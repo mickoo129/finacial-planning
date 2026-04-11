@@ -10,14 +10,11 @@ interface MpfaFund {
   fund_name_zh: string;
   trustee_zh: string;
   fund_type_zh: string;
-  launch_date: string | null;
-  fund_size: number | null;
-  risk_class: string | null;
   fer: number | null;
+  risk_class: string | null;
   return_1y_ann: number | null;
   return_5y_ann: number | null;
   return_10y_ann: number | null;
-  return_since_launch_ann: number | null;
   return_2025: number | null;
   return_2024: number | null;
   return_2023: number | null;
@@ -60,10 +57,8 @@ const SCHEME_MAP_ZH: Record<string, { trustee: string; scheme: string }> = {
   '永明彩虹強積金計劃': { trustee: '永明', scheme: '彩虹計劃' },
 };
 
-// Map Chinese fund type string to category and sub_category
 function mapFundTypeZh(type: string): { category: string; subCategory: string } {
   const t = type.trim();
-  // DIS
   if (t.includes('預設投資策略')) {
     if (t.includes('核心累積')) return { category: '預設投資策略', subCategory: '預設投資-核心累積基金' };
     if (t.includes('65歲後')) return { category: '預設投資策略', subCategory: '預設投資-65歲後基金' };
@@ -101,7 +96,6 @@ function mapFundTypeZh(type: string): { category: string; subCategory: string } 
   return { category: '其他', subCategory: '其他' };
 }
 
-// Parse the desktop Chinese MPFA page
 function parseMpfaDesktopZh(html: string): MpfaFund[] {
   const funds: MpfaFund[] = [];
   const rows = html.split(/<tr class="wr"/);
@@ -109,37 +103,32 @@ function parseMpfaDesktopZh(html: string): MpfaFund[] {
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
 
-    // Scheme name: <td ... class="txt">友邦強積金優選計劃</td>
+    // Scheme name: class="txt">...
     const schemeMatch = row.match(/class="txt">([^<]+)</);
     const scheme = schemeMatch ? schemeMatch[1].trim() : '';
 
-    // Fund name and fund type: colspan="2" align="left" class="table">...
+    // Fund name and fund type from colspan="2" align="left" class="table"
     const tdLeftMatches = [...row.matchAll(/colspan="2"\s+align="left"\s+class="table"[^>]*>([^<]*(?:<[^>]*>[^<]*)*?)<\/td>/g)];
     const fundName = tdLeftMatches.length >= 1 ? tdLeftMatches[0][1].replace(/<[^>]*>/g, '').trim() : '';
     const fundType = tdLeftMatches.length >= 2 ? tdLeftMatches[1][1].replace(/<[^>]*>/g, '').trim() : '';
 
-    // Trustee: <div align="center" ...>友邦信託</div>
+    // Trustee
     const trusteeMatch = row.match(/<div\s+align="center"[^>]*>([^<]+)<\/div>/);
     const trustee = trusteeMatch ? trusteeMatch[1].trim() : '';
 
-    // Launch date
-    const launchMatch = row.match(/align="center"\s+class="table mpp_tab_green">\s*([^<]+?)\s*<\/td>/);
-    const launchDate = launchMatch ? launchMatch[1].trim() : null;
-
-    // Fund size & risk class from right-aligned green cells
+    // Risk class
     const rightGreenMatches = [...row.matchAll(/align="right"\s+class="table mpp_tab_green">\s*([^<]+?)\s*<\/td>/g)];
-    const fundSize = rightGreenMatches.length >= 1 ? parseNum(rightGreenMatches[0][1]) : null;
     const risk = rightGreenMatches.length >= 2 ? rightGreenMatches[1][1].trim() : null;
 
     // FER
     const ferMatch = row.match(/colspan="2"\s+align="right"\s+class="table">\s*([\d.]+)\s*<\/td>/);
     const fer = ferMatch ? parseNum(ferMatch[1]) : null;
 
-    // Annualized returns (1y, 5y, 10y, since launch) - hidden by default
+    // Annualized returns (1y, 5y, 10y, since launch)
     const arMatches = [...row.matchAll(/class="arCol\s+mpp_tab_green"[^>]*>\s*([^<]*?)\s*<\/td>/g)];
     const arValues = arMatches.map(m => m[1].trim());
 
-    // Calendar year returns (2025, 2024, 2023, 2022, 2021)
+    // Calendar year returns
     const cyrMatches = [...row.matchAll(/class="cyrCol\s+mpp_tab_green"[^>]*>\s*([^<]*?)\s*<\/td>/g)];
     const cyrValues = cyrMatches.map(m => m[1].trim());
 
@@ -150,14 +139,11 @@ function parseMpfaDesktopZh(html: string): MpfaFund[] {
       fund_name_zh: fundName,
       trustee_zh: trustee,
       fund_type_zh: fundType,
-      launch_date: launchDate,
-      fund_size: fundSize,
-      risk_class: risk,
       fer,
+      risk_class: risk,
       return_1y_ann: arValues[0] ? parseNum(arValues[0]) : null,
       return_5y_ann: arValues[1] ? parseNum(arValues[1]) : null,
       return_10y_ann: arValues[2] ? parseNum(arValues[2]) : null,
-      return_since_launch_ann: arValues[3] ? parseNum(arValues[3]) : null,
       return_2025: cyrValues[0] ? parseNum(cyrValues[0]) : null,
       return_2024: cyrValues[1] ? parseNum(cyrValues[1]) : null,
       return_2023: cyrValues[2] ? parseNum(cyrValues[2]) : null,
@@ -168,65 +154,14 @@ function parseMpfaDesktopZh(html: string): MpfaFund[] {
   return funds;
 }
 
-// Strip class suffix for matching (e.g., "基金 - A" → "基金")
-function stripClass(name: string): string {
+// Normalize fund name for matching: remove trustee/scheme prefix and class suffix
+function normalizeName(name: string): string {
   return name
+    .replace(/^(友邦優選|友邦|恒生智選|滙豐智選|匯豐智選|宏利環球|宏利退休|宏利|富達|海通|永明彩虹|永明|萬通|信安|中銀保誠|中國人壽|東亞集成信託|東亞行業|東亞享惠|東亞|交通銀行愉盈|交通銀行|銀聯|BCT積金之選|BCT策略|BCT行業|BCT|AMTD\s*強積金|AMTD|新地|新鴻基|orientiertAMTD\s*強積金)/, '')
+    .replace(/\s*[-–—]\s*(?:單位)?(?:類別)?\s*[A-Z]\s*$/i, '')
     .replace(/\s*[-–—]\s*[A-Z]\s*$/, '')
-    .replace(/\s*[-–—]\s*(?:單位)?類別\s*[A-Z]\s*$/i, '')
+    .replace(/^[（(].*?[）)]/, '')
     .trim();
-}
-
-function getClassSuffix(name: string): string | null {
-  const m = name.match(/[-–—]\s*(?:單位)?(?:類別)?\s*([A-Z])\s*$/i);
-  if (m) return m[1].toUpperCase();
-  const m2 = name.match(/[-–—]\s*([A-Z])\s*$/);
-  if (m2) return m2[1].toUpperCase();
-  return null;
-}
-
-// Direct Chinese-to-Chinese matching score
-function matchScoreZh(mpfaName: string, etnetName: string, sameScheme: boolean): number {
-  let score = 0;
-  const mpfa = stripClass(mpfaName);
-  const etnet = stripClass(etnetName);
-
-  // Exact match (ignoring class)
-  if (mpfa === etnet) return 100;
-
-  // Check if one contains the other
-  if (etnet.includes(mpfa) || mpfa.includes(etnet)) {
-    score += 50;
-  }
-
-  // Key term matching - split MPFA name into meaningful segments
-  const keyTerms = [
-    '核心累積', '65歲後', '強積金保守', '保證',
-    '恒指', '恒生指數', '指數追蹤',
-    '大中華', '香港', '中國', '日本', '韓國', '亞太', '亞洲', '歐洲', '北美', '美國', '環球', '全球', '國際', '亞歐',
-    '股票', '債券', '固定收益', '貨幣', '人民幣', '港元',
-    '增長', '進取', '均衡', '平衡', '穩定', '穩健', '平穩', '靈活', '動態', '動力',
-    '綠色', 'ESG', '環保',
-    '退休易', '自在退休', '收益',
-    '安聯', '東方太平洋',
-    'E30', 'E50', 'E70', 'E90',
-    '目標', '精選',
-  ];
-
-  for (const term of keyTerms) {
-    if (mpfa.includes(term) && etnet.includes(term)) {
-      score += term.length >= 3 ? 8 : 5;
-    }
-  }
-
-  // Same scheme bonus
-  if (sameScheme && score > 0) score += 10;
-
-  // Class matching bonus
-  const mpfaClass = getClassSuffix(mpfaName);
-  const etnetClass = getClassSuffix(etnetName);
-  if (mpfaClass && etnetClass && mpfaClass === etnetClass) score += 10;
-
-  return score;
 }
 
 interface EtnetFund {
@@ -247,7 +182,6 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    // Fetch Chinese desktop MPFA page
     const url = 'https://mfp.mpfa.org.hk/tch/mpp_list.jsp';
     console.log(`Fetching MPFA (Chinese): ${url}`);
 
@@ -260,7 +194,6 @@ Deno.serve(async (req) => {
 
     if (!response.ok) throw new Error(`Failed to fetch MPFA: ${response.status}`);
     const html = await response.text();
-    console.log(`Fetched ${html.length} chars`);
 
     const mpfaFunds = parseMpfaDesktopZh(html);
     console.log(`Parsed ${mpfaFunds.length} MPFA funds (Chinese)`);
@@ -272,7 +205,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch all existing etnet funds from DB
+    // Fetch all existing etnet funds
     const { data: etnetFunds, error: fetchErr } = await supabase
       .from('mpf_funds')
       .select('id, etnet_fund_id, name, trustee_name, scheme_name')
@@ -281,7 +214,7 @@ Deno.serve(async (req) => {
     if (fetchErr) throw new Error(`DB fetch error: ${fetchErr.message}`);
     console.log(`Loaded ${etnetFunds?.length || 0} etnet funds from DB`);
 
-    // Group etnet funds by trustee and by trustee+scheme
+    // Group etnet funds by trustee
     const etnetByTrustee = new Map<string, EtnetFund[]>();
     const etnetByScheme = new Map<string, EtnetFund[]>();
     for (const f of (etnetFunds || [])) {
@@ -293,47 +226,108 @@ Deno.serve(async (req) => {
       etnetByScheme.get(key)!.push(f as EtnetFund);
     }
 
-    // Match MPFA funds to etnet funds
+    // === TWO-PASS OPTIMAL MATCHING ===
+    // Pass 1: Collect all candidate matches with scores
+    interface MatchCandidate {
+      mpfaIdx: number;
+      etnetFundId: string;
+      score: number;
+    }
+
+    const allCandidates: MatchCandidate[] = [];
+
+    for (let mi = 0; mi < mpfaFunds.length; mi++) {
+      const mpfa = mpfaFunds[mi];
+      const schemeMapping = SCHEME_MAP_ZH[mpfa.scheme_zh];
+      if (!schemeMapping) continue;
+
+      const mpfaNorm = normalizeName(mpfa.fund_name_zh);
+
+      // Get candidates from same scheme first, then same trustee
+      const schemeKey = `${schemeMapping.trustee}|${schemeMapping.scheme}`;
+      const candidates = new Set<string>();
+      for (const c of (etnetByScheme.get(schemeKey) || [])) candidates.add(c.etnet_fund_id);
+      for (const c of (etnetByTrustee.get(schemeMapping.trustee) || [])) candidates.add(c.etnet_fund_id);
+
+      for (const etFundId of candidates) {
+        const etFund = (etnetFunds || []).find(f => f.etnet_fund_id === etFundId);
+        if (!etFund) continue;
+
+        const etNorm = normalizeName(etFund.name);
+        const sameScheme = etFund.scheme_name === schemeMapping.scheme;
+        let score = 0;
+
+        // Exact normalized match
+        if (mpfaNorm === etNorm) {
+          score = 100;
+        } else if (etNorm.includes(mpfaNorm) || mpfaNorm.includes(etNorm)) {
+          // One contains the other
+          score = 60;
+        } else {
+          // Character overlap scoring
+          const mpfaChars = [...new Set(mpfaNorm.split(''))];
+          const etChars = new Set(etNorm.split(''));
+          let matchedChars = 0;
+          for (const c of mpfaChars) {
+            if (etChars.has(c)) matchedChars++;
+          }
+          const overlapRatio = mpfaChars.length > 0 ? matchedChars / mpfaChars.length : 0;
+          if (overlapRatio >= 0.7) {
+            score = Math.round(overlapRatio * 40);
+          }
+        }
+
+        // Penalize region/asset type mismatches
+        const regionTerms = ['北美', '歐洲', '亞洲', '香港', '中國', '日本', '環球', '大中華', '亞歐', '亞太'];
+        const assetTerms = ['股票', '債券', '保守', '保證', '貨幣', '核心累積', '65歲後'];
+        
+        for (const term of regionTerms) {
+          const inMpfa = mpfaNorm.includes(term);
+          const inEtnet = etNorm.includes(term);
+          if (inMpfa && !inEtnet) score -= 30;
+          if (!inMpfa && inEtnet) score -= 15;
+          if (inMpfa && inEtnet) score += 15;
+        }
+        for (const term of assetTerms) {
+          const inMpfa = mpfaNorm.includes(term);
+          const inEtnet = etNorm.includes(term);
+          if (inMpfa && !inEtnet) score -= 30;
+          if (!inMpfa && inEtnet) score -= 15;
+          if (inMpfa && inEtnet) score += 15;
+        }
+
+        if (sameScheme) score += 5;
+        if (score >= 15) {
+          allCandidates.push({ mpfaIdx: mi, etnetFundId: etFundId, score });
+        }
+      }
+    }
+
+    // Pass 2: Assign matches optimally (highest score first, no duplicates)
+    allCandidates.sort((a, b) => b.score - a.score);
+    const assignedMpfa = new Set<number>();
+    const assignedEtnet = new Set<string>();
+    const matchMap = new Map<number, { etnetFund: EtnetFund; score: number }>();
+
+    for (const c of allCandidates) {
+      if (assignedMpfa.has(c.mpfaIdx) || assignedEtnet.has(c.etnetFundId)) continue;
+      const etFund = (etnetFunds || []).find(f => f.etnet_fund_id === c.etnetFundId);
+      if (!etFund) continue;
+      assignedMpfa.add(c.mpfaIdx);
+      assignedEtnet.add(c.etnetFundId);
+      matchMap.set(c.mpfaIdx, { etnetFund: etFund as EtnetFund, score: c.score });
+    }
+
+    // Build upsert records
     let matched = 0;
     let unmatched = 0;
     const upsertRecords: Array<Record<string, unknown>> = [];
-    const usedEtnetIds = new Set<string>();
     const matchDetails: string[] = [];
 
-    for (const mpfa of mpfaFunds) {
+    for (let mi = 0; mi < mpfaFunds.length; mi++) {
+      const mpfa = mpfaFunds[mi];
       const schemeMapping = SCHEME_MAP_ZH[mpfa.scheme_zh];
       const { category, subCategory } = mapFundTypeZh(mpfa.fund_type_zh);
-
-      let bestMatch: EtnetFund | null = null;
-      let bestScore = 0;
-
-      if (schemeMapping) {
-        // Strategy 1: Match within same scheme
-        const schemeKey = `${schemeMapping.trustee}|${schemeMapping.scheme}`;
-        const schemeCandidates = etnetByScheme.get(schemeKey) || [];
-
-        for (const candidate of schemeCandidates) {
-          if (usedEtnetIds.has(candidate.etnet_fund_id)) continue;
-          const score = matchScoreZh(mpfa.fund_name_zh, candidate.name, true);
-          if (score > bestScore) {
-            bestScore = score;
-            bestMatch = candidate;
-          }
-        }
-
-        // Strategy 2: Match within same trustee (broader search)
-        if (bestScore < 20) {
-          const trusteeCandidates = etnetByTrustee.get(schemeMapping.trustee) || [];
-          for (const candidate of trusteeCandidates) {
-            if (usedEtnetIds.has(candidate.etnet_fund_id)) continue;
-            const score = matchScoreZh(mpfa.fund_name_zh, candidate.name, false);
-            if (score > bestScore) {
-              bestScore = score;
-              bestMatch = candidate;
-            }
-          }
-        }
-      }
 
       const mpfaData: Record<string, unknown> = {
         category,
@@ -349,18 +343,18 @@ Deno.serve(async (req) => {
         name_zh: mpfa.fund_name_zh,
       };
 
-      if (bestMatch && bestScore >= 10) {
-        usedEtnetIds.add(bestMatch.etnet_fund_id);
+      const match = matchMap.get(mi);
+      if (match) {
         upsertRecords.push({
-          etnet_fund_id: bestMatch.etnet_fund_id,
-          name: bestMatch.name,
-          trustee_name: bestMatch.trustee_name,
-          scheme_name: bestMatch.scheme_name,
+          etnet_fund_id: match.etnetFund.etnet_fund_id,
+          name: match.etnetFund.name,
+          trustee_name: match.etnetFund.trustee_name,
+          scheme_name: match.etnetFund.scheme_name,
           ...mpfaData,
         });
         matched++;
-        if (matched <= 20 || matched % 50 === 0) {
-          matchDetails.push(`✓ "${mpfa.fund_name_zh}" → "${bestMatch.name}" (score:${bestScore})`);
+        if (matched <= 25 || matched % 50 === 0) {
+          matchDetails.push(`✓ "${mpfa.fund_name_zh}" → "${match.etnetFund.name}" (score:${match.score})`);
         }
       } else {
         const trusteeName = schemeMapping?.trustee || mpfa.trustee_zh;
@@ -375,13 +369,12 @@ Deno.serve(async (req) => {
           ...mpfaData,
         });
         unmatched++;
-        if (unmatched <= 30) {
-          matchDetails.push(`✗ "${mpfa.scheme_zh}" / "${mpfa.fund_name_zh}" (best:${bestScore})`);
+        if (unmatched <= 15) {
+          matchDetails.push(`✗ "${mpfa.scheme_zh}" / "${mpfa.fund_name_zh}" norm="${normalizeName(mpfa.fund_name_zh)}" (no match)`);
         }
       }
     }
 
-    // Log match details
     for (const d of matchDetails) console.log(d);
     console.log(`Matched: ${matched}, Unmatched: ${unmatched}`);
 
@@ -402,7 +395,7 @@ Deno.serve(async (req) => {
       matched,
       unmatched,
       upserted,
-      sample_matches: matchDetails.slice(0, 15),
+      sample_matches: matchDetails.slice(0, 20),
     };
 
     console.log(`Done: ${JSON.stringify({ ...result, sample_matches: undefined })}`);
