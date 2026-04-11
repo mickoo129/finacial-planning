@@ -94,6 +94,8 @@ export default function Rankings() {
               <th className="text-left px-4 py-2 text-muted-foreground">基金</th>
               <th className="text-left px-4 py-2 text-muted-foreground hidden sm:table-cell">受託人</th>
               <th className="text-left px-4 py-2 text-muted-foreground hidden md:table-cell">類別</th>
+              <th className="text-right px-4 py-2 text-muted-foreground hidden lg:table-cell">FER</th>
+              <th className="text-right px-4 py-2 text-muted-foreground hidden lg:table-cell">規模(百萬)</th>
               <th className="text-right px-4 py-2 text-muted-foreground">回報率</th>
             </tr>
           </thead>
@@ -114,12 +116,21 @@ export default function Rankings() {
                     <div className="text-[10px] text-muted-foreground mt-0.5 sm:hidden">
                       {trustee} · {fund.sub_category || fund.category || '—'}
                     </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5 lg:hidden">
+                      {fund.fer != null ? `FER ${fund.fer}%` : ''}{fund.fer != null && fund.fund_size != null ? ' · ' : ''}{fund.fund_size != null ? `${fund.fund_size.toLocaleString()}百萬` : ''}
+                    </div>
                   </td>
                   <td className="px-4 py-2.5 hidden sm:table-cell">
                     <span className="text-xs text-muted-foreground">{trustee}</span>
                   </td>
                   <td className="px-4 py-2.5 hidden md:table-cell">
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.sub_category || fund.category || '—'}</span>
+                  </td>
+                  <td className="px-4 py-2.5 text-right hidden lg:table-cell">
+                    <span className="text-xs text-muted-foreground">{fund.fer != null ? `${fund.fer}%` : '—'}</span>
+                  </td>
+                  <td className="px-4 py-2.5 text-right hidden lg:table-cell">
+                    <span className="text-xs text-muted-foreground">{fund.fund_size != null ? fund.fund_size.toLocaleString() : '—'}</span>
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <ReturnValue value={fund[sortBy] ?? 0} />
