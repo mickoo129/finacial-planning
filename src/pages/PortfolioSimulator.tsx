@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { ReturnValue } from '@/components/ReturnValue';
 import { CascadingFundFilter } from '@/components/CascadingFundFilter';
+import { RETURN_LABELS } from '@/lib/returnFields';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';

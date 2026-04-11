@@ -6,7 +6,7 @@ interface TimePeriodSelectorProps {
   onChange: (period: TimePeriod) => void;
 }
 
-const periods: TimePeriod[] = ['1y', '5y', '10y', 'ytd', '2025', '2024', '2023', '2022', '2021'];
+const periods: TimePeriod[] = ['ytd', '3m', '1y', '3y', '5y', '10y', '2025', '2024', '2023', '2022', '2021'];
 
 export function TimePeriodSelector({ selected, onChange }: TimePeriodSelectorProps) {
   return (

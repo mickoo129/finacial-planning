@@ -1,57 +1,31 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CascadingFundFilter, getMainCategory } from '@/components/CascadingFundFilter';
+import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { ChevronDown, ChevronUp, BarChart3 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import { getMainCategory } from '@/components/CascadingFundFilter';
-
-type SortPeriod = 'return_ytd' | 'return_1m' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y';
-
-const SORT_LABELS: Record<SortPeriod, string> = {
-  return_ytd: '年初至今',
-  return_1m: '1個月',
-  return_3m: '3個月',
-  return_1y: '1年',
-  return_3y: '3年',
-  return_5y: '5年',
-  return_10y: '10年',
-};
 
 export default function Categories() {
-  const [sortBy, setSortBy] = useState<SortPeriod>('return_1y');
+  const [sortBy, setSortBy] = useState<ReturnField>('return_1y');
   const [expanded, setExpanded] = useState<string | null>(null);
   const [expandedSub, setExpandedSub] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedTrustee, setSelectedTrustee] = useState('all');
   const { data: funds, isLoading } = useMpfFunds();
+  const [cascadeFiltered, setCascadeFiltered] = useState<MpfFund[]>([]);
 
-  const trustees = useMemo(() => {
-    if (!funds) return [];
-    return [...new Set(funds.map(f => f.trustee_name).filter(Boolean))].sort() as string[];
-  }, [funds]);
+  const handleFilterChange = useCallback((filtered: MpfFund[]) => {
+    setCascadeFiltered(filtered);
+  }, []);
 
-  const mainCategories = useMemo(() => {
-    if (!funds) return [];
-    return [...new Set(funds.map(f => getMainCategory(f)))].sort();
-  }, [funds]);
+  const displayFunds = cascadeFiltered.length > 0 ? cascadeFiltered : (funds || []);
 
   // Group by main category, then sub-category
   const categoryData = useMemo(() => {
-    if (!funds) return [];
-    
-    let filtered = funds;
-    if (selectedTrustee !== 'all') {
-      filtered = filtered.filter(f => f.trustee_name === selectedTrustee);
-    }
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(f => getMainCategory(f) === selectedCategory);
-    }
+    if (!displayFunds.length) return [];
 
-    // Group by main category
     const mainGroups = new Map<string, MpfFund[]>();
-    for (const fund of filtered) {
+    for (const fund of displayFunds) {
       const main = getMainCategory(fund);
       if (!mainGroups.has(main)) mainGroups.set(main, []);
       mainGroups.get(main)!.push(fund);
@@ -59,7 +33,6 @@ export default function Categories() {
 
     return [...mainGroups.entries()]
       .map(([mainName, mainFunds]) => {
-        // Sub-group by sub_category or etnet category
         const subGroups = new Map<string, MpfFund[]>();
         for (const fund of mainFunds) {
           const sub = fund.sub_category || fund.category || mainName;
@@ -96,7 +69,7 @@ export default function Categories() {
         };
       })
       .sort((a, b) => b.avgReturn - a.avgReturn);
-  }, [funds, sortBy, selectedCategory, selectedTrustee]);
+  }, [displayFunds, sortBy]);
 
   // Flatten sub-categories for chart
   const chartData = useMemo(() => {
@@ -122,48 +95,27 @@ export default function Categories() {
       <div>
         <h1 className="text-lg sm:text-xl font-bold text-foreground">類別比較</h1>
         <p className="text-xs text-muted-foreground mt-1">
-          顯示 {funds?.length || 0} 隻基金 · 按基金類別和種類篩選
+          顯示 {displayFunds.length} / {funds?.length || 0} 隻基金 · 按基金類別和種類篩選
         </p>
       </div>
 
       {/* Filters */}
       <div className="bg-card rounded-lg border border-border p-4 space-y-3">
+        {funds && <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} />}
         <div className="flex flex-wrap gap-1 bg-muted/50 rounded-lg p-1">
-          {Object.entries(SORT_LABELS).map(([key, label]) => (
+          {RETURN_FIELDS.map(key => (
             <button
               key={key}
-              onClick={() => setSortBy(key as SortPeriod)}
-              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors flex-1 ${
+              onClick={() => setSortBy(key)}
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
                 sortBy === key
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {label}
+              {RETURN_LABELS[key]}
             </button>
           ))}
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-[10px] text-muted-foreground mb-1 block">基金大類</label>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="全部類別" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部類別</SelectItem>
-                {mainCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-[10px] text-muted-foreground mb-1 block">受託人</label>
-            <Select value={selectedTrustee} onValueChange={setSelectedTrustee}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="全部受託人" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部受託人</SelectItem>
-                {trustees.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
       </div>
 
@@ -175,7 +127,7 @@ export default function Categories() {
               <BarChart3 className="h-4 w-4 text-primary" />
               <h3 className="font-semibold text-foreground text-sm">各基金種類平均回報</h3>
             </div>
-            <span className="text-[10px] text-muted-foreground">{SORT_LABELS[sortBy]}</span>
+            <span className="text-[10px] text-muted-foreground">{RETURN_LABELS[sortBy]}</span>
           </div>
           <div style={{ height: Math.max(200, chartData.length * 28) }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -206,7 +158,7 @@ export default function Categories() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-foreground text-sm">基金類別 → 基金種類</h3>
-          <span className="text-[10px] text-muted-foreground">{SORT_LABELS[sortBy]}</span>
+          <span className="text-[10px] text-muted-foreground">{RETURN_LABELS[sortBy]}</span>
         </div>
         <div className="space-y-2">
           {categoryData.map((cat) => (
