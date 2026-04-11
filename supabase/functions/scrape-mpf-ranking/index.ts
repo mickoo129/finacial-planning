@@ -237,6 +237,9 @@ Deno.serve(async (req) => {
         .upsert(
           allFunds.map(f => {
             const planMapping = f.etnet_plan_id ? PLAN_TRUSTEE_MAP[f.etnet_plan_id] : null;
+            const nameMapping = !planMapping ? inferTrusteeFromName(f.name) : null;
+            const trustee = planMapping?.trustee || nameMapping?.trustee || null;
+            const scheme = planMapping?.scheme || nameMapping?.scheme || null;
             return {
               etnet_fund_id: f.etnet_fund_id,
               etnet_plan_id: f.etnet_plan_id,
@@ -249,8 +252,8 @@ Deno.serve(async (req) => {
               return_1y: f.return_1y,
               return_3y: f.return_3y,
               data_date: f.data_date,
-              trustee_name: planMapping?.trustee || null,
-              scheme_name: planMapping?.scheme || null,
+              trustee_name: trustee,
+              scheme_name: scheme,
             };
           }),
           { onConflict: 'etnet_fund_id' }
