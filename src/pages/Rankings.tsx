@@ -153,7 +153,7 @@ export default function Rankings() {
             className="text-[11px] h-8"
           >
             <RefreshCw className={`h-3 w-3 mr-1 ${scraping ? 'animate-spin' : ''}`} />
-            {scraping ? '更新中...' : '補充年度'}
+            {scraping ? '更新中...' : 'MPFA 數據'}
           </Button>
           <Button
             variant="outline"
