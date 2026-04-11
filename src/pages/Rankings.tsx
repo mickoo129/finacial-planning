@@ -8,10 +8,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
 
-type SortPeriod = 'return_ytd' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y';
+type SortPeriod = 'return_ytd' | 'return_1m' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y';
 
 const SORT_LABELS: Record<SortPeriod, string> = {
   return_ytd: '年初至今',
+  return_1m: '1個月',
   return_3m: '3個月',
   return_1y: '1年',
   return_3y: '3年',
@@ -96,7 +97,7 @@ export default function Rankings() {
                     </span>
                   </td>
                   <td className="px-4 py-2.5">
-                    <div className="font-medium text-foreground text-sm leading-tight">{fund.name}</div>
+                    <div className="font-medium text-foreground text-sm leading-tight">{fund.name_zh || fund.name}</div>
                     <div className="text-[10px] text-muted-foreground mt-0.5 sm:hidden">
                       {trustee} · {fund.category || '—'}
                     </div>
