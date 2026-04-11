@@ -22,56 +22,13 @@ interface FundData {
 function parseReturn(text: string): number | null {
   if (!text) return null;
   const cleaned = text.replace(/[+%\s]/g, '');
-  if (cleaned === '-' || cleaned === 'N/A' || cleaned === '') return null;
+  if (cleaned === '-' || cleaned === 'N/A' || cleaned === '' || cleaned === '--') return null;
   const val = parseFloat(cleaned);
   return isNaN(val) ? null : val;
 }
 
-function extractFundIdFromUrl(url: string): { fund: string; plan: string | null; provider: string | null } {
-  const fundMatch = url.match(/fund=([^&]+)/);
-  const planMatch = url.match(/plan=([^&]+)/);
-  const providerMatch = url.match(/provider=([^&]+)/);
-  return {
-    fund: fundMatch ? fundMatch[1] : '',
-    plan: planMatch ? planMatch[1] : null,
-    provider: providerMatch ? providerMatch[1] : null,
-  };
-}
-
-function parseRankingHtml(html: string, category: string): FundData[] {
-  const funds: FundData[] = [];
-
-  // Match table rows with fund data
-  const rowRegex = /<tr[^>]*>\s*<td[^>]*>.*?<\/td>\s*<td[^>]*><a[^>]*href="([^"]*)"[^>]*>([^<]+)<\/a><\/td>\s*<td[^>]*>([^<]*)<\/td>\s*<td[^>]*><span[^>]*>([^<]*)<\/span><\/td>\s*<td[^>]*><span[^>]*>([^<]*)<\/span><\/td>\s*<td[^>]*><span[^>]*>([^<]*)<\/span><\/td>\s*<td[^>]*><span[^>]*>([^<]*)<\/span><\/td>\s*<td[^>]*>([^<]*)<\/td>/g;
-
-  let match;
-  while ((match = rowRegex.exec(html)) !== null) {
-    const url = match[1].replace(/&amp;/g, '&');
-    const ids = extractFundIdFromUrl(url);
-    if (!ids.fund) continue;
-
-    funds.push({
-      etnet_fund_id: ids.fund,
-      etnet_plan_id: ids.plan,
-      etnet_provider_id: ids.provider,
-      name: match[2].trim(),
-      risk_level: match[3].trim() || null,
-      category,
-      return_ytd: parseReturn(match[4]),
-      return_3m: parseReturn(match[5]),
-      return_1y: parseReturn(match[6]),
-      return_3y: parseReturn(match[7]),
-      data_date: match[8].trim().replace(/\//g, '-') || null,
-    });
-  }
-
-  return funds;
-}
-
-// Fallback: simpler regex for different table structures
 function parseRankingHtmlFallback(html: string, category: string): FundData[] {
   const funds: FundData[] = [];
-
   const linkRegex = /<a[^>]*href="[^"]*fund_detail\.php\?fund=([^&"]+)(?:&amp;plan=([^&"]+))?(?:&amp;provider=([^&"]+))?[^"]*"[^>]*class="MPFLink"[^>]*>([^<]+)<\/a>/g;
 
   let linkMatch;
@@ -86,8 +43,6 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
     });
   }
 
-  const spanRegex = /<span class="(?:up|down)">([^<]+)<\/span>/g;
-
   for (const link of allLinks) {
     const searchStart = link.index;
     const searchEnd = html.indexOf('</tr>', searchStart);
@@ -95,8 +50,8 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
 
     const rowHtml = html.substring(searchStart, searchEnd);
     const spans: string[] = [];
-    let spanMatch;
     const localSpanRegex = /<span class="(?:up|down)">([^<]+)<\/span>/g;
+    let spanMatch;
     while ((spanMatch = localSpanRegex.exec(rowHtml)) !== null) {
       spans.push(spanMatch[1]);
     }
@@ -127,7 +82,6 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
   return funds;
 }
 
-// Map etnet plan IDs to trustee names
 const PLAN_TRUSTEE_MAP: Record<string, { trustee: string; scheme: string }> = {
   ETNSI1: { trustee: '銀聯信託', scheme: '積金之選' },
   ETNSI2: { trustee: '銀聯信託', scheme: '行業計劃' },
@@ -174,6 +128,11 @@ const SUBTYPES = [
   { id: 'ETNSI26', name: '其他' },
 ];
 
+const FETCH_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+  'Accept-Language': 'zh-TW,zh;q=0.9',
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -193,29 +152,15 @@ Deno.serve(async (req) => {
     const allFunds: FundData[] = [];
     const seenFundIds = new Set<string>();
 
-    // Scrape the ALL ranking page first
+    // Scrape the ALL ranking page
     const url = `https://www.etnet.com.hk/www/tc/mpf/ranking.php?subtype=ALL&sortby=1Y`;
     console.log(`Fetching: ${url}`);
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept-Language': 'zh-TW,zh;q=0.9',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ranking page: ${response.status}`);
-    }
-
+    const response = await fetch(url, { headers: FETCH_HEADERS });
+    if (!response.ok) throw new Error(`Failed to fetch ranking page: ${response.status}`);
     const html = await response.text();
-    console.log(`Fetched ${html.length} chars`);
 
-    let funds = parseRankingHtml(html, '全部');
-    if (funds.length === 0) {
-      console.log('Primary parser found 0, trying fallback...');
-      funds = parseRankingHtmlFallback(html, '全部');
-    }
+    const funds = parseRankingHtmlFallback(html, '全部');
     console.log(`Parsed ${funds.length} funds from ALL ranking`);
 
     for (const fund of funds) {
@@ -229,22 +174,10 @@ Deno.serve(async (req) => {
     for (const subtype of SUBTYPES) {
       try {
         const catUrl = `https://www.etnet.com.hk/www/tc/mpf/ranking.php?subtype=${subtype.id}&sortby=1Y`;
-        console.log(`Fetching category: ${subtype.name}`);
-
-        const catResponse = await fetch(catUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept-Language': 'zh-TW,zh;q=0.9',
-          },
-        });
-
+        const catResponse = await fetch(catUrl, { headers: FETCH_HEADERS });
         if (!catResponse.ok) continue;
         const catHtml = await catResponse.text();
-
-        let catFunds = parseRankingHtml(catHtml, subtype.name);
-        if (catFunds.length === 0) {
-          catFunds = parseRankingHtmlFallback(catHtml, subtype.name);
-        }
+        const catFunds = parseRankingHtmlFallback(catHtml, subtype.name);
         console.log(`  ${subtype.name}: ${catFunds.length} funds`);
 
         for (const fund of catFunds) {
@@ -254,8 +187,7 @@ Deno.serve(async (req) => {
             allFunds.push(fund);
           }
         }
-
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 200));
       } catch (e) {
         console.error(`Error scraping ${subtype.name}:`, e);
       }
@@ -263,7 +195,7 @@ Deno.serve(async (req) => {
 
     console.log(`Total unique funds: ${allFunds.length}`);
 
-    // Upsert all funds with trustee mapping
+    // Upsert all funds
     if (allFunds.length > 0) {
       const { error: upsertError } = await supabase
         .from('mpf_funds')
