@@ -97,7 +97,7 @@ export default function CompareFunds() {
               style={{ borderColor: CHART_COLORS[i], color: CHART_COLORS[i] }}
             >
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: CHART_COLORS[i] }} />
-              <span className="max-w-[120px] sm:max-w-[200px] truncate">{fund.name_zh || f.name}</span>
+              <span className="max-w-[120px] sm:max-w-[200px] truncate">{f.name_zh || f.name}</span>
               <button onClick={() => removeFund(f.id)} className="hover:opacity-70">
                 <X className="h-3 w-3" />
               </button>
