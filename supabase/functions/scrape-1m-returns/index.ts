@@ -14,7 +14,8 @@ function parseReturn(text: string): number | null {
 }
 
 function parse1mFromDetail(html: string): number | null {
-  const match = html.match(/1個月<\/td>\s*<td[^>]*>\s*([\s\S]*?)<\/td>/);
+  // The detail page has: <td>1個月</td>\n<td align="right">\n+4.46%\n</td>
+  const match = html.match(/1個月<\/td>[\s\S]*?<td[^>]*>([\s\S]*?)<\/td>/);
   if (!match) return null;
   const valMatch = match[1].match(/([+-]?\d+\.?\d*)%/);
   if (!valMatch) return null;
