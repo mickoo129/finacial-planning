@@ -4,55 +4,57 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 222 47% 11%;
+    --background: 220 20% 97%;
+    --foreground: 220 30% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 220 30% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 220 30% 15%;
 
-    --primary: 217 91% 60%;
+    --primary: 220 70% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 214 32% 91%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 220 15% 92%;
+    --secondary-foreground: 220 30% 15%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 10% 50%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 220 15% 94%;
+    --accent-foreground: 220 30% 15%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 217 91% 60%;
+    --border: 220 15% 90%;
+    --input: 220 15% 90%;
+    --ring: 220 70% 45%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --positive: 142 71% 45%;
-    --positive-foreground: 142 71% 25%;
-    --negative: 0 84% 60%;
-    --negative-foreground: 0 84% 40%;
+    --positive: 152 60% 36%;
+    --positive-foreground: 152 60% 20%;
+    --negative: 0 65% 50%;
+    --negative-foreground: 0 65% 35%;
 
-    --chart-blue: 217 91% 60%;
-    --chart-green: 142 71% 45%;
-    --chart-yellow: 45 93% 47%;
-    --chart-purple: 262 83% 58%;
-    --chart-orange: 24 95% 53%;
+    --chart-blue: 220 70% 45%;
+    --chart-green: 152 60% 36%;
+    --chart-yellow: 40 85% 50%;
+    --chart-purple: 260 55% 50%;
+    --chart-orange: 25 85% 55%;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 217 91% 60%;
+    --sidebar-foreground: 220 30% 15%;
+    --sidebar-primary: 220 70% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 220 15% 94%;
+    --sidebar-accent-foreground: 220 30% 15%;
+    --sidebar-border: 220 15% 90%;
+    --sidebar-ring: 220 70% 45%;
+
+    --header-gradient: linear-gradient(135deg, hsl(220 70% 18%), hsl(220 60% 28%));
   }
 }
 
@@ -63,22 +65,42 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Noto Sans TC', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'tnum';
   }
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
+  background: hsl(var(--muted-foreground) / 0.2);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* Banking table styles */
+.banking-table th {
+  @apply text-[11px] uppercase tracking-wider font-semibold;
+  letter-spacing: 0.05em;
+}
+
+.banking-table td {
+  @apply text-sm;
+}
+
+.banking-table tbody tr {
+  @apply transition-colors;
+}
+
+.banking-table tbody tr:hover {
+  background: hsl(var(--primary) / 0.03);
 }
