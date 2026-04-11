@@ -22,13 +22,23 @@ export type Database = {
           etnet_fund_id: string
           etnet_plan_id: string | null
           etnet_provider_id: string | null
+          fee_ratio: number | null
           id: string
           name: string
+          return_10y: number | null
           return_1y: number | null
+          return_2021: number | null
+          return_2022: number | null
+          return_2023: number | null
+          return_2024: number | null
           return_3m: number | null
           return_3y: number | null
+          return_5y: number | null
           return_ytd: number | null
           risk_level: string | null
+          scheme_name: string | null
+          sub_category: string | null
+          trustee_name: string | null
           updated_at: string
         }
         Insert: {
@@ -38,13 +48,23 @@ export type Database = {
           etnet_fund_id: string
           etnet_plan_id?: string | null
           etnet_provider_id?: string | null
+          fee_ratio?: number | null
           id?: string
           name: string
+          return_10y?: number | null
           return_1y?: number | null
+          return_2021?: number | null
+          return_2022?: number | null
+          return_2023?: number | null
+          return_2024?: number | null
           return_3m?: number | null
           return_3y?: number | null
+          return_5y?: number | null
           return_ytd?: number | null
           risk_level?: string | null
+          scheme_name?: string | null
+          sub_category?: string | null
+          trustee_name?: string | null
           updated_at?: string
         }
         Update: {
@@ -54,13 +74,23 @@ export type Database = {
           etnet_fund_id?: string
           etnet_plan_id?: string | null
           etnet_provider_id?: string | null
+          fee_ratio?: number | null
           id?: string
           name?: string
+          return_10y?: number | null
           return_1y?: number | null
+          return_2021?: number | null
+          return_2022?: number | null
+          return_2023?: number | null
+          return_2024?: number | null
           return_3m?: number | null
           return_3y?: number | null
+          return_5y?: number | null
           return_ytd?: number | null
           risk_level?: string | null
+          scheme_name?: string | null
+          sub_category?: string | null
+          trustee_name?: string | null
           updated_at?: string
         }
         Relationships: []
