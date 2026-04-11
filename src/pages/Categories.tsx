@@ -6,10 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ChevronDown, ChevronUp, BarChart3 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
 
-type SortPeriod = 'return_ytd' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y';
+type SortPeriod = 'return_ytd' | 'return_1m' | 'return_3m' | 'return_1y' | 'return_3y' | 'return_5y' | 'return_10y';
 
 const SORT_LABELS: Record<SortPeriod, string> = {
   return_ytd: '年初至今',
+  return_1m: '1個月',
   return_3m: '3個月',
   return_1y: '1年',
   return_3y: '3年',
@@ -225,7 +226,7 @@ export default function Categories() {
                         <tr key={fund.id} className="hover:bg-muted/30 transition-colors">
                           <td className="px-4 py-2.5">
                             <Link to={`/fund/${fund.id}`} className="text-primary hover:underline text-sm">
-                              {fund.name}
+                              {fund.name_zh || fund.name}
                             </Link>
                             <div className="text-xs text-muted-foreground mt-0.5">
                               {fund.trustee_name} · {fund.scheme_name}
