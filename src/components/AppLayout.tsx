@@ -1,18 +1,23 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { BarChart3, Search, GitCompare, PieChart, Calculator, Crown, Building2, Briefcase, Zap } from 'lucide-react';
+import { BarChart3, Search, GitCompare, PieChart, Calculator, Crown, Building2, Briefcase, Zap, MoreHorizontal } from 'lucide-react';
 import { useMpfFunds } from '@/hooks/useMpfFunds';
+import { useState } from 'react';
 
 const navItems = [
   { to: '/', label: '排名', icon: Crown },
-  { to: '/search', label: '基金搜尋', icon: Search },
-  { to: '/compare', label: '基金比較', icon: GitCompare },
-  { to: '/trustee', label: '受托人比較', icon: Building2 },
+  { to: '/search', label: '搜尋', icon: Search },
+  { to: '/compare', label: '比較', icon: GitCompare },
+  { to: '/trustee', label: '受托人', icon: Building2 },
   { to: '/portfolio', label: '模擬器', icon: Briefcase },
   { to: '/radar', label: 'RADAR', icon: Zap },
   { to: '/categories', label: '類別', icon: PieChart },
   { to: '/retirement', label: '退休', icon: Calculator },
 ];
+
+// Mobile bottom nav: show top 4 + "more" drawer for the rest
+const PRIMARY_NAV = navItems.slice(0, 4);
+const SECONDARY_NAV = navItems.slice(4);
 
 function formatDataDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—';
