@@ -52,6 +52,21 @@ export default function Rankings() {
     }
   };
 
+  const handleScrapeDetail = async () => {
+    setScraping(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('scrape-mpf-detail');
+      if (error) throw error;
+      toast({ title: '年度數據更新', description: `已更新 ${data?.updated ?? 0} 隻，剩餘 ${data?.remaining ?? '?'} 隻` });
+      refetch();
+    } catch (e: any) {
+      toast({ title: '更新中...', description: '正在抓取年度數據，請稍後再按一次' });
+      refetch();
+    } finally {
+      setScraping(false);
+    }
+  };
+
   const dataDate = hasRealData ? funds[0]?.data_date : null;
 
   const RankingTable = ({ title, icon: Icon, data, colorClass }: {
@@ -130,16 +145,28 @@ export default function Rankings() {
             )}
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleScrape}
-          disabled={scraping}
-          className="flex-shrink-0 text-[11px] h-8"
-        >
-          <RefreshCw className={`h-3 w-3 mr-1 ${scraping ? 'animate-spin' : ''}`} />
-          {scraping ? '更新中...' : '更新數據'}
-        </Button>
+        <div className="flex gap-2 flex-shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleScrapeDetail}
+            disabled={scraping}
+            className="text-[11px] h-8"
+          >
+            <RefreshCw className={`h-3 w-3 mr-1 ${scraping ? 'animate-spin' : ''}`} />
+            {scraping ? '更新中...' : '補充年度'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleScrape}
+            disabled={scraping}
+            className="text-[11px] h-8"
+          >
+            <RefreshCw className={`h-3 w-3 mr-1 ${scraping ? 'animate-spin' : ''}`} />
+            {scraping ? '更新中...' : '更新數據'}
+          </Button>
+        </div>
       </div>
 
       {/* Cascading filter */}

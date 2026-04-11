@@ -19,6 +19,11 @@ interface FundData {
   return_5y: number | null;
   return_10y: number | null;
   return_1m: number | null;
+  return_2025: number | null;
+  return_2024: number | null;
+  return_2023: number | null;
+  return_2022: number | null;
+  return_2021: number | null;
   data_date: string | null;
 }
 
@@ -80,6 +85,11 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
         return_5y: null,
         return_10y: null,
         return_1m: null,
+        return_2025: null,
+        return_2024: null,
+        return_2023: null,
+        return_2022: null,
+        return_2021: null,
         data_date: date,
       });
     }
@@ -88,43 +98,125 @@ function parseRankingHtmlFallback(html: string, category: string): FundData[] {
   return funds;
 }
 
-// Parse returns from a specific sort page (e.g. 1M, 5Y, 10Y)
-// The sortby page shows the same columns but sorted differently, 
-// but we can also try the fund_detail page for extra data
-function parseReturnsBySortby(html: string): Map<string, { return_1m?: number | null; return_5y?: number | null; return_10y?: number | null }> {
-  const results = new Map();
-  const linkRegex = /<a[^>]*href="[^"]*fund_detail\.php\?fund=([^&"]+)[^"]*"[^>]*class="MPFLink"[^>]*>([^<]+)<\/a>/g;
-  
-  let linkMatch;
-  const allLinks: Array<{ fund: string; index: number }> = [];
-  while ((linkMatch = linkRegex.exec(html)) !== null) {
-    allLinks.push({ fund: linkMatch[1], index: linkMatch.index });
-  }
+// ---------- Firecrawl-based detail page scraper ----------
+// Firecrawl renders JS so we can read the yearly performance table
 
-  for (const link of allLinks) {
-    const searchStart = link.index;
-    const searchEnd = html.indexOf('</tr>', searchStart);
-    if (searchEnd === -1) continue;
-
-    const rowHtml = html.substring(searchStart, searchEnd);
-    const spans: string[] = [];
-    const localSpanRegex = /<span class="(?:up|down)">([^<]+)<\/span>/g;
-    let spanMatch;
-    while ((spanMatch = localSpanRegex.exec(rowHtml)) !== null) {
-      spans.push(spanMatch[1]);
-    }
-    
-    if (spans.length >= 4) {
-      results.set(link.fund, {
-        return_ytd: parseReturn(spans[0]),
-        return_3m: parseReturn(spans[1]),
-        return_1y: parseReturn(spans[2]),
-        return_3y: parseReturn(spans[3]),
-      });
-    }
-  }
-  return results;
+interface DetailReturns {
+  return_5y: number | null;
+  return_10y: number | null;
+  return_1m: number | null;
+  return_2025: number | null;
+  return_2024: number | null;
+  return_2023: number | null;
+  return_2022: number | null;
+  return_2021: number | null;
 }
+
+function parseDetailMarkdown(md: string): DetailReturns {
+  const result: DetailReturns = {
+    return_5y: null, return_10y: null, return_1m: null,
+    return_2025: null, return_2024: null, return_2023: null, return_2022: null, return_2021: null,
+  };
+
+  const lines = md.split('\n');
+
+  // --- Period returns table ---
+  // Lines like: | 1個月 | +4.73% | +3.17% | -- |
+  const periodMap: Array<{ pattern: RegExp; field: keyof DetailReturns }> = [
+    { pattern: /^\|\s*1個月\s*\|/, field: 'return_1m' },
+    { pattern: /^\|\s*5年\s*\|/, field: 'return_5y' },
+    { pattern: /^\|\s*10年\s*\|/, field: 'return_10y' },
+  ];
+
+  for (const line of lines) {
+    for (const pm of periodMap) {
+      if (pm.pattern.test(line)) {
+        const cells = line.split('|').map(c => c.trim()).filter(Boolean);
+        if (cells.length >= 2) {
+          result[pm.field] = parseReturn(cells[1]);
+        }
+      }
+    }
+  }
+
+  // --- Yearly performance table ---
+  // Header: |  | 2021 | 2022 | 2023 | 2024 | 2025 |
+  // Data:   | 本積金 | +0.86% | -22.73% | +2.77% | +13.26% | +29.63% |
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!/2021/.test(line) || !/2024/.test(line)) continue;
+    // This might be the header row
+    const headerCells = line.split('|').map(c => c.trim()).filter(Boolean);
+    // Find column indices for each year
+    const yearCols: Record<string, number> = {};
+    headerCells.forEach((cell, idx) => {
+      const y = cell.match(/^(2021|2022|2023|2024|2025)$/);
+      if (y) yearCols[y[1]] = idx;
+    });
+
+    if (Object.keys(yearCols).length < 3) continue; // not the right row
+
+    // Next non-separator line should be "本積金" data row
+    for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
+      const dataLine = lines[j];
+      if (/---/.test(dataLine) && !/\d/.test(dataLine)) continue; // separator
+      if (/本積金/.test(dataLine) || /[+-]?\d+\.\d+%/.test(dataLine)) {
+        const dataCells = dataLine.split('|').map(c => c.trim()).filter(Boolean);
+        for (const [year, colIdx] of Object.entries(yearCols)) {
+          if (colIdx < dataCells.length) {
+            const fieldName = `return_${year}` as keyof DetailReturns;
+            if (fieldName in result) {
+              result[fieldName] = parseReturn(dataCells[colIdx]);
+            }
+          }
+        }
+        break;
+      }
+    }
+    break;
+  }
+
+  return result;
+}
+
+async function fetchFundDetailFirecrawl(
+  fundId: string,
+  firecrawlApiKey: string,
+): Promise<DetailReturns | null> {
+  try {
+    const url = `https://www.etnet.com.hk/www/tc/mpf/fund_detail.php?fund=${fundId}`;
+    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${firecrawlApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url,
+        formats: ['markdown'],
+        waitFor: 3000,
+        onlyMainContent: true,
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(`Firecrawl error for ${fundId}: ${response.status} ${errText.substring(0, 200)}`);
+      return null;
+    }
+
+    const data = await response.json();
+    const md = data?.data?.markdown || data?.markdown || '';
+    if (!md) return null;
+
+    return parseDetailMarkdown(md);
+  } catch (e) {
+    console.error(`Error fetching detail for ${fundId}:`, e);
+    return null;
+  }
+}
+
+// ---------- Trustee mapping ----------
 
 const PLAN_TRUSTEE_MAP: Record<string, { trustee: string; scheme: string }> = {
   ETNSI1: { trustee: '銀聯信託', scheme: '積金之選' },
@@ -211,80 +303,6 @@ const FETCH_HEADERS = {
   'Accept-Language': 'zh-TW,zh;q=0.9',
 };
 
-// Parse the fund detail page to get 5Y, 10Y, 1M, and yearly returns
-async function fetchFundDetail(fundId: string, planId: string | null, providerId: string | null): Promise<{
-  return_5y: number | null;
-  return_10y: number | null;
-  return_1m: number | null;
-  return_2025: number | null;
-  return_2024: number | null;
-  return_2023: number | null;
-  return_2022: number | null;
-  return_2021: number | null;
-} | null> {
-  try {
-    let url = `https://www.etnet.com.hk/www/tc/mpf/fund_detail.php?fund=${fundId}`;
-    if (planId) url += `&plan=${planId}`;
-    if (providerId) url += `&provider=${providerId}`;
-    
-    const response = await fetch(url, { headers: FETCH_HEADERS });
-    if (!response.ok) return null;
-    const html = await response.text();
-    
-    const result: any = {
-      return_5y: null,
-      return_10y: null,
-      return_1m: null,
-      return_2025: null,
-      return_2024: null,
-      return_2023: null,
-      return_2022: null,
-      return_2021: null,
-    };
-    
-    // Look for return values in the detail page
-    // Pattern: labels like "1個月", "5年", "10年" followed by return values
-    const periodPatterns: Array<{ label: RegExp; field: string }> = [
-      { label: /1個月/, field: 'return_1m' },
-      { label: /5年/, field: 'return_5y' },
-      { label: /10年/, field: 'return_10y' },
-      { label: /2025/, field: 'return_2025' },
-      { label: /2024/, field: 'return_2024' },
-      { label: /2023/, field: 'return_2023' },
-      { label: /2022/, field: 'return_2022' },
-      { label: /2021/, field: 'return_2021' },
-    ];
-    
-    // Try to find return data in a table format
-    // Look for spans with up/down class near period labels
-    for (const pp of periodPatterns) {
-      const labelMatch = html.match(new RegExp(pp.label.source + '[^<]*</[^>]+>\\s*(?:<[^>]+>\\s*)*<span class="(?:up|down)">([^<]+)</span>'));
-      if (labelMatch) {
-        result[pp.field] = parseReturn(labelMatch[1]);
-      }
-    }
-    
-    // Alternative: look for the performance table rows
-    // Pattern: <td>1個月</td>...<span class="up/down">value</span>
-    const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || [];
-    for (const row of rows) {
-      for (const pp of periodPatterns) {
-        if (pp.label.test(row)) {
-          const spanMatch = row.match(/<span class="(?:up|down)">([^<]+)<\/span>/);
-          if (spanMatch && result[pp.field] === null) {
-            result[pp.field] = parseReturn(spanMatch[1]);
-          }
-        }
-      }
-    }
-    
-    return result;
-  } catch (e) {
-    console.error(`Error fetching detail for ${fundId}:`, e);
-    return null;
-  }
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -293,6 +311,7 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, serviceRoleKey);
+  const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
 
   const { data: logEntry } = await supabase
     .from('mpf_scrape_logs')
@@ -303,10 +322,9 @@ Deno.serve(async (req) => {
   try {
     const allFunds = new Map<string, FundData>();
 
-    // Step 1: Scrape ALL category pages to get all unique funds
+    // Step 1: Scrape ALL category pages from etnet ranking (static HTML, fast)
     for (const subtype of SUBTYPES) {
       try {
-        // Try multiple sort orders to catch all funds (some categories have >15 funds)
         for (const sortby of ['1Y', '1M', 'YTD']) {
           const catUrl = `https://www.etnet.com.hk/www/tc/mpf/ranking.php?subtype=${subtype.id}&sortby=${sortby}`;
           const catResponse = await fetch(catUrl, { headers: FETCH_HEADERS });
@@ -331,33 +349,44 @@ Deno.serve(async (req) => {
 
     console.log(`Total unique funds from ranking pages: ${allFunds.size}`);
 
-    // Step 2: Fetch detail pages for extra return periods (1M, 5Y, 10Y, yearly)
-    // Process in batches to avoid rate limiting
-    const fundEntries = [...allFunds.entries()];
-    const batchSize = 5;
-    let detailCount = 0;
-    
-    for (let i = 0; i < fundEntries.length; i += batchSize) {
-      const batch = fundEntries.slice(i, i + batchSize);
-      const promises = batch.map(async ([fundId, fund]) => {
-        const detail = await fetchFundDetail(fundId, fund.etnet_plan_id, fund.etnet_provider_id);
-        if (detail) {
-          fund.return_1m = detail.return_1m;
-          fund.return_5y = detail.return_5y;
-          fund.return_10y = detail.return_10y;
-          (fund as any).return_2025 = detail.return_2025;
-          (fund as any).return_2024 = detail.return_2024;
-          (fund as any).return_2023 = detail.return_2023;
-          (fund as any).return_2022 = detail.return_2022;
-          (fund as any).return_2021 = detail.return_2021;
-          detailCount++;
+    // Step 2: Fetch detail pages via Firecrawl (JS-rendered) for extra return periods
+    if (firecrawlApiKey) {
+      const fundEntries = [...allFunds.entries()];
+      const batchSize = 3; // Firecrawl needs more time per request
+      let detailCount = 0;
+      let errorCount = 0;
+      
+      for (let i = 0; i < fundEntries.length; i += batchSize) {
+        const batch = fundEntries.slice(i, i + batchSize);
+        const promises = batch.map(async ([fundId, fund]) => {
+          const detail = await fetchFundDetailFirecrawl(fundId, firecrawlApiKey);
+          if (detail) {
+            fund.return_1m = detail.return_1m ?? fund.return_1m;
+            fund.return_5y = detail.return_5y ?? fund.return_5y;
+            fund.return_10y = detail.return_10y ?? fund.return_10y;
+            fund.return_2025 = detail.return_2025;
+            fund.return_2024 = detail.return_2024;
+            fund.return_2023 = detail.return_2023;
+            fund.return_2022 = detail.return_2022;
+            fund.return_2021 = detail.return_2021;
+            detailCount++;
+          } else {
+            errorCount++;
+          }
+        });
+        await Promise.all(promises);
+        // Rate limit: ~1s between batches
+        await new Promise(r => setTimeout(r, 1000));
+
+        if (i % 30 === 0 && i > 0) {
+          console.log(`Detail progress: ${i}/${fundEntries.length} (success: ${detailCount}, errors: ${errorCount})`);
         }
-      });
-      await Promise.all(promises);
-      await new Promise(r => setTimeout(r, 300));
+      }
+      
+      console.log(`Firecrawl detail: ${detailCount} success, ${errorCount} errors out of ${fundEntries.length} funds`);
+    } else {
+      console.log('FIRECRAWL_API_KEY not configured, skipping detail page scraping');
     }
-    
-    console.log(`Fetched detail data for ${detailCount} funds`);
 
     // Step 3: Upsert all funds
     const fundsArray = [...allFunds.values()];
@@ -384,11 +413,11 @@ Deno.serve(async (req) => {
               return_3y: f.return_3y,
               return_5y: f.return_5y,
               return_10y: f.return_10y,
-              return_2025: (f as any).return_2025 ?? null,
-              return_2024: (f as any).return_2024 ?? null,
-              return_2023: (f as any).return_2023 ?? null,
-              return_2022: (f as any).return_2022 ?? null,
-              return_2021: (f as any).return_2021 ?? null,
+              return_2025: f.return_2025,
+              return_2024: f.return_2024,
+              return_2023: f.return_2023,
+              return_2022: f.return_2022,
+              return_2021: f.return_2021,
               data_date: f.data_date,
               trustee_name: trustee,
               scheme_name: scheme,
