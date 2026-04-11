@@ -216,6 +216,7 @@ async function fetchFundDetail(fundId: string, planId: string | null, providerId
   return_5y: number | null;
   return_10y: number | null;
   return_1m: number | null;
+  return_2025: number | null;
   return_2024: number | null;
   return_2023: number | null;
   return_2022: number | null;
@@ -234,6 +235,7 @@ async function fetchFundDetail(fundId: string, planId: string | null, providerId
       return_5y: null,
       return_10y: null,
       return_1m: null,
+      return_2025: null,
       return_2024: null,
       return_2023: null,
       return_2022: null,
@@ -246,6 +248,7 @@ async function fetchFundDetail(fundId: string, planId: string | null, providerId
       { label: /1個月/, field: 'return_1m' },
       { label: /5年/, field: 'return_5y' },
       { label: /10年/, field: 'return_10y' },
+      { label: /2025/, field: 'return_2025' },
       { label: /2024/, field: 'return_2024' },
       { label: /2023/, field: 'return_2023' },
       { label: /2022/, field: 'return_2022' },
@@ -342,7 +345,7 @@ Deno.serve(async (req) => {
           fund.return_1m = detail.return_1m;
           fund.return_5y = detail.return_5y;
           fund.return_10y = detail.return_10y;
-          // Store yearly returns in extended fields
+          (fund as any).return_2025 = detail.return_2025;
           (fund as any).return_2024 = detail.return_2024;
           (fund as any).return_2023 = detail.return_2023;
           (fund as any).return_2022 = detail.return_2022;
@@ -381,6 +384,7 @@ Deno.serve(async (req) => {
               return_3y: f.return_3y,
               return_5y: f.return_5y,
               return_10y: f.return_10y,
+              return_2025: (f as any).return_2025 ?? null,
               return_2024: (f as any).return_2024 ?? null,
               return_2023: (f as any).return_2023 ?? null,
               return_2022: (f as any).return_2022 ?? null,
