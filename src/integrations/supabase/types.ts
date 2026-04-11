@@ -25,7 +25,9 @@ export type Database = {
           fee_ratio: number | null
           id: string
           name: string
+          name_zh: string | null
           return_10y: number | null
+          return_1m: number | null
           return_1y: number | null
           return_2021: number | null
           return_2022: number | null
@@ -51,7 +53,9 @@ export type Database = {
           fee_ratio?: number | null
           id?: string
           name: string
+          name_zh?: string | null
           return_10y?: number | null
+          return_1m?: number | null
           return_1y?: number | null
           return_2021?: number | null
           return_2022?: number | null
@@ -77,7 +81,9 @@ export type Database = {
           fee_ratio?: number | null
           id?: string
           name?: string
+          name_zh?: string | null
           return_10y?: number | null
+          return_1m?: number | null
           return_1y?: number | null
           return_2021?: number | null
           return_2022?: number | null
