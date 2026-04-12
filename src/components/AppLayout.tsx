@@ -15,7 +15,6 @@ const navItems = [
   { to: '/radar', label: 'RADAR', icon: Zap },
 ];
 
-// Mobile bottom nav: show top 4 + "more" drawer for the rest
 const PRIMARY_NAV = navItems.slice(0, 4);
 const SECONDARY_NAV = navItems.slice(4);
 
@@ -31,56 +30,36 @@ function MobileNav({ pathname }: { pathname: string }) {
 
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/98 backdrop-blur-xl safe-area-bottom">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-white/80 backdrop-blur-2xl safe-area-bottom">
         <div className="grid grid-cols-5 py-1">
           {PRIMARY_NAV.map((item) => {
             const isActive = pathname === item.to;
             return (
-              <Link
-                key={item.to}
-                to={item.to}
-                onClick={() => setShowMore(false)}
-                className={cn(
-                  'flex flex-col items-center gap-0.5 py-1.5 text-[10px] transition-colors',
-                  isActive ? 'text-primary font-medium' : 'text-muted-foreground'
-                )}
-              >
+              <Link key={item.to} to={item.to} onClick={() => setShowMore(false)}
+                className={cn('flex flex-col items-center gap-0.5 py-1.5 text-[10px] transition-colors', isActive ? 'text-primary font-medium' : 'text-muted-foreground')}>
                 <item.icon className={cn('h-5 w-5', isActive && 'text-primary')} />
                 <span>{item.label}</span>
               </Link>
             );
           })}
-          <button
-            onClick={() => setShowMore(!showMore)}
-            className={cn(
-              'flex flex-col items-center gap-0.5 py-1.5 text-[10px] transition-colors',
-              isSecondaryActive || showMore ? 'text-primary font-medium' : 'text-muted-foreground'
-            )}
-          >
+          <button onClick={() => setShowMore(!showMore)}
+            className={cn('flex flex-col items-center gap-0.5 py-1.5 text-[10px] transition-colors', isSecondaryActive || showMore ? 'text-primary font-medium' : 'text-muted-foreground')}>
             <MoreHorizontal className={cn('h-5 w-5', (isSecondaryActive || showMore) && 'text-primary')} />
             <span>更多</span>
           </button>
         </div>
       </nav>
 
-      {/* "More" drawer */}
       {showMore && (
         <>
-          <div className="md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setShowMore(false)} />
-          <div className="md:hidden fixed bottom-[60px] left-0 right-0 z-40 bg-card border-t border-border rounded-t-2xl shadow-xl animate-in slide-in-from-bottom-4 duration-200">
+          <div className="md:hidden fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={() => setShowMore(false)} />
+          <div className="md:hidden fixed bottom-[60px] left-0 right-0 z-40 bg-white/90 backdrop-blur-2xl border-t border-border/60 rounded-t-3xl shadow-[0_-8px_30px_-12px_hsl(230_60%_70%/0.2)] animate-in slide-in-from-bottom-4 duration-200">
             <div className="p-4 grid grid-cols-4 gap-3">
               {SECONDARY_NAV.map((item) => {
                 const isActive = pathname === item.to;
                 return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => setShowMore(false)}
-                    className={cn(
-                      'flex flex-col items-center gap-1.5 py-3 rounded-xl transition-colors',
-                      isActive ? 'text-primary bg-primary/8 font-medium' : 'text-muted-foreground hover:bg-muted'
-                    )}
-                  >
+                  <Link key={item.to} to={item.to} onClick={() => setShowMore(false)}
+                    className={cn('flex flex-col items-center gap-1.5 py-3 rounded-2xl transition-colors', isActive ? 'text-primary bg-primary/8 font-medium' : 'text-muted-foreground hover:bg-muted/50')}>
                     <item.icon className={cn('h-6 w-6', isActive && 'text-primary')} />
                     <span className="text-[11px]">{item.label}</span>
                   </Link>
@@ -107,7 +86,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center justify-between">
             <Link to="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-primary-foreground/15 border border-primary-foreground/20 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-2xl bg-primary-foreground/15 border border-primary-foreground/20 flex items-center justify-center">
                 <BarChart3 className="h-4 w-4 text-primary-foreground" />
               </div>
               <div>
@@ -119,16 +98,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               {navItems.map((item) => {
                 const isActive = location.pathname === item.to;
                 return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className={cn(
-                      'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
-                      isActive
-                        ? 'bg-primary-foreground/15 text-primary-foreground'
-                        : 'text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/8'
-                    )}
-                  >
+                  <Link key={item.to} to={item.to}
+                    className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all',
+                      isActive ? 'bg-primary-foreground/15 text-primary-foreground' : 'text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/8')}>
                     <item.icon className="h-3.5 w-3.5" />
                     {item.label}
                   </Link>
@@ -137,7 +109,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </div>
-        {/* Data ticker bar */}
         <div className="border-t border-primary-foreground/10">
           <div className="container mx-auto px-4 py-1 flex items-center justify-between text-[10px] text-primary-foreground/50">
             <span>數據來源：etnet · MPFA</span>
@@ -146,16 +117,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Mobile nav - scrollable */}
       <MobileNav pathname={location.pathname} />
 
-      {/* Content */}
       <main className="container mx-auto px-4 py-5 pb-20 md:pb-6 max-w-7xl">
         {children}
       </main>
 
-      {/* Footer */}
-      <footer className="hidden md:block border-t border-border py-3 text-center text-[11px] text-muted-foreground">
+      <footer className="hidden md:block border-t border-border/60 py-3 text-center text-[11px] text-muted-foreground">
         數據來源：etnet · MPFA · 數據截至 {formattedDate} · 僅供參考，不構成投資建議
       </footer>
     </div>

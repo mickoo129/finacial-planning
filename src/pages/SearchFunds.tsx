@@ -61,25 +61,25 @@ export default function SearchFunds() {
       </div>
 
       {/* Filters */}
-      <div className="bg-card rounded-lg border border-border p-4 space-y-3">
+      <div className="glass-card rounded-3xl p-4 space-y-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="搜尋基金名稱..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="pl-10 h-9 text-sm"
+            className="pl-10 h-9 text-sm rounded-2xl"
           />
         </div>
         <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} />
-        <div className="flex flex-wrap gap-1 bg-muted/50 rounded-lg p-1">
+        <div className="flex flex-wrap gap-1 bg-muted/30 rounded-2xl p-1">
           {RETURN_FIELDS.map(key => (
             <button
               key={key}
               onClick={() => toggleSort(key)}
-              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
+              className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-all ${
                 sortBy === key
-                  ? 'bg-primary text-primary-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -90,43 +90,42 @@ export default function SearchFunds() {
       </div>
 
       {/* Results table */}
-      <div className="bg-card rounded-lg border border-border overflow-hidden shadow-sm">
+      <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full banking-table">
+          <table className="w-full banking-table min-w-[700px]">
             <thead>
-              <tr className="border-b border-border bg-muted/30">
-                <th className="text-left px-3 py-2 text-muted-foreground w-8">#</th>
-                <th className="text-left px-3 py-2 text-muted-foreground">基金名稱</th>
-                <th className="text-left px-3 py-2 text-muted-foreground hidden md:table-cell">受託人</th>
-                <th className="text-left px-3 py-2 text-muted-foreground hidden lg:table-cell">類別</th>
-                <th className="text-right px-3 py-2 text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_ytd')}>
+              <tr className="border-b border-border/60 bg-muted/30">
+                <th className="text-left px-5 py-2 text-muted-foreground w-8">#</th>
+                <th className="text-left px-5 py-2 text-muted-foreground">基金名稱</th>
+                <th className="text-left px-5 py-2 text-muted-foreground">受託人</th>
+                <th className="text-left px-5 py-2 text-muted-foreground">類別</th>
+                <th className="text-right px-5 py-2 text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_ytd')}>
                   <span className="inline-flex items-center gap-0.5">YTD <ArrowUpDown className="h-2.5 w-2.5" /></span>
                 </th>
-                <th className="text-right px-3 py-2 text-muted-foreground hidden sm:table-cell cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_1y')}>
+                <th className="text-right px-5 py-2 text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_1y')}>
                   <span className="inline-flex items-center gap-0.5">1年 <ArrowUpDown className="h-2.5 w-2.5" /></span>
                 </th>
-                <th className="text-right px-3 py-2 text-muted-foreground hidden lg:table-cell cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_3y')}>
+                <th className="text-right px-5 py-2 text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_3y')}>
                   <span className="inline-flex items-center gap-0.5">3年 <ArrowUpDown className="h-2.5 w-2.5" /></span>
                 </th>
-                <th className="text-right px-3 py-2 text-muted-foreground hidden xl:table-cell">FER</th>
+                <th className="text-right px-5 py-2 text-muted-foreground">FER</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/50">
+            <tbody className="divide-y divide-border/40">
               {filteredFunds.map((fund, i) => (
                 <tr key={fund.id || fund.etnet_fund_id}>
-                  <td className="px-3 py-2 text-[10px] text-muted-foreground">{i + 1}</td>
-                  <td className="px-3 py-2">
-                    <div className="text-sm font-medium text-foreground leading-tight">{fund.name_zh || fund.name}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5 md:hidden">{fund.trustee_name}</div>
+                  <td className="px-5 py-2.5 text-[10px] text-muted-foreground">{i + 1}</td>
+                  <td className="px-5 py-2.5">
+                    <div className="text-sm font-medium text-foreground leading-tight max-w-[220px] truncate">{fund.name_zh || fund.name}</div>
                   </td>
-                  <td className="px-3 py-2 hidden md:table-cell text-xs text-muted-foreground">{fund.trustee_name}</td>
-                  <td className="px-3 py-2 hidden lg:table-cell">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.sub_category || fund.category || '—'}</span>
+                  <td className="px-5 py-2.5 text-xs text-muted-foreground">{fund.trustee_name}</td>
+                  <td className="px-5 py-2.5">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">{fund.sub_category || fund.category || '—'}</span>
                   </td>
-                  <td className="px-3 py-2 text-right"><ReturnValue value={fund.return_ytd} /></td>
-                  <td className="px-3 py-2 text-right hidden sm:table-cell"><ReturnValue value={fund.return_1y} /></td>
-                  <td className="px-3 py-2 text-right hidden lg:table-cell"><ReturnValue value={fund.return_3y} /></td>
-                  <td className="px-3 py-2 text-right hidden xl:table-cell text-xs text-muted-foreground">
+                  <td className="px-5 py-2.5 text-right"><ReturnValue value={fund.return_ytd} /></td>
+                  <td className="px-5 py-2.5 text-right"><ReturnValue value={fund.return_1y} /></td>
+                  <td className="px-5 py-2.5 text-right"><ReturnValue value={fund.return_3y} /></td>
+                  <td className="px-5 py-2.5 text-right text-xs text-muted-foreground">
                     {fund.fee_ratio != null ? `${fund.fee_ratio.toFixed(2)}%` : '—'}
                   </td>
                 </tr>

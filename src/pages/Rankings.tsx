@@ -21,16 +21,12 @@ export default function Rankings() {
   }, []);
 
   const hasRealData = funds && funds.length > 0;
-
   const displayFunds = cascadeFiltered.length > 0 || !hasRealData ? cascadeFiltered : (funds || []);
 
   const { topFunds, bottomFunds } = useMemo(() => {
     const sorted = [...displayFunds]
       .filter(f => f[sortBy] != null)
       .sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0));
-    
-    // Always show up to 10 for each list
-    // When pool is small, allow overlap between top and bottom
     const topCount = Math.min(sorted.length, 10);
     const bottomCount = Math.min(sorted.length, 10);
     return {
@@ -75,60 +71,54 @@ export default function Rankings() {
     data: any[];
     colorClass: string;
   }) => (
-    <div className="bg-card rounded-lg border border-border overflow-hidden shadow-sm">
-      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-        <div className={`w-1 h-5 rounded-full ${colorClass}`} />
+    <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
+        <div className={`w-1.5 h-5 rounded-full ${colorClass}`} />
         <Icon className={`h-4 w-4 ${colorClass === 'bg-positive' ? 'text-positive' : 'text-negative'}`} />
         <h2 className="font-semibold text-foreground text-sm">{title}（{RETURN_LABELS[sortBy]}）</h2>
         <span className="text-[10px] text-muted-foreground ml-auto">{data.length} 隻基金</span>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full banking-table">
+        <table className="w-full banking-table min-w-[600px]">
           <thead>
-            <tr className="border-b border-border bg-muted/30">
-              <th className="text-left px-4 py-2 text-muted-foreground w-8">#</th>
-              <th className="text-left px-4 py-2 text-muted-foreground">基金</th>
-              <th className="text-left px-4 py-2 text-muted-foreground hidden sm:table-cell">受託人</th>
-              <th className="text-left px-4 py-2 text-muted-foreground hidden md:table-cell">類別</th>
-              <th className="text-right px-4 py-2 text-muted-foreground hidden lg:table-cell">FER</th>
-              <th className="text-right px-4 py-2 text-muted-foreground hidden lg:table-cell">規模(百萬)</th>
-              <th className="text-right px-4 py-2 text-muted-foreground">回報率</th>
+            <tr className="border-b border-border/60 bg-muted/30">
+              <th className="text-left px-5 py-2 text-muted-foreground w-8">#</th>
+              <th className="text-left px-5 py-2 text-muted-foreground">基金</th>
+              <th className="text-left px-5 py-2 text-muted-foreground">受託人</th>
+              <th className="text-left px-5 py-2 text-muted-foreground">類別</th>
+              <th className="text-right px-5 py-2 text-muted-foreground">FER</th>
+              <th className="text-right px-5 py-2 text-muted-foreground">規模(百萬)</th>
+              <th className="text-right px-5 py-2 text-muted-foreground">回報率</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border/50">
+          <tbody className="divide-y divide-border/40">
             {data.map((fund, i) => {
               const trustee = fund.trustee_name || getTrusteeFromPlanId(fund.etnet_plan_id);
               return (
                 <tr key={fund.etnet_fund_id} className="group">
-                  <td className="px-4 py-2.5">
-                    <span className={`inline-flex items-center justify-center w-6 h-6 rounded text-xs font-bold ${
+                  <td className="px-5 py-2.5">
+                    <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                       i < 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     }`}>
                       {i + 1}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5">
-                    <div className="font-medium text-foreground text-sm leading-tight">{fund.name_zh || fund.name}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5 sm:hidden">
-                      {trustee} · {fund.sub_category || fund.category || '—'}
-                    </div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5 lg:hidden">
-                      {fund.fer != null ? `FER ${fund.fer}%` : ''}{fund.fer != null && fund.fund_size != null ? ' · ' : ''}{fund.fund_size != null ? `${fund.fund_size.toLocaleString()}百萬` : ''}
-                    </div>
+                  <td className="px-5 py-2.5">
+                    <div className="font-medium text-foreground text-sm leading-tight max-w-[220px] truncate">{fund.name_zh || fund.name}</div>
                   </td>
-                  <td className="px-4 py-2.5 hidden sm:table-cell">
+                  <td className="px-5 py-2.5">
                     <span className="text-xs text-muted-foreground">{trustee}</span>
                   </td>
-                  <td className="px-4 py-2.5 hidden md:table-cell">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.sub_category || fund.category || '—'}</span>
+                  <td className="px-5 py-2.5">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">{fund.sub_category || fund.category || '—'}</span>
                   </td>
-                  <td className="px-4 py-2.5 text-right hidden lg:table-cell">
+                  <td className="px-5 py-2.5 text-right">
                     <span className="text-xs text-muted-foreground">{fund.fer != null ? `${fund.fer}%` : '—'}</span>
                   </td>
-                  <td className="px-4 py-2.5 text-right hidden lg:table-cell">
+                  <td className="px-5 py-2.5 text-right">
                     <span className="text-xs text-muted-foreground">{fund.fund_size != null ? fund.fund_size.toLocaleString() : '—'}</span>
                   </td>
-                  <td className="px-4 py-2.5 text-right">
+                  <td className="px-5 py-2.5 text-right">
                     <ReturnValue value={fund[sortBy] ?? 0} />
                   </td>
                 </tr>
@@ -162,7 +152,7 @@ export default function Rankings() {
             size="sm"
             onClick={handleScrapeDetail}
             disabled={scraping}
-            className="text-[11px] h-8"
+            className="text-[11px] h-8 rounded-2xl"
           >
             <RefreshCw className={`h-3 w-3 mr-1 ${scraping ? 'animate-spin' : ''}`} />
             {scraping ? '更新中...' : 'MPFA 數據'}
@@ -172,7 +162,7 @@ export default function Rankings() {
             size="sm"
             onClick={handleScrape}
             disabled={scraping}
-            className="text-[11px] h-8"
+            className="text-[11px] h-8 rounded-2xl"
           >
             <RefreshCw className={`h-3 w-3 mr-1 ${scraping ? 'animate-spin' : ''}`} />
             {scraping ? '更新中...' : '更新數據'}
@@ -182,21 +172,21 @@ export default function Rankings() {
 
       {/* Cascading filter */}
       {hasRealData && (
-        <div className="bg-card rounded-lg border border-border p-4">
+        <div className="glass-card rounded-3xl p-4">
           <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} />
         </div>
       )}
 
       {/* Period selector */}
-      <div className="flex flex-wrap gap-1 bg-card rounded-lg border border-border p-1.5">
+      <div className="flex flex-wrap gap-1 bg-white/70 backdrop-blur-xl rounded-2xl border border-border p-1.5">
         {RETURN_FIELDS.map(key => (
           <button
             key={key}
             onClick={() => setSortBy(key)}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
               sortBy === key
                 ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
             }`}
           >
             {RETURN_LABELS[key]}
@@ -205,30 +195,20 @@ export default function Rankings() {
       </div>
 
       {isLoading ? (
-        <div className="bg-card rounded-lg border border-border p-12 text-center">
+        <div className="glass-card rounded-3xl p-12 text-center">
           <RefreshCw className="h-6 w-6 text-muted-foreground/30 mx-auto mb-3 animate-spin" />
           <p className="text-muted-foreground text-xs">載入中...</p>
         </div>
       ) : !hasRealData ? (
-        <div className="bg-card rounded-lg border border-border p-12 text-center">
+        <div className="glass-card rounded-3xl p-12 text-center">
           <Database className="h-8 w-8 text-muted-foreground/20 mx-auto mb-3" />
           <p className="text-muted-foreground text-sm mb-2">暫無基金數據</p>
           <p className="text-muted-foreground text-xs">點擊上方「更新數據」按鈕從 etnet 抓取最新排名</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-          <RankingTable
-            title="表現最佳 Top 10"
-            icon={TrendingUp}
-            data={topFunds}
-            colorClass="bg-positive"
-          />
-          <RankingTable
-            title="表現最差 Bottom 10"
-            icon={TrendingDown}
-            data={bottomFunds}
-            colorClass="bg-negative"
-          />
+          <RankingTable title="表現最佳 Top 10" icon={TrendingUp} data={topFunds} colorClass="bg-positive" />
+          <RankingTable title="表現最差 Bottom 10" icon={TrendingDown} data={bottomFunds} colorClass="bg-negative" />
         </div>
       )}
     </div>
