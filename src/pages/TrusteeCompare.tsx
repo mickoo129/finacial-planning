@@ -238,13 +238,13 @@ function TrusteeCard({ group, scheme, setScheme, fundList, period }: {
         )}
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full banking-table min-w-[420px]">
+      <div className="overflow-x-auto -mx-0.5">
+        <table className="w-full banking-table min-w-[460px]">
           <thead>
             <tr className="border-y border-border/60 bg-muted/30">
-              <th className="text-left px-5 py-2 text-muted-foreground">基金</th>
-              <th className="text-left px-5 py-2 text-muted-foreground">類別</th>
-              <th className="text-right px-5 py-2 text-muted-foreground">回報率</th>
+              <th className="text-left px-3 py-2 text-muted-foreground">基金</th>
+              <th className="text-left px-3 py-2 text-muted-foreground">類別</th>
+              <th className="text-right px-3 py-2 text-muted-foreground">回報率</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/40">
