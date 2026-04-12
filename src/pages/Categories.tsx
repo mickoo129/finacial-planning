@@ -100,18 +100,26 @@ export default function Categories() {
             <span className="text-[10px] text-muted-foreground">{RETURN_LABELS[sortBy]}</span>
           </div>
           <div className="space-y-2">
-            {chartData.map(cat => (
-              <div key={cat.name} className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground w-24 text-right shrink-0">{cat.shortName}</span>
-                <div className="flex-1 h-6 bg-muted/30 rounded overflow-hidden relative">
-                  <div
-                    className={`h-full rounded ${cat.avgReturn >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`}
-                    style={{ width: `${Math.min(Math.abs(cat.avgReturn) / Math.max(...chartData.map(c => Math.abs(c.avgReturn))) * 100, 100)}%` }}
-                  />
+            {chartData.map((cat, i) => {
+              const colors = [
+                'bg-blue-500', 'bg-amber-500', 'bg-violet-500', 
+                'bg-emerald-500', 'bg-rose-500', 'bg-cyan-500', 
+                'bg-orange-500', 'bg-pink-500'
+              ];
+              const barColor = colors[i % colors.length];
+              return (
+                <div key={cat.name} className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground w-24 text-right shrink-0">{cat.shortName}</span>
+                  <div className="flex-1 h-6 bg-muted/30 rounded overflow-hidden relative">
+                    <div
+                      className={`h-full rounded ${barColor}`}
+                      style={{ width: `${Math.min(Math.abs(cat.avgReturn) / Math.max(...chartData.map(c => Math.abs(c.avgReturn))) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <ReturnValue value={cat.avgReturn} className="w-16 text-right" />
                 </div>
-                <ReturnValue value={cat.avgReturn} className="w-16 text-right" />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
