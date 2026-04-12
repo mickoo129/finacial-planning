@@ -152,7 +152,7 @@ export default function TrusteeCompare() {
       </div>
 
       {/* All trustees overview */}
-      <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
+      <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)]">
         <div className="px-5 pt-5 pb-3">
           <h2 className="text-sm font-semibold text-foreground">全部受託人排名（{RETURN_LABELS[period]} 平均回報）</h2>
         </div>
@@ -193,7 +193,7 @@ function TrusteeCard({ group, scheme, setScheme, fundList, period }: {
   period: ReturnField;
 }) {
   return (
-    <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
+    <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)]">
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -239,24 +239,25 @@ function TrusteeCard({ group, scheme, setScheme, fundList, period }: {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full banking-table min-w-[420px]">
+        <table className="w-full banking-table">
           <thead>
             <tr className="border-y border-border/60 bg-muted/30">
-              <th className="text-left px-5 py-2 text-muted-foreground">基金</th>
-              <th className="text-left px-5 py-2 text-muted-foreground">類別</th>
-              <th className="text-right px-5 py-2 text-muted-foreground">回報率</th>
+              <th className="text-left px-3 py-2 text-muted-foreground">基金</th>
+              <th className="text-left px-3 py-2 text-muted-foreground hidden sm:table-cell">類別</th>
+              <th className="text-right px-3 py-2 text-muted-foreground">回報率</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/40">
             {fundList.map(fund => (
               <tr key={fund.etnet_fund_id}>
-                <td className="px-5 py-2.5">
+                <td className="px-3 py-2.5">
                   <div className="text-sm text-foreground leading-tight max-w-[200px] truncate">{fund.name_zh || fund.name}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5 sm:hidden">{fund.sub_category || fund.category}</div>
                 </td>
-                <td className="px-5 py-2.5">
+                <td className="px-3 py-2.5 hidden sm:table-cell">
                   <CategoryBadge category={fund.sub_category || fund.category} />
                 </td>
-                <td className="px-5 py-2.5 text-right">
+                <td className="px-3 py-2.5 text-right">
                   <ReturnValue value={fund[period]} />
                 </td>
               </tr>
