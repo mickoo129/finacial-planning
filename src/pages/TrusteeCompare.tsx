@@ -238,12 +238,12 @@ function TrusteeCard({ group, scheme, setScheme, fundList, period }: {
         )}
       </div>
 
-      <div className="overflow-x-auto -mx-0.5">
-        <table className="w-full banking-table min-w-[460px]">
+      <div className="overflow-x-auto">
+        <table className="w-full banking-table">
           <thead>
             <tr className="border-y border-border/60 bg-muted/30">
               <th className="text-left px-3 py-2 text-muted-foreground">基金</th>
-              <th className="text-left px-3 py-2 text-muted-foreground">類別</th>
+              <th className="text-left px-3 py-2 text-muted-foreground hidden sm:table-cell">類別</th>
               <th className="text-right px-3 py-2 text-muted-foreground">回報率</th>
             </tr>
           </thead>
@@ -251,9 +251,10 @@ function TrusteeCard({ group, scheme, setScheme, fundList, period }: {
             {fundList.map(fund => (
               <tr key={fund.etnet_fund_id}>
                 <td className="px-3 py-2.5">
-                  <div className="text-sm text-foreground leading-tight max-w-[180px] truncate">{fund.name_zh || fund.name}</div>
+                  <div className="text-sm text-foreground leading-tight max-w-[200px] truncate">{fund.name_zh || fund.name}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5 sm:hidden">{fund.sub_category || fund.category}</div>
                 </td>
-                <td className="px-3 py-2.5">
+                <td className="px-3 py-2.5 hidden sm:table-cell">
                   <CategoryBadge category={fund.sub_category || fund.category} />
                 </td>
                 <td className="px-3 py-2.5 text-right">
