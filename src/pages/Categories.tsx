@@ -33,28 +33,6 @@ export default function Categories() {
 
     return [...mainGroups.entries()]
       .map(([mainName, mainFunds]) => {
-        const subGroups = new Map<string, MpfFund[]>();
-        for (const fund of mainFunds) {
-          const sub = fund.sub_category || fund.category || mainName;
-          if (!subGroups.has(sub)) subGroups.set(sub, []);
-          subGroups.get(sub)!.push(fund);
-        }
-
-        const subCategories = [...subGroups.entries()]
-          .map(([subName, subFunds]) => {
-            const withReturn = subFunds.filter(f => f[sortBy] != null);
-            const avg = withReturn.length > 0
-              ? withReturn.reduce((sum, f) => sum + (f[sortBy] ?? 0), 0) / withReturn.length
-              : 0;
-            return {
-              name: subName,
-              avgReturn: Math.round(avg * 100) / 100,
-              count: subFunds.length,
-              funds: [...subFunds].sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0)),
-            };
-          })
-          .sort((a, b) => b.avgReturn - a.avgReturn);
-
         const withReturn = mainFunds.filter(f => f[sortBy] != null);
         const avg = withReturn.length > 0
           ? withReturn.reduce((sum, f) => sum + (f[sortBy] ?? 0), 0) / withReturn.length
@@ -65,7 +43,7 @@ export default function Categories() {
           shortName: mainName.replace('基金', ''),
           avgReturn: Math.round(avg * 100) / 100,
           count: mainFunds.length,
-          subCategories,
+          funds: [...mainFunds].sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0)),
         };
       })
       .sort((a, b) => b.avgReturn - a.avgReturn);
