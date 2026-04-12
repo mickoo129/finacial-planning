@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
       .is('fer', null)
       .not('etnet_fund_id', 'like', 'MPFA_%')
       .not('etnet_fund_id', 'like', 'MANUAL_%')
-      .limit(15);
+      .limit(5);
     if (error) {
       return new Response(JSON.stringify({ success: false, error: error.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
       .or('fer.is.null,return_2025.is.null')
       .not('etnet_fund_id', 'like', 'MPFA_%')
       .not('etnet_fund_id', 'like', 'MANUAL_%')
-      .limit(15);
+      .limit(5);
     if (error) {
       return new Response(JSON.stringify({ success: false, error: error.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
       .is('return_2025', null)
       .not('etnet_fund_id', 'like', 'MPFA_%')
       .not('etnet_fund_id', 'like', 'MANUAL_%')
-      .limit(15);
+      .limit(5);
     if (error) {
       return new Response(JSON.stringify({ success: false, error: error.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
