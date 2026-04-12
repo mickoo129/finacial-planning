@@ -111,6 +111,19 @@ export default function TrusteeCompare() {
             </SelectContent>
           </Select>
         </div>
+        {scheme === 'all' && group.schemes.length > 1 && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {group.schemes.map(s => (
+              <button
+                key={s.name}
+                onClick={() => setScheme(s.name)}
+                className="text-[10px] px-2 py-0.5 rounded-full border border-border bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+              >
+                {s.name} <span className="font-semibold">{s.count}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </CardHeader>
       <CardContent className="p-0">
         <table className="w-full banking-table">
