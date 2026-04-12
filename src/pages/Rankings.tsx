@@ -86,8 +86,6 @@ export default function Rankings() {
               <th className="text-left px-5 py-2 text-muted-foreground">基金</th>
               <th className="text-left px-5 py-2 text-muted-foreground">受託人</th>
               <th className="text-left px-5 py-2 text-muted-foreground">類別</th>
-              <th className="text-right px-5 py-2 text-muted-foreground">FER</th>
-              <th className="text-right px-5 py-2 text-muted-foreground">規模(百萬)</th>
               <th className="text-right px-5 py-2 text-muted-foreground">回報率</th>
             </tr>
           </thead>
@@ -110,13 +108,7 @@ export default function Rankings() {
                     <span className="text-xs text-muted-foreground">{trustee}</span>
                   </td>
                   <td className="px-5 py-2.5">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">{fund.sub_category || fund.category || '—'}</span>
-                  </td>
-                  <td className="px-5 py-2.5 text-right">
-                    <span className="text-xs text-muted-foreground">{fund.fer != null ? `${fund.fer}%` : '—'}</span>
-                  </td>
-                  <td className="px-5 py-2.5 text-right">
-                    <span className="text-xs text-muted-foreground">{fund.fund_size != null ? fund.fund_size.toLocaleString() : '—'}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">{fund.sub_category || fund.category || '未分類'}</span>
                   </td>
                   <td className="px-5 py-2.5 text-right">
                     <ReturnValue value={fund[sortBy] ?? 0} />

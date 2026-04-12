@@ -108,7 +108,7 @@ export default function SearchFunds() {
                 <th className="text-right px-5 py-2 text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_3y')}>
                   <span className="inline-flex items-center gap-0.5">3年 <ArrowUpDown className="h-2.5 w-2.5" /></span>
                 </th>
-                <th className="text-right px-5 py-2 text-muted-foreground">FER</th>
+                
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
@@ -120,14 +120,11 @@ export default function SearchFunds() {
                   </td>
                   <td className="px-5 py-2.5 text-xs text-muted-foreground">{fund.trustee_name}</td>
                   <td className="px-5 py-2.5">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">{fund.sub_category || fund.category || '—'}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">{fund.sub_category || fund.category || '未分類'}</span>
                   </td>
                   <td className="px-5 py-2.5 text-right"><ReturnValue value={fund.return_ytd} /></td>
                   <td className="px-5 py-2.5 text-right"><ReturnValue value={fund.return_1y} /></td>
                   <td className="px-5 py-2.5 text-right"><ReturnValue value={fund.return_3y} /></td>
-                  <td className="px-5 py-2.5 text-right text-xs text-muted-foreground">
-                    {fund.fee_ratio != null ? `${fund.fee_ratio.toFixed(2)}%` : '—'}
-                  </td>
                 </tr>
               ))}
             </tbody>

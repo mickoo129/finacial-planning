@@ -117,7 +117,6 @@ export default function Categories() {
                     <thead>
                       <tr className="bg-muted/30 border-b border-border/60">
                         <th className="text-left px-5 py-1.5 font-medium text-muted-foreground text-[10px]">基金</th>
-                        <th className="text-right px-5 py-1.5 font-medium text-muted-foreground text-[10px]">FER</th>
                         <th className="text-right px-5 py-1.5 font-medium text-muted-foreground text-[10px]">回報率</th>
                       </tr>
                     </thead>
@@ -130,7 +129,7 @@ export default function Categories() {
                             </Link>
                             <div className="text-[10px] text-muted-foreground mt-0.5">{fund.trustee_name} · {fund.scheme_name}</div>
                           </td>
-                          <td className="px-5 py-2.5 text-right text-[10px] text-muted-foreground">{fund.fee_ratio != null ? `${fund.fee_ratio.toFixed(2)}%` : '-'}</td>
+                          
                           <td className="px-5 py-2.5 text-right"><ReturnValue value={fund[sortBy]} /></td>
                         </tr>
                       ))}
