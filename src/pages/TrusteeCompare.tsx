@@ -193,7 +193,7 @@ function TrusteeCard({ group, scheme, setScheme, fundList, period }: {
   period: ReturnField;
 }) {
   return (
-    <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
+    <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)]">
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
