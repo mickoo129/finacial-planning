@@ -35,12 +35,12 @@ export default function FundDetail() {
         <ArrowLeft className="h-4 w-4" /> 返回排名
       </Link>
 
-      <div className="bg-card rounded-xl border border-border p-5">
+      <div className="glass-card rounded-3xl p-5">
         <h1 className="text-xl font-bold text-foreground">{fund.name}</h1>
         {fund.nameEn && <p className="text-sm text-muted-foreground mt-0.5">{fund.nameEn}</p>}
         <div className="flex items-center gap-2 mt-2">
-          <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">{fund.trustee}</span>
-          <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">{fund.subCategory || fund.category}</span>
+          <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">{fund.trustee}</span>
+          <span className="text-xs px-2.5 py-0.5 rounded-full bg-muted/60 text-muted-foreground">{fund.subCategory || fund.category}</span>
         </div>
       </div>
 
@@ -52,10 +52,10 @@ export default function FundDetail() {
           { label: '最新價格', value: `$${fund.priceHistory[fund.priceHistory.length - 1].price.toFixed(3)}` },
           { label: '年至今', value: null, returnVal: fund.returns.ytd },
         ].map((item, i) => (
-          <div key={i} className="bg-card rounded-xl border border-border p-4">
+          <div key={i} className="glass-card rounded-3xl p-4">
             <div className="text-xs text-muted-foreground">{item.label}</div>
             {item.returnVal !== undefined ? (
-              <ReturnValue value={item.returnVal} className="text-lg" />
+              <ReturnValue value={item.returnVal} className="text-lg mt-1" />
             ) : (
               <div className="text-lg font-semibold text-foreground mt-0.5">{item.value}</div>
             )}
@@ -64,7 +64,7 @@ export default function FundDetail() {
       </div>
 
       {/* Chart */}
-      <div className="bg-card rounded-xl border border-border p-5">
+      <div className="glass-card rounded-3xl p-5">
         <h3 className="font-semibold text-foreground mb-3">價格走勢</h3>
         <TimePeriodSelector selected={chartPeriod} onChange={setChartPeriod} />
         <div className="h-[300px] sm:h-[400px] mt-4">
@@ -72,51 +72,46 @@ export default function FundDetail() {
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={isPositive ? 'hsl(142, 71%, 45%)' : 'hsl(0, 84%, 60%)'} stopOpacity={0.2} />
-                  <stop offset="95%" stopColor={isPositive ? 'hsl(142, 71%, 45%)' : 'hsl(0, 84%, 60%)'} stopOpacity={0} />
+                  <stop offset="5%" stopColor={isPositive ? 'hsl(155, 75%, 42%)' : 'hsl(345, 70%, 55%)'} stopOpacity={0.2} />
+                  <stop offset="95%" stopColor={isPositive ? 'hsl(155, 75%, 42%)' : 'hsl(345, 70%, 55%)'} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 32%, 91%)" />
-              <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} stroke="hsl(215, 16%, 47%)" fontSize={11} tickLine={false} />
-              <YAxis stroke="hsl(215, 16%, 47%)" fontSize={11} tickLine={false} domain={['auto', 'auto']} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 93%)" />
+              <XAxis dataKey="date" tickFormatter={(d) => d.slice(5)} stroke="hsl(220, 10%, 50%)" fontSize={11} tickLine={false} />
+              <YAxis stroke="hsl(220, 10%, 50%)" fontSize={11} tickLine={false} domain={['auto', 'auto']} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(0, 0%, 100%)',
-                  border: '1px solid hsl(214, 32%, 91%)',
-                  borderRadius: '8px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid hsl(220, 14%, 93%)',
+                  borderRadius: '16px',
                   fontSize: '12px',
                 }}
                 formatter={(value: number) => [`$${value.toFixed(3)}`, '價格']}
               />
-              <Area
-                type="monotone"
-                dataKey="price"
-                stroke={isPositive ? 'hsl(142, 71%, 45%)' : 'hsl(0, 84%, 60%)'}
-                fill="url(#colorPrice)"
-                strokeWidth={2}
-              />
+              <Area type="monotone" dataKey="price" stroke={isPositive ? 'hsl(155, 75%, 42%)' : 'hsl(345, 70%, 55%)'} fill="url(#colorPrice)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       {/* All period returns */}
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <div className="px-5 py-4 border-b border-border">
+      <div className="glass-card rounded-3xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-border/60">
           <h3 className="font-semibold text-foreground">各時段回報率</h3>
         </div>
-        <table className="w-full text-sm">
-          <tbody className="divide-y divide-border">
-            {(Object.entries(TIME_PERIOD_LABELS) as [TimePeriod, string][]).map(([key, label]) => (
-              <tr key={key} className="hover:bg-muted/30">
-                <td className="px-5 py-3 text-muted-foreground">{label}</td>
-                <td className="px-5 py-3 text-right">
-                  <ReturnValue value={fund.returns[key]} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm banking-table">
+            <tbody className="divide-y divide-border/40">
+              {(Object.entries(TIME_PERIOD_LABELS) as [TimePeriod, string][]).map(([key, label]) => (
+                <tr key={key}>
+                  <td className="px-5 py-3 text-muted-foreground">{label}</td>
+                  <td className="px-5 py-3 text-right"><ReturnValue value={fund.returns[key]} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

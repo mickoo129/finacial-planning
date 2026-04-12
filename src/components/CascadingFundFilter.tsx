@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { MpfFund } from '@/hooks/useMpfFunds';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Get main category from etnet sub_category or category
 function getMainCategory(fund: MpfFund): string {
   const sub = fund.sub_category || '';
   const cat = fund.category || '';
@@ -30,76 +29,26 @@ interface CascadingFundFilterProps {
   onFundSelect?: (fundId: string) => void;
 }
 
-export function CascadingFundFilter({
-  funds,
-  onFilteredFundsChange,
-  showFundSelector = false,
-  selectedFundId,
-  onFundSelect,
-}: CascadingFundFilterProps) {
+export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSelector = false, selectedFundId, onFundSelect }: CascadingFundFilterProps) {
   const [mainCategory, setMainCategory] = useState('all');
   const [subCategory, setSubCategory] = useState('all');
   const [trustee, setTrustee] = useState('all');
   const [scheme, setScheme] = useState('all');
 
-  const mainCategories = useMemo(() => {
-    return [...new Set(funds.map(f => getMainCategory(f)))].sort();
-  }, [funds]);
+  const mainCategories = useMemo(() => [...new Set(funds.map(f => getMainCategory(f)))].sort(), [funds]);
+  const filteredByMain = useMemo(() => mainCategory === 'all' ? funds : funds.filter(f => getMainCategory(f) === mainCategory), [funds, mainCategory]);
+  const subCategories = useMemo(() => [...new Set(filteredByMain.map(f => f.sub_category || f.category).filter(Boolean))].sort() as string[], [filteredByMain]);
+  const filteredBySub = useMemo(() => subCategory === 'all' ? filteredByMain : filteredByMain.filter(f => (f.sub_category || f.category) === subCategory), [filteredByMain, subCategory]);
+  const trustees = useMemo(() => [...new Set(filteredBySub.map(f => f.trustee_name).filter(Boolean))].sort() as string[], [filteredBySub]);
+  const filteredByTrustee = useMemo(() => trustee === 'all' ? filteredBySub : filteredBySub.filter(f => f.trustee_name === trustee), [filteredBySub, trustee]);
+  const schemes = useMemo(() => [...new Set(filteredByTrustee.map(f => f.scheme_name).filter(Boolean))].sort() as string[], [filteredByTrustee]);
+  const filteredByScheme = useMemo(() => scheme === 'all' ? filteredByTrustee : filteredByTrustee.filter(f => f.scheme_name === scheme), [filteredByTrustee, scheme]);
 
-  const filteredByMain = useMemo(() => {
-    if (mainCategory === 'all') return funds;
-    return funds.filter(f => getMainCategory(f) === mainCategory);
-  }, [funds, mainCategory]);
+  useEffect(() => { onFilteredFundsChange(filteredByScheme); }, [filteredByScheme, onFilteredFundsChange]);
 
-  const subCategories = useMemo(() => {
-    return [...new Set(filteredByMain.map(f => f.sub_category || f.category).filter(Boolean))].sort() as string[];
-  }, [filteredByMain]);
-
-  const filteredBySub = useMemo(() => {
-    if (subCategory === 'all') return filteredByMain;
-    return filteredByMain.filter(f => (f.sub_category || f.category) === subCategory);
-  }, [filteredByMain, subCategory]);
-
-  const trustees = useMemo(() => {
-    return [...new Set(filteredBySub.map(f => f.trustee_name).filter(Boolean))].sort() as string[];
-  }, [filteredBySub]);
-
-  const filteredByTrustee = useMemo(() => {
-    if (trustee === 'all') return filteredBySub;
-    return filteredBySub.filter(f => f.trustee_name === trustee);
-  }, [filteredBySub, trustee]);
-
-  const schemes = useMemo(() => {
-    return [...new Set(filteredByTrustee.map(f => f.scheme_name).filter(Boolean))].sort() as string[];
-  }, [filteredByTrustee]);
-
-  const filteredByScheme = useMemo(() => {
-    if (scheme === 'all') return filteredByTrustee;
-    return filteredByTrustee.filter(f => f.scheme_name === scheme);
-  }, [filteredByTrustee, scheme]);
-
-  useEffect(() => {
-    onFilteredFundsChange(filteredByScheme);
-  }, [filteredByScheme, onFilteredFundsChange]);
-
-  // Reset child filters when parent changes
-  const handleMainChange = (v: string) => {
-    setMainCategory(v);
-    setSubCategory('all');
-    setTrustee('all');
-    setScheme('all');
-  };
-
-  const handleSubChange = (v: string) => {
-    setSubCategory(v);
-    setTrustee('all');
-    setScheme('all');
-  };
-
-  const handleTrusteeChange = (v: string) => {
-    setTrustee(v);
-    setScheme('all');
-  };
+  const handleMainChange = (v: string) => { setMainCategory(v); setSubCategory('all'); setTrustee('all'); setScheme('all'); };
+  const handleSubChange = (v: string) => { setSubCategory(v); setTrustee('all'); setScheme('all'); };
+  const handleTrusteeChange = (v: string) => { setTrustee(v); setScheme('all'); };
 
   return (
     <div className="space-y-3">
@@ -107,7 +56,7 @@ export function CascadingFundFilter({
         <div>
           <label className="text-[10px] text-muted-foreground mb-1 block">基金類別</label>
           <Select value={mainCategory} onValueChange={handleMainChange}>
-            <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="全部" /></SelectTrigger>
+            <SelectTrigger className="h-8 text-xs rounded-2xl"><SelectValue placeholder="全部" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">全部類別</SelectItem>
               {mainCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -117,7 +66,7 @@ export function CascadingFundFilter({
         <div>
           <label className="text-[10px] text-muted-foreground mb-1 block">基金種類</label>
           <Select value={subCategory} onValueChange={handleSubChange}>
-            <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="全部" /></SelectTrigger>
+            <SelectTrigger className="h-8 text-xs rounded-2xl"><SelectValue placeholder="全部" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">全部種類</SelectItem>
               {subCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -127,7 +76,7 @@ export function CascadingFundFilter({
         <div>
           <label className="text-[10px] text-muted-foreground mb-1 block">受託人</label>
           <Select value={trustee} onValueChange={handleTrusteeChange}>
-            <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="全部" /></SelectTrigger>
+            <SelectTrigger className="h-8 text-xs rounded-2xl"><SelectValue placeholder="全部" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">全部受託人</SelectItem>
               {trustees.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
@@ -137,7 +86,7 @@ export function CascadingFundFilter({
         <div>
           <label className="text-[10px] text-muted-foreground mb-1 block">計劃名稱</label>
           <Select value={scheme} onValueChange={setScheme}>
-            <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="全部" /></SelectTrigger>
+            <SelectTrigger className="h-8 text-xs rounded-2xl"><SelectValue placeholder="全部" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">全部計劃</SelectItem>
               {schemes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -149,7 +98,7 @@ export function CascadingFundFilter({
         <div>
           <label className="text-[10px] text-muted-foreground mb-1 block">基金名稱</label>
           <Select value={selectedFundId || ''} onValueChange={onFundSelect}>
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger className="h-8 text-xs rounded-2xl">
               <SelectValue placeholder={`選擇基金 (${filteredByScheme.length} 隻)`} />
             </SelectTrigger>
             <SelectContent>
