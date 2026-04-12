@@ -89,10 +89,6 @@ export default function CompareFunds() {
                   <td className="px-5 py-2.5 text-muted-foreground text-xs">風險級別</td>
                   {selectedFunds.map(f => <td key={f.id} className="px-4 py-2.5 text-center text-xs">{f.risk_level || '-'}</td>)}
                 </tr>
-                <tr>
-                  <td className="px-5 py-2.5 text-muted-foreground text-xs">FER 收費比率</td>
-                  {selectedFunds.map(f => <td key={f.id} className="px-4 py-2.5 text-center text-xs">{f.fee_ratio != null ? `${f.fee_ratio.toFixed(2)}%` : '-'}</td>)}
-                </tr>
                 {RETURN_FIELDS.map(field => (
                   <tr key={field}>
                     <td className="px-5 py-2.5 text-muted-foreground text-xs">{RETURN_LABELS[field]}</td>
