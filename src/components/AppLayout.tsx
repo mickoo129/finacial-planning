@@ -119,7 +119,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       <MobileNav pathname={location.pathname} />
 
-      <main className="container mx-auto px-4 py-5 pb-20 md:pb-6 max-w-7xl">
+      <main className="container mx-auto px-3 md:px-6 py-5 pb-20 md:pb-6 max-w-[1600px]">
         {children}
       </main>
 
