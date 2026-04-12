@@ -152,7 +152,7 @@ export default function TrusteeCompare() {
       </div>
 
       {/* All trustees overview */}
-      <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
+      <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)]">
         <div className="px-5 pt-5 pb-3">
           <h2 className="text-sm font-semibold text-foreground">全部受託人排名（{RETURN_LABELS[period]} 平均回報）</h2>
         </div>
