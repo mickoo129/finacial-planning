@@ -3,9 +3,36 @@ import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds } from '@/hooks/useMpfFunds';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2 } from 'lucide-react';
+
+const CANDY_COLORS = [
+  { bg: 'hsl(var(--candy-blue))', fg: 'hsl(var(--candy-blue-fg))' },
+  { bg: 'hsl(var(--candy-green))', fg: 'hsl(var(--candy-green-fg))' },
+  { bg: 'hsl(var(--candy-purple))', fg: 'hsl(var(--candy-purple-fg))' },
+  { bg: 'hsl(var(--candy-orange))', fg: 'hsl(var(--candy-orange-fg))' },
+  { bg: 'hsl(var(--candy-pink))', fg: 'hsl(var(--candy-pink-fg))' },
+  { bg: 'hsl(var(--candy-teal))', fg: 'hsl(var(--candy-teal-fg))' },
+];
+
+function getCandyColor(str: string) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return CANDY_COLORS[Math.abs(hash) % CANDY_COLORS.length];
+}
+
+function CategoryBadge({ category }: { category: string | null | undefined }) {
+  if (!category) return null;
+  const color = getCandyColor(category);
+  return (
+    <span
+      className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap"
+      style={{ background: color.bg, color: color.fg }}
+    >
+      {category}
+    </span>
+  );
+}
 
 export default function TrusteeCompare() {
   const [period, setPeriod] = useState<ReturnField>('return_1y');
@@ -79,82 +106,6 @@ export default function TrusteeCompare() {
     );
   }
 
-  const TrusteeCard = ({ group, scheme, setScheme, fundList }: {
-    group: NonNullable<typeof group1>;
-    scheme: string;
-    setScheme: (v: string) => void;
-    fundList: typeof funds1;
-  }) => (
-    <Card className="shadow-sm">
-      <CardHeader className="pb-2 px-4 pt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm">{group.name}</CardTitle>
-            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-              {fundList.length} 隻基金
-            </span>
-          </div>
-          <div className="text-right">
-            <div className="text-[10px] text-muted-foreground">平均回報</div>
-            <ReturnValue value={group.avg} className="text-base" />
-          </div>
-        </div>
-        <div className="mt-2">
-          <Select value={scheme} onValueChange={setScheme}>
-            <SelectTrigger className="h-7 text-[11px]"><SelectValue placeholder="全部計劃" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部計劃</SelectItem>
-              {group.schemes.map(s => (
-                <SelectItem key={s.name} value={s.name}>{s.name} ({s.count})</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {scheme === 'all' && group.schemes.length > 1 && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {group.schemes.map(s => (
-              <button
-                key={s.name}
-                onClick={() => setScheme(s.name)}
-                className="text-[10px] px-2 py-0.5 rounded-full border border-border bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-              >
-                {s.name} <span className="font-semibold">{s.count}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </CardHeader>
-      <CardContent className="p-0">
-        <table className="w-full banking-table">
-          <thead>
-            <tr className="border-y border-border bg-muted/30">
-              <th className="text-left px-4 py-1.5 text-muted-foreground">基金</th>
-              <th className="text-left px-4 py-1.5 text-muted-foreground hidden sm:table-cell">類別</th>
-              <th className="text-right px-4 py-1.5 text-muted-foreground">回報率</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/50">
-            {fundList.map(fund => (
-              <tr key={fund.etnet_fund_id}>
-                <td className="px-4 py-2">
-                  <div className="text-sm text-foreground leading-tight">{fund.name_zh || fund.name}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5 sm:hidden">{fund.sub_category || fund.category}</div>
-                </td>
-                <td className="px-4 py-2 hidden sm:table-cell">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{fund.sub_category || fund.category}</span>
-                </td>
-                <td className="px-4 py-2 text-right">
-                  <ReturnValue value={fund[period]} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </CardContent>
-    </Card>
-  );
-
   return (
     <div className="space-y-5">
       <div>
@@ -162,28 +113,29 @@ export default function TrusteeCompare() {
         <p className="text-[11px] text-muted-foreground">比較不同受託人旗下基金整體表現，可細分計劃名稱</p>
       </div>
 
+      {/* Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <Select value={t1} onValueChange={v => { setTrustee1(v); setScheme1('all'); }}>
-          <SelectTrigger className="w-full sm:w-44 h-9 text-xs"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-44 h-9 text-xs rounded-2xl"><SelectValue /></SelectTrigger>
           <SelectContent>
             {trusteeNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
           </SelectContent>
         </Select>
         <span className="text-muted-foreground text-xs self-center font-medium">VS</span>
         <Select value={t2} onValueChange={v => { setTrustee2(v); setScheme2('all'); }}>
-          <SelectTrigger className="w-full sm:w-44 h-9 text-xs"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-44 h-9 text-xs rounded-2xl"><SelectValue /></SelectTrigger>
           <SelectContent>
             {trusteeNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
           </SelectContent>
         </Select>
-        <div className="flex flex-wrap gap-1 sm:ml-auto bg-card rounded-lg border border-border p-1">
+        <div className="flex flex-wrap gap-1 sm:ml-auto bg-white/70 backdrop-blur-xl rounded-2xl border border-border p-1">
           {RETURN_FIELDS.map(key => (
             <button
               key={key}
               onClick={() => setPeriod(key)}
-              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
+              className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-all ${
                 period === key
-                  ? 'bg-primary text-primary-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -193,41 +145,125 @@ export default function TrusteeCompare() {
         </div>
       </div>
 
+      {/* Side-by-side cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {group1 && <TrusteeCard group={group1} scheme={scheme1} setScheme={setScheme1} fundList={funds1} />}
-        {group2 && <TrusteeCard group={group2} scheme={scheme2} setScheme={setScheme2} fundList={funds2} />}
+        {group1 && <TrusteeCard group={group1} scheme={scheme1} setScheme={setScheme1} fundList={funds1} period={period} />}
+        {group2 && <TrusteeCard group={group2} scheme={scheme2} setScheme={setScheme2} fundList={funds2} period={period} />}
       </div>
 
       {/* All trustees overview */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-2 px-4 pt-4">
-          <CardTitle className="text-sm">全部受託人排名（{RETURN_LABELS[period]} 平均回報）</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <table className="w-full banking-table">
+      <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
+        <div className="px-5 pt-5 pb-3">
+          <h2 className="text-sm font-semibold text-foreground">全部受託人排名（{RETURN_LABELS[period]} 平均回報）</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full banking-table min-w-[500px]">
             <thead>
-              <tr className="border-y border-border bg-muted/30">
-                <th className="text-left px-4 py-1.5 text-muted-foreground w-8">#</th>
-                <th className="text-left px-4 py-1.5 text-muted-foreground">受託人</th>
-                <th className="text-center px-4 py-1.5 text-muted-foreground">基金數目</th>
-                <th className="text-right px-4 py-1.5 text-muted-foreground">平均回報</th>
+              <tr className="border-y border-border/60 bg-muted/30">
+                <th className="text-left px-5 py-2 text-muted-foreground w-8">#</th>
+                <th className="text-left px-5 py-2 text-muted-foreground">受託人</th>
+                <th className="text-center px-5 py-2 text-muted-foreground">基金數目</th>
+                <th className="text-right px-5 py-2 text-muted-foreground">平均回報</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/50">
+            <tbody className="divide-y divide-border/40">
               {trusteeGroups.map((group, i) => (
                 <tr key={group.name}>
-                  <td className="px-4 py-2 text-xs text-muted-foreground">{i + 1}</td>
-                  <td className="px-4 py-2 text-sm font-medium text-foreground">{group.name}</td>
-                  <td className="px-4 py-2 text-center text-xs text-muted-foreground">{group.count}</td>
-                  <td className="px-4 py-2 text-right">
+                  <td className="px-5 py-2.5 text-xs text-muted-foreground">{i + 1}</td>
+                  <td className="px-5 py-2.5 text-sm font-medium text-foreground">{group.name}</td>
+                  <td className="px-5 py-2.5 text-center text-xs text-muted-foreground">{group.count}</td>
+                  <td className="px-5 py-2.5 text-right">
                     <ReturnValue value={group.avg} />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TrusteeCard({ group, scheme, setScheme, fundList, period }: {
+  group: { name: string; avg: number; count: number; schemes: { name: string; count: number; funds: any[] }[] };
+  scheme: string;
+  setScheme: (v: string) => void;
+  fundList: any[];
+  period: ReturnField;
+}) {
+  return (
+    <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
+      <div className="px-5 pt-5 pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Building2 className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">{group.name}</h3>
+              <span className="text-[10px] text-muted-foreground">{fundList.length} 隻基金</span>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-[10px] text-muted-foreground mb-0.5">平均回報</div>
+            <ReturnValue value={group.avg} className="text-sm" />
+          </div>
+        </div>
+
+        <div className="mt-3">
+          <Select value={scheme} onValueChange={setScheme}>
+            <SelectTrigger className="h-8 text-[11px] rounded-2xl"><SelectValue placeholder="全部計劃" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部計劃</SelectItem>
+              {group.schemes.map(s => (
+                <SelectItem key={s.name} value={s.name}>{s.name} ({s.count})</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {scheme === 'all' && group.schemes.length > 1 && (
+          <div className="flex flex-wrap gap-1.5 mt-2.5">
+            {group.schemes.map(s => (
+              <button
+                key={s.name}
+                onClick={() => setScheme(s.name)}
+                className="text-[10px] px-2.5 py-1 rounded-full bg-muted/60 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+              >
+                {s.name} <span className="font-semibold">{s.count}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full banking-table min-w-[420px]">
+          <thead>
+            <tr className="border-y border-border/60 bg-muted/30">
+              <th className="text-left px-5 py-2 text-muted-foreground">基金</th>
+              <th className="text-left px-5 py-2 text-muted-foreground">類別</th>
+              <th className="text-right px-5 py-2 text-muted-foreground">回報率</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/40">
+            {fundList.map(fund => (
+              <tr key={fund.etnet_fund_id}>
+                <td className="px-5 py-2.5">
+                  <div className="text-sm text-foreground leading-tight max-w-[200px] truncate">{fund.name_zh || fund.name}</div>
+                </td>
+                <td className="px-5 py-2.5">
+                  <CategoryBadge category={fund.sub_category || fund.category} />
+                </td>
+                <td className="px-5 py-2.5 text-right">
+                  <ReturnValue value={fund[period]} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

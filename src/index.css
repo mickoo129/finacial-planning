@@ -4,57 +4,77 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 30% 15%;
+    --background: 0 0% 98%;
+    --foreground: 220 25% 18%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 30% 15%;
+    --card-foreground: 220 25% 18%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 15%;
+    --popover-foreground: 220 25% 18%;
 
-    --primary: 220 70% 45%;
+    --primary: 230 65% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 92%;
-    --secondary-foreground: 220 30% 15%;
+    --secondary: 220 15% 94%;
+    --secondary-foreground: 220 25% 18%;
 
-    --muted: 220 15% 94%;
+    --muted: 220 14% 96%;
     --muted-foreground: 220 10% 50%;
 
-    --accent: 220 15% 94%;
-    --accent-foreground: 220 30% 15%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 25% 18%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
-    --ring: 220 70% 45%;
+    --border: 220 14% 93%;
+    --input: 220 14% 93%;
+    --ring: 230 65% 55%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --positive: 152 60% 36%;
-    --positive-foreground: 152 60% 20%;
-    --negative: 0 65% 50%;
-    --negative-foreground: 0 65% 35%;
+    /* Return colors — neon green / soft pink */
+    --positive: 155 75% 42%;
+    --positive-foreground: 155 80% 28%;
+    --positive-bg: 155 60% 95%;
+    --negative: 345 70% 55%;
+    --negative-foreground: 345 70% 42%;
+    --negative-bg: 345 55% 96%;
 
-    --chart-blue: 220 70% 45%;
-    --chart-green: 152 60% 36%;
+    --chart-blue: 230 65% 55%;
+    --chart-green: 155 75% 42%;
     --chart-yellow: 40 85% 50%;
     --chart-purple: 260 55% 50%;
     --chart-orange: 25 85% 55%;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 30% 15%;
-    --sidebar-primary: 220 70% 45%;
+    --sidebar-foreground: 220 25% 18%;
+    --sidebar-primary: 230 65% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 94%;
-    --sidebar-accent-foreground: 220 30% 15%;
-    --sidebar-border: 220 15% 90%;
-    --sidebar-ring: 220 70% 45%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 220 25% 18%;
+    --sidebar-border: 220 14% 93%;
+    --sidebar-ring: 230 65% 55%;
 
-    --header-gradient: linear-gradient(135deg, hsl(220 70% 18%), hsl(220 60% 28%));
+    --header-gradient: linear-gradient(135deg, hsl(230 55% 22%), hsl(230 50% 32%));
+
+    /* Hover champagne gold */
+    --row-hover: 38 60% 97%;
+
+    /* Candy category colors */
+    --candy-blue: 210 85% 94%;
+    --candy-blue-fg: 210 60% 45%;
+    --candy-green: 155 55% 92%;
+    --candy-green-fg: 155 50% 35%;
+    --candy-purple: 270 60% 94%;
+    --candy-purple-fg: 270 45% 48%;
+    --candy-orange: 25 80% 93%;
+    --candy-orange-fg: 25 65% 45%;
+    --candy-pink: 340 60% 94%;
+    --candy-pink-fg: 340 50% 45%;
+    --candy-teal: 185 55% 92%;
+    --candy-teal-fg: 185 50% 35%;
   }
 }
 
@@ -65,7 +85,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Noto Sans TC', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Noto Sans TC', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     font-feature-settings: 'tnum';
   }
@@ -73,8 +93,8 @@
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -84,27 +104,35 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.2);
-  border-radius: 3px;
+  background: hsl(var(--muted-foreground) / 0.15);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.4);
+  background: hsl(var(--muted-foreground) / 0.3);
 }
 
 /* Banking table styles */
 .banking-table th {
-  @apply text-[11px] uppercase tracking-wider font-semibold;
+  @apply text-[11px] uppercase tracking-wider font-semibold whitespace-nowrap;
   letter-spacing: 0.05em;
 }
 
 .banking-table td {
-  @apply text-sm;
+  @apply text-sm whitespace-nowrap;
 }
 
 .banking-table tbody tr {
-  @apply transition-colors;
+  @apply transition-colors duration-150;
 }
 
 .banking-table tbody tr:hover {
-  background: hsl(var(--primary) / 0.03);
+  background: hsl(var(--row-hover));
+}
+
+/* Glass card utility */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid hsl(220 14% 93%);
 }
