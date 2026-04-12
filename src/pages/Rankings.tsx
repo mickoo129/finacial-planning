@@ -29,17 +29,13 @@ export default function Rankings() {
       .filter(f => f[sortBy] != null)
       .sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0));
     
-    if (sorted.length <= 20) {
-      // If pool is small, split in half to avoid overlap
-      const half = Math.ceil(sorted.length / 2);
-      return {
-        topFunds: sorted.slice(0, half),
-        bottomFunds: [...sorted.slice(half)].reverse(),
-      };
-    }
+    // Always show up to 10 for each list
+    // When pool is small, allow overlap between top and bottom
+    const topCount = Math.min(sorted.length, 10);
+    const bottomCount = Math.min(sorted.length, 10);
     return {
-      topFunds: sorted.slice(0, 10),
-      bottomFunds: [...sorted.slice(-10)].reverse(),
+      topFunds: sorted.slice(0, topCount),
+      bottomFunds: [...sorted.slice(-bottomCount)].reverse(),
     };
   }, [displayFunds, sortBy]);
 
