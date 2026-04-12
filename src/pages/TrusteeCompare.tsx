@@ -250,13 +250,13 @@ function TrusteeCard({ group, scheme, setScheme, fundList, period }: {
           <tbody className="divide-y divide-border/40">
             {fundList.map(fund => (
               <tr key={fund.etnet_fund_id}>
-                <td className="px-5 py-2.5">
-                  <div className="text-sm text-foreground leading-tight max-w-[200px] truncate">{fund.name_zh || fund.name}</div>
+                <td className="px-3 py-2.5">
+                  <div className="text-sm text-foreground leading-tight max-w-[180px] truncate">{fund.name_zh || fund.name}</div>
                 </td>
-                <td className="px-5 py-2.5">
+                <td className="px-3 py-2.5">
                   <CategoryBadge category={fund.sub_category || fund.category} />
                 </td>
-                <td className="px-5 py-2.5 text-right">
+                <td className="px-3 py-2.5 text-right">
                   <ReturnValue value={fund[period]} />
                 </td>
               </tr>
