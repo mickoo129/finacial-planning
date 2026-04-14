@@ -4,6 +4,7 @@ import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { CascadingFundFilter, getMainCategory } from '@/components/CascadingFundFilter';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
+import { getFallbackReturn } from '@/lib/fallbackReturn';
 import { ChevronDown, ChevronUp, BarChart3 } from 'lucide-react';
 
 export default function Categories() {
@@ -121,7 +122,9 @@ export default function Categories() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/40">
-                      {cat.funds.map(fund => (
+                      {cat.funds.map(fund => {
+                        const fb = getFallbackReturn(fund, sortBy);
+                        return (
                         <tr key={fund.id}>
                           <td className="px-5 py-2.5">
                             <Link to={`/fund/${fund.id}`} className="text-primary hover:underline text-xs">
@@ -130,9 +133,15 @@ export default function Categories() {
                             <div className="text-[10px] text-muted-foreground mt-0.5">{fund.trustee_name} · {fund.scheme_name}</div>
                           </td>
                           
-                          <td className="px-5 py-2.5 text-right"><ReturnValue value={fund[sortBy]} /></td>
+                          <td className="px-5 py-2.5 text-right">
+                            <ReturnValue 
+                              value={fb?.value ?? null} 
+                              fallbackLabel={fb?.isFallback ? fb.label : undefined} 
+                            />
+                          </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
