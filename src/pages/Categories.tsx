@@ -6,6 +6,7 @@ import { CascadingFundFilter, getMainCategory } from '@/components/CascadingFund
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { getFallbackReturn } from '@/lib/fallbackReturn';
 import { deduplicateFunds } from '@/lib/fundGrouping';
+import { normalizeTrusteeName } from '@/lib/trusteeMap';
 import { ChevronDown, ChevronUp, BarChart3 } from 'lucide-react';
 
 export default function Categories() {
@@ -134,7 +135,7 @@ export default function Categories() {
                             <Link to={`/fund/${fund.id}`} className="text-primary hover:underline text-xs">
                               <span className="max-w-[220px] truncate inline-block align-bottom">{fund.name_zh || fund.name}</span>
                             </Link>
-                            <div className="text-[10px] text-muted-foreground mt-0.5">{fund.trustee_name} · {fund.scheme_name}</div>
+                            <div className="text-[10px] text-muted-foreground mt-0.5">{normalizeTrusteeName(fund.trustee_name)} · {fund.scheme_name}</div>
                           </td>
                           
                           <td className="px-5 py-2.5 text-right">

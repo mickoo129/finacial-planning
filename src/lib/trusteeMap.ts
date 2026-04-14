@@ -68,6 +68,17 @@ export const PLAN_TRUSTEE_MAP: Record<string, { trustee: string; scheme: string 
   ETNSI66: { trustee: '信安', scheme: '易富之選' },
 };
 
+// Normalize trustee names that are incorrectly separated in data sources
+// Based on MPFA official approved trustee list (https://www.mpfa.org.hk)
+const TRUSTEE_ALIAS: Record<string, string> = {
+  'AMTD': '銀聯信託',  // AMTD計劃受託人為銀聯信託有限公司
+};
+
+export function normalizeTrusteeName(name: string | null | undefined): string {
+  if (!name) return '未知';
+  return TRUSTEE_ALIAS[name] || name;
+}
+
 export function getTrusteeFromPlanId(planId: string | null): string {
   if (!planId) return '未知';
   return PLAN_TRUSTEE_MAP[planId]?.trustee || '其他';
