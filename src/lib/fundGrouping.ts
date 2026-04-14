@@ -21,28 +21,48 @@ export function parseUnitClass(name: string): { baseName: string; unitClass: str
  * Normalize base name by stripping trustee+scheme prefixes.
  * e.g. "宏利退休精選安聯大中華基金" → "安聯大中華基金" if schemeName is "退休精選" and trusteeName is "宏利"
  */
+/** Common noise tokens that vary between data sources but don't distinguish funds */
+const NOISE_TOKENS = ['MPF', '強積金', ' '];
+
+function stripNoise(s: string): string {
+  let out = s;
+  for (const tok of NOISE_TOKENS) {
+    out = out.split(tok).join('');
+  }
+  return out;
+}
+
 function normalizeBaseName(baseName: string, fund: MpfFund): string {
   let normalized = baseName;
   const trustee = fund.trustee_name || '';
   const scheme = fund.scheme_name || '';
 
-  // Try stripping "trustee + scheme" prefix
+  // Try stripping "trustee + scheme" prefix (with or without spaces)
   if (trustee && scheme) {
-    const prefix = trustee + scheme;
-    if (normalized.startsWith(prefix)) {
-      normalized = normalized.slice(prefix.length);
+    for (const sep of ['', ' ']) {
+      const prefix = trustee + sep + scheme;
+      if (normalized.startsWith(prefix)) {
+        normalized = normalized.slice(prefix.length);
+        break;
+      }
     }
   }
   // Try stripping just scheme prefix  
   if (scheme && normalized.startsWith(scheme)) {
     normalized = normalized.slice(scheme.length);
   }
-  // Try stripping just trustee prefix
-  if (trustee && normalized.startsWith(trustee)) {
-    normalized = normalized.slice(trustee.length);
+  // Try stripping just trustee prefix (with optional space)
+  if (trustee) {
+    if (normalized.startsWith(trustee + ' ')) {
+      normalized = normalized.slice(trustee.length + 1);
+    } else if (normalized.startsWith(trustee)) {
+      normalized = normalized.slice(trustee.length);
+    }
   }
 
-  return normalized || baseName;
+  normalized = normalized.trim() || baseName;
+  // Strip noise tokens (MPF, 強積金, spaces) for grouping key only
+  return stripNoise(normalized);
 }
 
 export interface FundGroup {
