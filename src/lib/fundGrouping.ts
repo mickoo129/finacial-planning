@@ -26,6 +26,8 @@ const NOISE_TOKENS = ['MPF', '強積金', ' '];
 
 function stripNoise(s: string): string {
   let out = s;
+  // Strip "orientiert" prefix (old branding for AMTD funds)
+  out = out.replace(/^orientiert/i, '');
   for (const tok of NOISE_TOKENS) {
     out = out.split(tok).join('');
   }
