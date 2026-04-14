@@ -1,6 +1,13 @@
 import { cn } from '@/lib/utils';
 
-export function ReturnValue({ value, className }: { value: number | null | undefined; className?: string }) {
+interface ReturnValueProps {
+  value: number | null | undefined;
+  className?: string;
+  /** Optional fallback label shown when data comes from a different period */
+  fallbackLabel?: string;
+}
+
+export function ReturnValue({ value, className, fallbackLabel }: ReturnValueProps) {
   if (value == null) {
     return <span className={cn('font-mono text-muted-foreground text-xs', className)}>—</span>;
   }
@@ -15,6 +22,9 @@ export function ReturnValue({ value, className }: { value: number | null | undef
       className
     )}>
       {value > 0 ? '+' : ''}{value.toFixed(2)}%
+      {fallbackLabel && (
+        <span className="ml-1 text-[9px] font-normal opacity-70">({fallbackLabel})</span>
+      )}
     </span>
   );
 }
