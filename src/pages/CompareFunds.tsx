@@ -4,7 +4,7 @@ import { ReturnValue } from '@/components/ReturnValue';
 import { CascadingFundFilter } from '@/components/CascadingFundFilter';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { Button } from '@/components/ui/button';
-import { normalizeTrusteeName } from '@/lib/trusteeMap';
+import { resolveTrustee } from '@/lib/trusteeMap';
 import { Plus, X, GitCompare } from 'lucide-react';
 
 const CHART_COLORS = ['hsl(217, 91%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(24, 95%, 53%)', 'hsl(262, 83%, 58%)'];
@@ -73,7 +73,7 @@ export default function CompareFunds() {
                       <div className="flex items-center justify-between">
                         <div className="text-left flex-1 min-w-0">
                           <div className="text-foreground text-xs truncate">{f.name_zh || f.name}</div>
-                          <div className="text-[10px] text-muted-foreground truncate">{normalizeTrusteeName(f.trustee_name)} · {f.scheme_name}</div>
+                          <div className="text-[10px] text-muted-foreground truncate">{resolveTrustee(f)} · {f.scheme_name}</div>
                         </div>
                         <button onClick={() => removeFund(f.id)} className="text-muted-foreground hover:text-destructive ml-1 flex-shrink-0"><X className="h-3.5 w-3.5" /></button>
                       </div>

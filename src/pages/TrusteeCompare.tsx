@@ -3,7 +3,7 @@ import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds } from '@/hooks/useMpfFunds';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { getFallbackReturn } from '@/lib/fallbackReturn';
-import { getTrusteeFromPlanId, normalizeTrusteeName } from '@/lib/trusteeMap';
+import { resolveTrustee, resolveScheme } from '@/lib/trusteeMap';
 import { groupFundsByName, type FundGroup } from '@/lib/fundGrouping';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, ChevronDown } from 'lucide-react';
@@ -44,7 +44,7 @@ export default function TrusteeCompare() {
     if (!funds?.length) return [];
     const groups: Record<string, typeof funds> = {};
     for (const fund of funds) {
-      const trustee = normalizeTrusteeName(fund.trustee_name) || getTrusteeFromPlanId(fund.etnet_plan_id);
+      const trustee = resolveTrustee(fund);
       if (!trustee) continue;
       if (!groups[trustee]) groups[trustee] = [];
       groups[trustee].push(fund);
@@ -57,8 +57,10 @@ export default function TrusteeCompare() {
           : 0;
         const schemeMap = new Map<string, typeof groupFunds>();
         for (const f of groupFunds) {
-          const s = f.scheme_name || '未分類';
+          const s = resolveScheme(f) || '未分類';
           if (!schemeMap.has(s)) schemeMap.set(s, []);
+          schemeMap.get(s)!.push(f);
+        }
           schemeMap.get(s)!.push(f);
         }
         const schemes = [...schemeMap.entries()].map(([schemeName, schemeFunds]) => ({
@@ -86,7 +88,7 @@ export default function TrusteeCompare() {
   const getFilteredFunds = (group: typeof group1, scheme: string) => {
     if (!group) return [];
     if (scheme === 'all') return group.funds;
-    return group.funds.filter(f => (f.scheme_name || '未分類') === scheme);
+    return group.funds.filter(f => resolveScheme(f) === scheme);
   };
 
   const funds1 = getFilteredFunds(group1, scheme1);

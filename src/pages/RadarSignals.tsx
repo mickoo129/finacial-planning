@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useMpfFunds } from '@/hooks/useMpfFunds';
 import { ReturnValue } from '@/components/ReturnValue';
-import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
+import { resolveTrustee } from '@/lib/trusteeMap';
 import { Zap } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -137,7 +137,7 @@ export default function RadarSignals() {
                       <span className="text-xs font-bold text-foreground">{s.score}分</span>
                     </div>
                     <div className="font-medium text-foreground text-sm mt-1 truncate">{s.fund.name}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">{getTrusteeFromPlanId(s.fund.etnet_plan_id)} · {s.fund.category} · {s.fund.risk_level || '—'}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">{resolveTrustee(s.fund)} · {s.fund.category} · {s.fund.risk_level || '—'}</div>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <ReturnValue value={s.fund.return_1y} className="text-sm font-bold" />
