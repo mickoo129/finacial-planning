@@ -61,8 +61,6 @@ export default function TrusteeCompare() {
           if (!schemeMap.has(s)) schemeMap.set(s, []);
           schemeMap.get(s)!.push(f);
         }
-          schemeMap.get(s)!.push(f);
-        }
         const schemes = [...schemeMap.entries()].map(([schemeName, schemeFunds]) => ({
           name: schemeName,
           funds: [...schemeFunds].sort((a, b) => (b[period] ?? 0) - (a[period] ?? 0)),
