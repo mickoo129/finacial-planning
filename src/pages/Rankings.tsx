@@ -3,6 +3,7 @@ import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { CascadingFundFilter } from '@/components/CascadingFundFilter';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
+import { deduplicateFunds } from '@/lib/fundGrouping';
 import { TrendingUp, TrendingDown, RefreshCw, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';

@@ -3,6 +3,7 @@ import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { CascadingFundFilter } from '@/components/CascadingFundFilter';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
+import { deduplicateFunds } from '@/lib/fundGrouping';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowUpDown, RefreshCw, Database } from 'lucide-react';
 
