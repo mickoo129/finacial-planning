@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { MpfFund } from '@/hooks/useMpfFunds';
+import { deduplicateFunds } from '@/lib/fundGrouping';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function getMainCategory(fund: MpfFund): string {
