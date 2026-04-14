@@ -16,7 +16,11 @@ export default function Categories() {
     setCascadeFiltered(filtered);
   }, []);
 
-  const displayFunds = cascadeFiltered.length > 0 ? cascadeFiltered : (funds || []);
+  // Filter out funds with no return data at all to avoid confusing empty rows
+  const baseFunds = cascadeFiltered.length > 0 ? cascadeFiltered : (funds || []);
+  const displayFunds = useMemo(() => baseFunds.filter(f =>
+    f.return_ytd != null || f.return_3m != null || f.return_1y != null || f.return_3y != null || f.return_5y != null || f.return_10y != null
+  ), [baseFunds]);
 
   const categoryData = useMemo(() => {
     if (!displayFunds.length) return [];
