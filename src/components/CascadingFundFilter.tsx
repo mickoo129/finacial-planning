@@ -67,7 +67,7 @@ export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSele
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-3">
-        <div>
+        <div className="min-w-[120px] flex-1">
           <label className="text-[10px] text-muted-foreground mb-1 block">基金類別</label>
           <Select value={mainCategory} onValueChange={handleMainChange}>
             <SelectTrigger className="h-8 text-xs rounded-2xl"><SelectValue placeholder="全部" /></SelectTrigger>
@@ -77,7 +77,7 @@ export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSele
             </SelectContent>
           </Select>
         </div>
-        <div>
+        <div className="min-w-[120px] flex-1">
           <label className="text-[10px] text-muted-foreground mb-1 block">基金種類</label>
           <Select value={subCategory} onValueChange={handleSubChange}>
             <SelectTrigger className="h-8 text-xs rounded-2xl"><SelectValue placeholder="全部" /></SelectTrigger>
@@ -87,7 +87,7 @@ export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSele
             </SelectContent>
           </Select>
         </div>
-        <div>
+        <div className="min-w-[120px] flex-1">
           <label className="text-[10px] text-muted-foreground mb-1 block">受託人</label>
           <Select value={trustee} onValueChange={handleTrusteeChange}>
             <SelectTrigger className="h-8 text-xs rounded-2xl"><SelectValue placeholder="全部" /></SelectTrigger>
@@ -97,7 +97,7 @@ export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSele
             </SelectContent>
           </Select>
         </div>
-        <div>
+        <div className="min-w-[120px] flex-1">
           <label className="text-[10px] text-muted-foreground mb-1 block">計劃名稱</label>
           <Select value={scheme} onValueChange={setScheme}>
             <SelectTrigger className="h-8 text-xs rounded-2xl"><SelectValue placeholder="全部" /></SelectTrigger>
