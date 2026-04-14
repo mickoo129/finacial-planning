@@ -6,10 +6,13 @@ import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowUpDown, RefreshCw, Database } from 'lucide-react';
 
+const DEFAULT_VISIBLE: ReturnField[] = ['return_ytd', 'return_1y', 'return_3y'];
+
 export default function SearchFunds() {
   const [query, setQuery] = useState('');
   const [sortBy, setSortBy] = useState<ReturnField>('return_1y');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [visibleColumns, setVisibleColumns] = useState<Set<ReturnField>>(new Set(DEFAULT_VISIBLE));
   const { data: funds, isLoading } = useMpfFunds();
   const [cascadeFiltered, setCascadeFiltered] = useState<MpfFund[]>([]);
 
@@ -35,6 +38,20 @@ export default function SearchFunds() {
     if (sortBy === field) setSortDir(d => d === 'desc' ? 'asc' : 'desc');
     else { setSortBy(field); setSortDir('desc'); }
   };
+
+  const toggleColumn = (field: ReturnField) => {
+    setVisibleColumns(prev => {
+      const next = new Set(prev);
+      if (next.has(field)) {
+        next.delete(field);
+      } else {
+        next.add(field);
+      }
+      return next;
+    });
+  };
+
+  const visibleFields = useMemo(() => RETURN_FIELDS.filter(f => visibleColumns.has(f)), [visibleColumns]);
 
   if (isLoading) {
     return (
@@ -72,43 +89,53 @@ export default function SearchFunds() {
           />
         </div>
         <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} />
-        <div className="flex flex-wrap gap-1 bg-muted/30 rounded-2xl p-1">
-          {RETURN_FIELDS.map(key => (
-            <button
-              key={key}
-              onClick={() => toggleSort(key)}
-              className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-all ${
-                sortBy === key
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {RETURN_LABELS[key]}
-            </button>
-          ))}
+        <div>
+          <label className="text-[10px] text-muted-foreground mb-1 block">顯示時間段（點擊開關）</label>
+          <div className="flex flex-wrap gap-1 bg-muted/30 rounded-2xl p-1">
+            {RETURN_FIELDS.map(key => {
+              const isVisible = visibleColumns.has(key);
+              const isActive = sortBy === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => toggleColumn(key)}
+                  className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-all ${
+                    isVisible
+                      ? isActive
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-primary/15 text-primary border border-primary/20'
+                      : 'text-muted-foreground/50 hover:text-muted-foreground'
+                  }`}
+                >
+                  {RETURN_LABELS[key]}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Results table */}
       <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full banking-table min-w-[700px]">
+          <table className="w-full banking-table min-w-[500px]">
             <thead>
               <tr className="border-b border-border/60 bg-muted/30">
                 <th className="text-left px-5 py-2 text-muted-foreground w-8">#</th>
                 <th className="text-left px-5 py-2 text-muted-foreground">基金名稱</th>
                 <th className="text-left px-5 py-2 text-muted-foreground">受託人</th>
                 <th className="text-left px-5 py-2 text-muted-foreground">類別</th>
-                <th className="text-right px-5 py-2 text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_ytd')}>
-                  <span className="inline-flex items-center gap-0.5">YTD <ArrowUpDown className="h-2.5 w-2.5" /></span>
-                </th>
-                <th className="text-right px-5 py-2 text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_1y')}>
-                  <span className="inline-flex items-center gap-0.5">1年 <ArrowUpDown className="h-2.5 w-2.5" /></span>
-                </th>
-                <th className="text-right px-5 py-2 text-muted-foreground cursor-pointer hover:text-foreground" onClick={() => toggleSort('return_3y')}>
-                  <span className="inline-flex items-center gap-0.5">3年 <ArrowUpDown className="h-2.5 w-2.5" /></span>
-                </th>
-                
+                {visibleFields.map(field => (
+                  <th
+                    key={field}
+                    className="text-right px-5 py-2 text-muted-foreground cursor-pointer hover:text-foreground"
+                    onClick={() => toggleSort(field)}
+                  >
+                    <span className={`inline-flex items-center gap-0.5 ${sortBy === field ? 'text-primary font-semibold' : ''}`}>
+                      {RETURN_LABELS[field]} <ArrowUpDown className="h-2.5 w-2.5" />
+                    </span>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
@@ -122,9 +149,9 @@ export default function SearchFunds() {
                   <td className="px-5 py-2.5">
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">{fund.sub_category || fund.category || '未分類'}</span>
                   </td>
-                  <td className="px-5 py-2.5 text-right"><ReturnValue value={fund.return_ytd} /></td>
-                  <td className="px-5 py-2.5 text-right"><ReturnValue value={fund.return_1y} /></td>
-                  <td className="px-5 py-2.5 text-right"><ReturnValue value={fund.return_3y} /></td>
+                  {visibleFields.map(field => (
+                    <td key={field} className="px-5 py-2.5 text-right"><ReturnValue value={fund[field]} /></td>
+                  ))}
                 </tr>
               ))}
             </tbody>
