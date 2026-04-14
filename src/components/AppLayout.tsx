@@ -9,8 +9,8 @@ const navItems = [
   { to: '/search', label: '基金搜尋', icon: Search },
   { to: '/compare', label: '基金比較', icon: GitCompare },
   { to: '/categories', label: '類別比較', icon: PieChart },
+  { to: '/trustee', label: '受托人比較', icon: Building2 },
   { to: '/retirement', label: '退休計算機', icon: Calculator },
-  { to: '/trustee', label: '受托人', icon: Building2 },
   { to: '/portfolio', label: '模擬器', icon: Briefcase },
   { to: '/radar', label: 'RADAR', icon: Zap },
 ];
