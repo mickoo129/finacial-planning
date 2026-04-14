@@ -4,6 +4,7 @@ import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { CascadingFundFilter } from '@/components/CascadingFundFilter';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { deduplicateFunds } from '@/lib/fundGrouping';
+import { normalizeTrusteeName } from '@/lib/trusteeMap';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowUpDown, RefreshCw, Database } from 'lucide-react';
 

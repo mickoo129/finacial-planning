@@ -8,7 +8,7 @@ import { TrendingUp, TrendingDown, RefreshCw, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
+import { getTrusteeFromPlanId, normalizeTrusteeName } from '@/lib/trusteeMap';
 
 export default function Rankings() {
   const [sortBy, setSortBy] = useState<ReturnField>('return_1y');

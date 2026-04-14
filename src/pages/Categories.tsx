@@ -6,6 +6,7 @@ import { CascadingFundFilter, getMainCategory } from '@/components/CascadingFund
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { getFallbackReturn } from '@/lib/fallbackReturn';
 import { deduplicateFunds } from '@/lib/fundGrouping';
+import { normalizeTrusteeName } from '@/lib/trusteeMap';
 import { ChevronDown, ChevronUp, BarChart3 } from 'lucide-react';
 
 export default function Categories() {

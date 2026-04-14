@@ -3,7 +3,7 @@ import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds } from '@/hooks/useMpfFunds';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { getFallbackReturn } from '@/lib/fallbackReturn';
-import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
+import { getTrusteeFromPlanId, normalizeTrusteeName } from '@/lib/trusteeMap';
 import { groupFundsByName, type FundGroup } from '@/lib/fundGrouping';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, ChevronDown } from 'lucide-react';
