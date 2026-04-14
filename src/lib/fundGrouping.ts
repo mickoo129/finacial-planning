@@ -1,5 +1,6 @@
 import type { MpfFund } from '@/hooks/useMpfFunds';
 import type { ReturnField } from '@/lib/returnFields';
+import { getFallbackReturn } from '@/lib/fallbackReturn';
 
 /** Extract base fund name and unit class from name like "安聯均衡基金 - 單位A" or "宏利退休精選安聯均衡基金 - A" */
 export function parseUnitClass(name: string): { baseName: string; unitClass: string | null } {
