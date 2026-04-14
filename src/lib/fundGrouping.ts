@@ -107,3 +107,12 @@ export function groupFundsByName(funds: MpfFund[], period: ReturnField): FundGro
   });
   return groups;
 }
+
+/**
+ * Deduplicate funds by keeping only the best unit class per base fund name.
+ * Returns a flat array of MpfFund with duplicates removed.
+ */
+export function deduplicateFunds(funds: MpfFund[], period: ReturnField): MpfFund[] {
+  const groups = groupFundsByName(funds, period);
+  return groups.map(g => g.bestFund);
+}

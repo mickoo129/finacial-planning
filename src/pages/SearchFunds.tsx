@@ -3,6 +3,7 @@ import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { CascadingFundFilter } from '@/components/CascadingFundFilter';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
+import { deduplicateFunds } from '@/lib/fundGrouping';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowUpDown, RefreshCw, Database } from 'lucide-react';
 
@@ -21,7 +22,7 @@ export default function SearchFunds() {
   }, []);
 
   const filteredFunds = useMemo(() => {
-    let result = [...cascadeFiltered];
+    let result = deduplicateFunds(cascadeFiltered, sortBy);
     if (query) {
       const q = query.toLowerCase();
       result = result.filter(f => f.name.toLowerCase().includes(q) || (f.name_zh && f.name_zh.toLowerCase().includes(q)));
