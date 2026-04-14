@@ -22,7 +22,7 @@ export default function SearchFunds() {
   }, []);
 
   const filteredFunds = useMemo(() => {
-    let result = [...cascadeFiltered];
+    let result = deduplicateFunds(cascadeFiltered, sortBy);
     if (query) {
       const q = query.toLowerCase();
       result = result.filter(f => f.name.toLowerCase().includes(q) || (f.name_zh && f.name_zh.toLowerCase().includes(q)));

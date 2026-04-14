@@ -24,8 +24,9 @@ export default function Rankings() {
   const hasRealData = funds && funds.length > 0;
   const displayFunds = cascadeFiltered.length > 0 || !hasRealData ? cascadeFiltered : (funds || []);
 
-  const { topFunds, bottomFunds } = useMemo(() => {
-    const sorted = [...displayFunds]
+  const { topFunds, bottomFunds, dedupedCount } = useMemo(() => {
+    const deduped = deduplicateFunds(displayFunds, sortBy);
+    const sorted = deduped
       .filter(f => f[sortBy] != null)
       .sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0));
     const topCount = Math.min(sorted.length, 10);
@@ -33,6 +34,7 @@ export default function Rankings() {
     return {
       topFunds: sorted.slice(0, topCount),
       bottomFunds: [...sorted.slice(-bottomCount)].reverse(),
+      dedupedCount: deduped.length,
     };
   }, [displayFunds, sortBy]);
 
