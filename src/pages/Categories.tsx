@@ -140,7 +140,8 @@ export default function Categories() {
                             />
                           </td>
                         </tr>
-                      )})
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
