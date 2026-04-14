@@ -16,9 +16,7 @@ export default function Categories() {
     setCascadeFiltered(filtered);
   }, []);
 
-  // Only show funds that have return data for the currently selected period
-  const baseFunds = cascadeFiltered.length > 0 ? cascadeFiltered : (funds || []);
-  const displayFunds = useMemo(() => baseFunds.filter(f => f[sortBy] != null), [baseFunds, sortBy]);
+  const displayFunds = cascadeFiltered.length > 0 ? cascadeFiltered : (funds || []);
 
   const categoryData = useMemo(() => {
     if (!displayFunds.length) return [];
