@@ -5,20 +5,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 function getMainCategory(fund: MpfFund): string {
   const sub = fund.sub_category || '';
   const cat = fund.category || '';
-  if (sub.startsWith('股票基金')) return '股票基金';
-  if (sub.startsWith('混合資產基金')) return '混合資產基金';
-  if (sub.startsWith('債券基金')) return '債券基金';
+  const name = fund.name || '';
+  // sub_category based matching
+  if (sub.startsWith('股票基金') || sub.includes('股票基金') || sub === '未分類股票基金') return '股票基金';
+  if (sub.startsWith('混合資產基金') || sub.startsWith('混合資產-') || sub === '未分類混合資產基金') return '混合資產基金';
+  if (sub.includes('債券基金') || sub === '人民幣債券基金') return '債券基金';
   if (sub.startsWith('保證基金')) return '保證基金';
-  if (sub.startsWith('強積金保守')) return '強積金保守基金';
-  if (sub.startsWith('貨幣市場')) return '貨幣市場基金';
-  if (sub.startsWith('預設投資')) return '預設投資策略';
+  if (sub.startsWith('強積金保守') || sub === '強積金保守基金') return '強積金保守基金';
+  if (sub.startsWith('貨幣市場') || sub === '不包括強積金保守基金') return '貨幣市場基金';
+  if (sub.startsWith('預設投資') || sub === '核心累積基金' || sub.includes('65歲後基金')) return '預設投資策略';
+  // percentage-based mixed asset sub_categories
+  if (/^\d+%/.test(sub) && sub.includes('股票')) return '混合資產基金';
+  // category based fallback
   if (cat.includes('股票')) return '股票基金';
   if (cat.includes('混合') || cat.includes('均衡') || cat.includes('保守') || cat.includes('進取')) return '混合資產基金';
   if (cat.includes('固定收益') || cat.includes('債券')) return '債券基金';
   if (cat.includes('保證')) return '保證基金';
   if (cat.includes('強積金保守')) return '強積金保守基金';
   if (cat.includes('貨幣')) return '貨幣市場基金';
-  return '其他';
+  if (cat.includes('預設投資')) return '預設投資策略';
+  // name based fallback
+  if (name.includes('強積金保守')) return '強積金保守基金';
+  if (name.includes('股票') || name.includes('指數')) return '股票基金';
+  if (name.includes('債券') || name.includes('儲蓄')) return '債券基金';
+  if (name.includes('混合') || name.includes('均衡') || name.includes('穩定') || name.includes('靈活')) return '混合資產基金';
+  if (name.includes('保證')) return '保證基金';
+  return '混合資產基金'; // default fallback instead of 其他
 }
 
 interface CascadingFundFilterProps {
