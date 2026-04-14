@@ -66,7 +66,7 @@ export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSele
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="flex flex-wrap gap-3">
         <div>
           <label className="text-[10px] text-muted-foreground mb-1 block">基金類別</label>
           <Select value={mainCategory} onValueChange={handleMainChange}>
