@@ -5,6 +5,7 @@ import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { CascadingFundFilter, getMainCategory } from '@/components/CascadingFundFilter';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { getFallbackReturn } from '@/lib/fallbackReturn';
+import { deduplicateFunds } from '@/lib/fundGrouping';
 import { ChevronDown, ChevronUp, BarChart3 } from 'lucide-react';
 
 export default function Categories() {
@@ -17,7 +18,10 @@ export default function Categories() {
     setCascadeFiltered(filtered);
   }, []);
 
-  const displayFunds = cascadeFiltered.length > 0 ? cascadeFiltered : (funds || []);
+  const displayFunds = useMemo(() => {
+    const base = cascadeFiltered.length > 0 ? cascadeFiltered : (funds || []);
+    return deduplicateFunds(base, sortBy);
+  }, [cascadeFiltered, funds, sortBy]);
 
   const categoryData = useMemo(() => {
     if (!displayFunds.length) return [];
