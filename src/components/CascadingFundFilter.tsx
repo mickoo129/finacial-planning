@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { MpfFund } from '@/hooks/useMpfFunds';
+import { deduplicateFunds } from '@/lib/fundGrouping';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function getMainCategory(fund: MpfFund): string {
@@ -106,24 +107,27 @@ export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSele
           </Select>
         </div>
       </div>
-      {showFundSelector && (
-        <div>
-          <label className="text-[10px] text-muted-foreground mb-1 block">基金名稱</label>
-          <Select value={selectedFundId || ''} onValueChange={onFundSelect}>
-            <SelectTrigger className="h-8 text-xs rounded-2xl">
-              <SelectValue placeholder={`選擇基金 (${filteredByScheme.length} 隻)`} />
-            </SelectTrigger>
-            <SelectContent>
-              {filteredByScheme.map(f => (
-                <SelectItem key={f.id} value={f.id}>
-                  {f.name_zh || f.name}
-                  {f.trustee_name && <span className="text-muted-foreground ml-1">({f.trustee_name})</span>}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+      {showFundSelector && (() => {
+        const dedupedFunds = deduplicateFunds(filteredByScheme, 'return_1y');
+        return (
+          <div>
+            <label className="text-[10px] text-muted-foreground mb-1 block">基金名稱</label>
+            <Select value={selectedFundId || ''} onValueChange={onFundSelect}>
+              <SelectTrigger className="h-8 text-xs rounded-2xl">
+                <SelectValue placeholder={`選擇基金 (${dedupedFunds.length} 隻)`} />
+              </SelectTrigger>
+              <SelectContent>
+                {dedupedFunds.map(f => (
+                  <SelectItem key={f.id} value={f.id}>
+                    {f.name_zh || f.name}
+                    {f.trustee_name && <span className="text-muted-foreground ml-1">({f.trustee_name})</span>}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        );
+      })()}
     </div>
   );
 }
