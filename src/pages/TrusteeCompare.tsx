@@ -193,6 +193,17 @@ function TrusteeCard({ group, scheme, setScheme, fundList, period }: {
   fundList: any[];
   period: ReturnField;
 }) {
+  const fundGroups = useMemo(() => groupFundsByName(fundList, period), [fundList, period]);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  const toggle = (name: string) => {
+    setExpanded(prev => {
+      const next = new Set(prev);
+      next.has(name) ? next.delete(name) : next.add(name);
+      return next;
+    });
+  };
+
   return (
     <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)]">
       <div className="px-5 pt-5 pb-3">
@@ -203,7 +214,7 @@ function TrusteeCard({ group, scheme, setScheme, fundList, period }: {
             </div>
             <div>
               <h3 className="text-sm font-semibold text-foreground">{group.name}</h3>
-              <span className="text-[10px] text-muted-foreground">{fundList.length} 隻基金</span>
+              <span className="text-[10px] text-muted-foreground">{fundGroups.length} 隻基金（{fundList.length} 單位）</span>
             </div>
           </div>
           <div className="text-right">
@@ -249,28 +260,81 @@ function TrusteeCard({ group, scheme, setScheme, fundList, period }: {
             </tr>
           </thead>
           <tbody className="divide-y divide-border/40">
-            {fundList.map(fund => (
-              <tr key={fund.etnet_fund_id}>
-                <td className="px-3 py-2.5">
-                  <div className="text-sm text-foreground leading-tight max-w-[220px] truncate">{fund.name_zh || fund.name}</div>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    {fund.scheme_name && (
-                      <span className="text-[9px] text-muted-foreground/70 truncate max-w-[120px]">{fund.scheme_name}</span>
-                    )}
-                    <span className="sm:hidden text-[10px] text-muted-foreground">{fund.sub_category || fund.category || '未分類'}</span>
-                  </div>
-                </td>
-                <td className="px-3 py-2.5 hidden sm:table-cell">
-                  <CategoryBadge category={fund.sub_category || fund.category || '未分類'} />
-                </td>
-                <td className="px-3 py-2.5 text-right">
-                  <ReturnValue value={fund[period]} />
-                </td>
-              </tr>
+            {fundGroups.map(fg => (
+              <FundGroupRow
+                key={fg.baseName}
+                fg={fg}
+                isOpen={expanded.has(fg.baseName)}
+                onToggle={() => toggle(fg.baseName)}
+                period={period}
+              />
             ))}
           </tbody>
         </table>
       </div>
     </div>
+  );
+}
+
+function FundGroupRow({ fg, isOpen, onToggle, period }: {
+  fg: FundGroup;
+  isOpen: boolean;
+  onToggle: () => void;
+  period: ReturnField;
+}) {
+  const best = fg.bestFund;
+  const bestUnitClass = fg.variants[0].unitClass;
+
+  return (
+    <>
+      <tr
+        className={fg.hasMultiple ? 'cursor-pointer hover:bg-muted/30 transition-colors' : ''}
+        onClick={fg.hasMultiple ? onToggle : undefined}
+      >
+        <td className="px-3 py-2.5">
+          <div className="flex items-center gap-1.5">
+            {fg.hasMultiple && (
+              <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            )}
+            <div>
+              <div className="text-sm text-foreground leading-tight max-w-[200px] truncate">
+                {fg.baseName}
+              </div>
+              <div className="flex items-center gap-1 mt-0.5">
+                {best.scheme_name && (
+                  <span className="text-[9px] text-muted-foreground/70 truncate max-w-[120px]">{best.scheme_name}</span>
+                )}
+                {fg.hasMultiple && (
+                  <span className="text-[9px] text-primary/70 font-medium">{fg.variants.length} 個單位</span>
+                )}
+                {bestUnitClass && (
+                  <span className="text-[9px] text-muted-foreground">最佳: {bestUnitClass}</span>
+                )}
+                <span className="sm:hidden text-[10px] text-muted-foreground">{best.sub_category || best.category || '未分類'}</span>
+              </div>
+            </div>
+          </div>
+        </td>
+        <td className="px-3 py-2.5 hidden sm:table-cell">
+          <CategoryBadge category={best.sub_category || best.category || '未分類'} />
+        </td>
+        <td className="px-3 py-2.5 text-right">
+          <ReturnValue value={best[period]} />
+        </td>
+      </tr>
+      {isOpen && fg.variants.map(v => (
+        <tr key={v.fund.etnet_fund_id} className="bg-muted/20">
+          <td className="px-3 py-1.5 pl-9">
+            <span className="text-[11px] text-muted-foreground">
+              {v.unitClass ? `單位 ${v.unitClass}` : (v.fund.name_zh || v.fund.name)}
+            </span>
+          </td>
+          <td className="px-3 py-1.5 hidden sm:table-cell" />
+          <td className="px-3 py-1.5 text-right">
+            <ReturnValue value={v.fund[period]} className="text-xs" />
+          </td>
+        </tr>
+      ))}
+    </>
   );
 }
