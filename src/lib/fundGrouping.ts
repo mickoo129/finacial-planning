@@ -1,15 +1,19 @@
 import type { MpfFund } from '@/hooks/useMpfFunds';
 import type { ReturnField } from '@/lib/returnFields';
 
-/** Extract base fund name and unit class from name like "安聯均衡基金 - 單位A" */
+/** Extract base fund name and unit class from name like "安聯均衡基金 - 單位A" or "宏利退休精選安聯均衡基金 - A" */
 export function parseUnitClass(name: string): { baseName: string; unitClass: string | null } {
-  // Match patterns like " - 單位A", " \- 單位T", " - Class A"
-  const match = name.match(/\s*[-–—\\-]+\s*(單位|Class)\s*([A-Z0-9]+)\s*$/i);
+  // Match patterns like " - 單位A", " \- 單位T", " - Class A", " - A", " - T"
+  const match = name.match(/\s*[-–—\\-]+\s*(?:單位|Class)?\s*([A-Z0-9]+)\s*$/i);
   if (match) {
-    return {
-      baseName: name.slice(0, match.index!).trim(),
-      unitClass: match[2],
-    };
+    const candidate = match[1].toUpperCase();
+    // Only treat as unit class if it's a short token (A, B, T, A1, etc.)
+    if (candidate.length <= 2) {
+      return {
+        baseName: name.slice(0, match.index!).trim(),
+        unitClass: candidate,
+      };
+    }
   }
   return { baseName: name, unitClass: null };
 }
