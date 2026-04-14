@@ -44,7 +44,7 @@ export default function TrusteeCompare() {
     if (!funds?.length) return [];
     const groups: Record<string, typeof funds> = {};
     for (const fund of funds) {
-      const trustee = fund.trustee_name || getTrusteeFromPlanId(fund.etnet_plan_id);
+      const trustee = normalizeTrusteeName(fund.trustee_name) || getTrusteeFromPlanId(fund.etnet_plan_id);
       if (!trustee) continue;
       if (!groups[trustee]) groups[trustee] = [];
       groups[trustee].push(fund);

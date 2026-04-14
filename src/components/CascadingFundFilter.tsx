@@ -52,8 +52,8 @@ export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSele
   const filteredByMain = useMemo(() => mainCategory === 'all' ? funds : funds.filter(f => getMainCategory(f) === mainCategory), [funds, mainCategory]);
   const subCategories = useMemo(() => [...new Set(filteredByMain.map(f => f.sub_category || f.category).filter(Boolean))].sort() as string[], [filteredByMain]);
   const filteredBySub = useMemo(() => subCategory === 'all' ? filteredByMain : filteredByMain.filter(f => (f.sub_category || f.category) === subCategory), [filteredByMain, subCategory]);
-  const trustees = useMemo(() => [...new Set(filteredBySub.map(f => f.trustee_name).filter(Boolean))].sort() as string[], [filteredBySub]);
-  const filteredByTrustee = useMemo(() => trustee === 'all' ? filteredBySub : filteredBySub.filter(f => f.trustee_name === trustee), [filteredBySub, trustee]);
+  const trustees = useMemo(() => [...new Set(filteredBySub.map(f => normalizeTrusteeName(f.trustee_name)).filter(Boolean))].sort() as string[], [filteredBySub]);
+  const filteredByTrustee = useMemo(() => trustee === 'all' ? filteredBySub : filteredBySub.filter(f => normalizeTrusteeName(f.trustee_name) === trustee), [filteredBySub, trustee]);
   const schemes = useMemo(() => [...new Set(filteredByTrustee.map(f => f.scheme_name).filter(Boolean))].sort() as string[], [filteredByTrustee]);
   const filteredByScheme = useMemo(() => scheme === 'all' ? filteredByTrustee : filteredByTrustee.filter(f => f.scheme_name === scheme), [filteredByTrustee, scheme]);
 
@@ -120,7 +120,7 @@ export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSele
                 {dedupedFunds.map(f => (
                   <SelectItem key={f.id} value={f.id}>
                     {f.name_zh || f.name}
-                    {f.trustee_name && <span className="text-muted-foreground ml-1">({f.trustee_name})</span>}
+                    {f.trustee_name && <span className="text-muted-foreground ml-1">({normalizeTrusteeName(f.trustee_name)})</span>}
                   </SelectItem>
                 ))}
               </SelectContent>
