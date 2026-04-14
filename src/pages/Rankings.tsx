@@ -8,7 +8,7 @@ import { TrendingUp, TrendingDown, RefreshCw, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { getTrusteeFromPlanId, normalizeTrusteeName } from '@/lib/trusteeMap';
+import { resolveTrustee } from '@/lib/trusteeMap';
 
 export default function Rankings() {
   const [sortBy, setSortBy] = useState<ReturnField>('return_1y');
@@ -94,7 +94,7 @@ export default function Rankings() {
           </thead>
           <tbody className="divide-y divide-border/40">
             {data.map((fund, i) => {
-              const trustee = normalizeTrusteeName(fund.trustee_name) || getTrusteeFromPlanId(fund.etnet_plan_id);
+              const trustee = resolveTrustee(fund);
               return (
                 <tr key={fund.etnet_fund_id} className="group">
                   <td className="px-5 py-2.5">

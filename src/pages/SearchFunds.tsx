@@ -4,7 +4,7 @@ import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { CascadingFundFilter } from '@/components/CascadingFundFilter';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { deduplicateFunds } from '@/lib/fundGrouping';
-import { normalizeTrusteeName } from '@/lib/trusteeMap';
+import { resolveTrustee } from '@/lib/trusteeMap';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowUpDown, RefreshCw, Database } from 'lucide-react';
 
@@ -147,7 +147,7 @@ export default function SearchFunds() {
                   <td className="px-5 py-2.5">
                     <div className="text-sm font-medium text-foreground leading-tight max-w-[220px] truncate">{fund.name_zh || fund.name}</div>
                   </td>
-                  <td className="px-5 py-2.5 text-xs text-muted-foreground">{normalizeTrusteeName(fund.trustee_name)}</td>
+                  <td className="px-5 py-2.5 text-xs text-muted-foreground">{resolveTrustee(fund)}</td>
                   <td className="px-5 py-2.5">
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">{fund.sub_category || fund.category || '未分類'}</span>
                   </td>
