@@ -18,7 +18,7 @@ export const PLAN_TRUSTEE_MAP: Record<string, { trustee: string; scheme: string 
   ETNSI16: { trustee: '匯豐', scheme: '智選計劃' },
   ETNSI17: { trustee: '恒生', scheme: '強積金' },
   ETNSI18: { trustee: '中國人壽', scheme: '強積金' },
-  ETNSI19: { trustee: '銀聯信託', scheme: 'AMTD強積金' },
+  ETNSI19: { trustee: '銀聯信託', scheme: 'AMTD強積金計劃' },
   ETNSI20: { trustee: '宏利', scheme: '全面之選' },
   ETNSI21: { trustee: '宏利', scheme: '環球精選' },
   ETNSI22: { trustee: '友邦', scheme: '尊選計劃' },
