@@ -1,5 +1,6 @@
 import type { MpfFund } from '@/hooks/useMpfFunds';
 import type { ReturnField } from '@/lib/returnFields';
+import { getFallbackReturn } from '@/lib/fallbackReturn';
 
 /** Extract base fund name and unit class from name like "安聯均衡基金 - 單位A" or "宏利退休精選安聯均衡基金 - A" */
 export function parseUnitClass(name: string): { baseName: string; unitClass: string | null } {
@@ -65,11 +66,13 @@ export function groupFundsByName(funds: MpfFund[], period: ReturnField): FundGro
   }
 
   const groups: FundGroup[] = [];
-  for (const [key, variants] of map) {
-    // Sort variants by return descending
-    variants.sort((a, b) => (b.fund[period] ?? -Infinity) - (a.fund[period] ?? -Infinity));
+  for (const [, variants] of map) {
+    variants.sort((a, b) => {
+      const aValue = getFallbackReturn(a.fund, period)?.value ?? -Infinity;
+      const bValue = getFallbackReturn(b.fund, period)?.value ?? -Infinity;
+      return bValue - aValue;
+    });
 
-    // Deduplicate: if same unitClass appears multiple times (MPFA + ETNET), prefer MPFA (has name_zh)
     const seen = new Map<string, typeof variants[0]>();
     const deduped: typeof variants = [];
     for (const v of variants) {
@@ -78,20 +81,16 @@ export function groupFundsByName(funds: MpfFund[], period: ReturnField): FundGro
       if (!existing) {
         seen.set(uc, v);
         deduped.push(v);
-      } else {
-        // Keep the one with more data (name_zh or fer)
-        if (!existing.fund.name_zh && v.fund.name_zh) {
-          const idx = deduped.indexOf(existing);
-          deduped[idx] = v;
-          seen.set(uc, v);
-        }
+      } else if (!existing.fund.name_zh && v.fund.name_zh) {
+        const idx = deduped.indexOf(existing);
+        deduped[idx] = v;
+        seen.set(uc, v);
       }
     }
 
-    // Use the best display name (prefer shorter / MPFA name)
     const bestDisplayName = deduped.reduce((best, v) =>
-      v.displayName.length < best.length ? v.displayName : best
-    , deduped[0].displayName);
+      v.displayName.length < best.length ? v.displayName : best,
+    deduped[0].displayName);
 
     groups.push({
       baseName: bestDisplayName,
@@ -101,6 +100,10 @@ export function groupFundsByName(funds: MpfFund[], period: ReturnField): FundGro
     });
   }
 
-  groups.sort((a, b) => (b.bestFund[period] ?? -Infinity) - (a.bestFund[period] ?? -Infinity));
+  groups.sort((a, b) => {
+    const aValue = getFallbackReturn(a.bestFund, period)?.value ?? -Infinity;
+    const bValue = getFallbackReturn(b.bestFund, period)?.value ?? -Infinity;
+    return bValue - aValue;
+  });
   return groups;
 }

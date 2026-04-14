@@ -2,8 +2,9 @@ import { useState, useMemo } from 'react';
 import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds } from '@/hooks/useMpfFunds';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
+import { getFallbackReturn } from '@/lib/fallbackReturn';
 import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
-import { groupFundsByName, parseUnitClass, type FundGroup } from '@/lib/fundGrouping';
+import { groupFundsByName, type FundGroup } from '@/lib/fundGrouping';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, ChevronDown } from 'lucide-react';
 
@@ -284,6 +285,7 @@ function FundGroupRow({ fg, isOpen, onToggle, period }: {
 }) {
   const best = fg.bestFund;
   const bestUnitClass = fg.variants[0].unitClass;
+  const bestReturn = getFallbackReturn(best, period);
 
   return (
     <>
@@ -319,22 +321,25 @@ function FundGroupRow({ fg, isOpen, onToggle, period }: {
           <CategoryBadge category={best.sub_category || best.category || '未分類'} />
         </td>
         <td className="px-3 py-2.5 text-right">
-          <ReturnValue value={best[period]} />
+          <ReturnValue value={bestReturn?.value} fallbackLabel={bestReturn?.isFallback ? bestReturn.label : undefined} />
         </td>
       </tr>
-      {isOpen && fg.variants.map(v => (
-        <tr key={v.fund.etnet_fund_id} className="bg-muted/20">
-          <td className="px-3 py-1.5 pl-9">
-            <span className="text-[11px] text-muted-foreground">
-              {v.unitClass ? `單位 ${v.unitClass}` : (v.fund.name_zh || v.fund.name)}
-            </span>
-          </td>
-          <td className="px-3 py-1.5 hidden sm:table-cell" />
-          <td className="px-3 py-1.5 text-right">
-            <ReturnValue value={v.fund[period]} className="text-xs" />
-          </td>
-        </tr>
-      ))}
+      {isOpen && fg.variants.map(v => {
+        const variantReturn = getFallbackReturn(v.fund, period);
+        return (
+          <tr key={v.fund.etnet_fund_id} className="bg-muted/20">
+            <td className="px-3 py-1.5 pl-9">
+              <span className="text-[11px] text-muted-foreground">
+                {v.unitClass ? `單位 ${v.unitClass}` : (v.fund.name_zh || v.fund.name)}
+              </span>
+            </td>
+            <td className="px-3 py-1.5 hidden sm:table-cell" />
+            <td className="px-3 py-1.5 text-right">
+              <ReturnValue value={variantReturn?.value} fallbackLabel={variantReturn?.isFallback ? variantReturn.label : undefined} className="text-xs" />
+            </td>
+          </tr>
+        );
+      })}
     </>
   );
 }
