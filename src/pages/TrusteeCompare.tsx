@@ -3,8 +3,9 @@ import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds } from '@/hooks/useMpfFunds';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { getTrusteeFromPlanId } from '@/lib/trusteeMap';
+import { groupFundsByName, parseUnitClass, type FundGroup } from '@/lib/fundGrouping';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Building2 } from 'lucide-react';
+import { Building2, ChevronDown } from 'lucide-react';
 
 const CANDY_COLORS = [
   { bg: 'hsl(var(--candy-blue))', fg: 'hsl(var(--candy-blue-fg))' },
