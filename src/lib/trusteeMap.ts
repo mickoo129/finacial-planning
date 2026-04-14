@@ -74,9 +74,53 @@ const TRUSTEE_ALIAS: Record<string, string> = {
   'AMTD': '銀聯信託',  // AMTD計劃受託人為銀聯信託有限公司
 };
 
+// Infer trustee from fund name when trustee_name is null/missing
+const FUND_NAME_TRUSTEE_PATTERNS: { pattern: RegExp; trustee: string; scheme: string }[] = [
+  { pattern: /^(?:orientiert)?AMTD/i, trustee: '銀聯信託', scheme: 'AMTD強積金計劃' },
+];
+
 export function normalizeTrusteeName(name: string | null | undefined): string {
   if (!name) return '未知';
   return TRUSTEE_ALIAS[name] || name;
+}
+
+/**
+ * Resolve trustee for a fund using all available signals:
+ * 1. trustee_name (with alias normalization)
+ * 2. etnet_plan_id mapping
+ * 3. Fund name pattern matching (for corrupted/missing data)
+ */
+export function resolveTrustee(fund: { trustee_name?: string | null; etnet_plan_id?: string | null; name?: string; name_zh?: string | null }): string {
+  // 1. Check trustee_name with alias
+  if (fund.trustee_name) {
+    const normalized = TRUSTEE_ALIAS[fund.trustee_name] || fund.trustee_name;
+    if (normalized !== '未知') return normalized;
+  }
+  // 2. Check plan ID mapping
+  if (fund.etnet_plan_id && PLAN_TRUSTEE_MAP[fund.etnet_plan_id]) {
+    return PLAN_TRUSTEE_MAP[fund.etnet_plan_id].trustee;
+  }
+  // 3. Infer from fund name
+  const fundName = fund.name_zh || fund.name || '';
+  for (const { pattern, trustee } of FUND_NAME_TRUSTEE_PATTERNS) {
+    if (pattern.test(fundName)) return trustee;
+  }
+  return '未知';
+}
+
+/**
+ * Resolve scheme for a fund using all available signals
+ */
+export function resolveScheme(fund: { scheme_name?: string | null; etnet_plan_id?: string | null; name?: string; name_zh?: string | null }): string {
+  if (fund.scheme_name) return fund.scheme_name;
+  if (fund.etnet_plan_id && PLAN_TRUSTEE_MAP[fund.etnet_plan_id]) {
+    return PLAN_TRUSTEE_MAP[fund.etnet_plan_id].scheme;
+  }
+  const fundName = fund.name_zh || fund.name || '';
+  for (const { pattern, scheme } of FUND_NAME_TRUSTEE_PATTERNS) {
+    if (pattern.test(fundName)) return scheme;
+  }
+  return '未知';
 }
 
 export function getTrusteeFromPlanId(planId: string | null): string {
