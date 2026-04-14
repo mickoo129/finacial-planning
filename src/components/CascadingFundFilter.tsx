@@ -121,7 +121,7 @@ export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSele
                 {dedupedFunds.map(f => (
                   <SelectItem key={f.id} value={f.id}>
                     {f.name_zh || f.name}
-                    {f.trustee_name && <span className="text-muted-foreground ml-1">({normalizeTrusteeName(f.trustee_name)})</span>}
+                    {f.trustee_name && <span className="text-muted-foreground ml-1">({resolveTrustee(f)})</span>}
                   </SelectItem>
                 ))}
               </SelectContent>
