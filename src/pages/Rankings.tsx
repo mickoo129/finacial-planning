@@ -82,14 +82,14 @@ export default function Rankings() {
         <span className="text-[10px] text-muted-foreground ml-auto">{data.length} 隻基金</span>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full banking-table min-w-[600px]">
+        <table className="w-full banking-table">
           <thead>
             <tr className="border-b border-border/60 bg-muted/30">
-              <th className="text-left px-5 py-2 text-muted-foreground w-8">#</th>
-              <th className="text-left px-5 py-2 text-muted-foreground">基金</th>
-              <th className="text-left px-5 py-2 text-muted-foreground">受託人</th>
-              <th className="text-left px-5 py-2 text-muted-foreground">類別</th>
-              <th className="text-right px-5 py-2 text-muted-foreground">回報率</th>
+              <th className="text-left px-3 sm:px-5 py-2 text-muted-foreground w-6 sm:w-8">#</th>
+              <th className="text-left px-3 sm:px-5 py-2 text-muted-foreground">基金</th>
+              <th className="text-left px-3 sm:px-5 py-2 text-muted-foreground hide-mobile">受託人</th>
+              <th className="text-left px-3 sm:px-5 py-2 text-muted-foreground hide-mobile">類別</th>
+              <th className="text-right px-3 sm:px-5 py-2 text-muted-foreground">回報率</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/40">
@@ -97,23 +97,24 @@ export default function Rankings() {
               const trustee = resolveTrustee(fund);
               return (
                 <tr key={fund.etnet_fund_id} className="group">
-                  <td className="px-5 py-2.5">
-                    <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                  <td className="px-3 sm:px-5 py-2.5">
+                    <span className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full text-[10px] sm:text-xs font-bold ${
                       i < 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     }`}>
                       {i + 1}
                     </span>
                   </td>
-                  <td className="px-5 py-2.5">
-                    <div className="font-medium text-foreground text-sm leading-tight max-w-[220px] truncate">{fund.name_zh || fund.name}</div>
+                  <td className="px-3 sm:px-5 py-2.5">
+                    <div className="font-medium text-foreground text-xs sm:text-sm leading-tight max-w-[140px] sm:max-w-[220px] truncate">{fund.name_zh || fund.name}</div>
+                    <div className="sm:hidden text-[10px] text-muted-foreground mt-0.5">{trustee} · {fund.sub_category || fund.category || '未分類'}</div>
                   </td>
-                  <td className="px-5 py-2.5">
+                  <td className="px-3 sm:px-5 py-2.5 hide-mobile">
                     <span className="text-xs text-muted-foreground">{trustee}</span>
                   </td>
-                  <td className="px-5 py-2.5">
+                  <td className="px-3 sm:px-5 py-2.5 hide-mobile">
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">{fund.sub_category || fund.category || '未分類'}</span>
                   </td>
-                  <td className="px-5 py-2.5 text-right">
+                  <td className="px-3 sm:px-5 py-2.5 text-right">
                     <ReturnValue value={fund[sortBy] ?? 0} />
                   </td>
                 </tr>
