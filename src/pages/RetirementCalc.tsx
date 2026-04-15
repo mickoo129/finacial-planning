@@ -75,7 +75,7 @@ export default function RetirementCalc() {
           <div className="space-y-5">
             <div>
               <label className="text-sm text-muted-foreground mb-1.5 block">現時年齡</label>
-              <Input type="number" value={age} onChange={(e) => setAge(Number(e.target.value))} min={18} max={64} className="rounded-xl" />
+              <Input {...numInputProps(age, setAge, 18, 64)} />
             </div>
 
             <div>
