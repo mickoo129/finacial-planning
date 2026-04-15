@@ -1,105 +1,160 @@
-import { useState } from 'react';
-import { Calculator, TrendingUp, Banknote, Calendar } from 'lucide-react';
+import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function RetirementCalc() {
-  const [age, setAge] = useState(30);
-  const [retireAge, setRetireAge] = useState(65);
-  const [monthlyContrib, setMonthlyContrib] = useState(3000);
-  const [currentBalance, setCurrentBalance] = useState(100000);
+  const [age, setAge] = useState(35);
+  const [currentBalance, setCurrentBalance] = useState(200000);
+  const [monthlySalary, setMonthlySalary] = useState(30000);
+  const [monthlyTVC, setMonthlyTVC] = useState(0);
   const [annualReturn, setAnnualReturn] = useState(5);
-  const [showResult, setShowResult] = useState(false);
+  const [inflationRate, setInflationRate] = useState(2);
+  const [monthlyExpense, setMonthlyExpense] = useState(15000);
 
-  const years = retireAge - age;
-  const monthlyRate = annualReturn / 100 / 12;
-  const months = years * 12;
-  const fvBalance = currentBalance * Math.pow(1 + monthlyRate, months);
-  const fvContrib = monthlyContrib * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
-  const totalAmount = fvBalance + fvContrib;
-  const totalContributed = currentBalance + monthlyContrib * months;
-  const totalGains = totalAmount - totalContributed;
+  const retireAge = 65;
 
-  const formatCurrency = (n: number) => {
-    if (n >= 10000000) return `${(n / 10000000).toFixed(1)} 千萬`;
-    if (n >= 10000) return `${(n / 10000).toFixed(0)} 萬`;
-    return n.toLocaleString();
+  const result = useMemo(() => {
+    const years = retireAge - age;
+    if (years <= 0) return null;
+
+    // Monthly mandatory contribution (employee 5% + employer 5% = 10% of salary, capped at HK$1500 each side)
+    const mandatoryMonthly = Math.min(monthlySalary * 0.05, 1500) * 2;
+    const totalMonthlyContrib = mandatoryMonthly + monthlyTVC;
+
+    const monthlyRate = annualReturn / 100 / 12;
+    const months = years * 12;
+
+    // Future value
+    const fvBalance = currentBalance * Math.pow(1 + monthlyRate, months);
+    const fvContrib = totalMonthlyContrib * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
+    const nominalTotal = fvBalance + fvContrib;
+
+    // Real purchasing power (adjusted for inflation)
+    const realTotal = nominalTotal / Math.pow(1 + inflationRate / 100, years);
+
+    // How many years the fund can sustain monthly expense (in today's dollars)
+    const sustainYears = monthlyExpense > 0 ? realTotal / (monthlyExpense * 12) : Infinity;
+
+    return { nominalTotal, realTotal, sustainYears, years, totalMonthlyContrib };
+  }, [age, currentBalance, monthlySalary, monthlyTVC, annualReturn, inflationRate, monthlyExpense]);
+
+  const formatWan = (n: number) => {
+    const wan = n / 10000;
+    return wan.toFixed(1);
   };
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">退休計算器</h1>
         <p className="text-sm text-muted-foreground mt-1">估算你的強積金退休儲蓄</p>
       </div>
 
-      <div className="glass-card rounded-3xl p-6 space-y-5">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">現時年齡</label>
-            <Input type="number" value={age} onChange={(e) => setAge(Number(e.target.value))} min={18} max={64} className="rounded-2xl" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: Input Form */}
+        <div className="glass-card rounded-2xl p-6">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-1 h-6 bg-primary rounded-full" />
+            <h2 className="font-semibold text-foreground text-lg">退休參數模型</h2>
           </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">預計退休年齡</label>
-            <Input type="number" value={retireAge} onChange={(e) => setRetireAge(Number(e.target.value))} min={age + 1} max={75} className="rounded-2xl" />
+
+          <div className="space-y-5">
+            <div>
+              <label className="text-sm text-muted-foreground mb-1.5 block">現時年齡</label>
+              <Input type="number" value={age} onChange={(e) => setAge(Number(e.target.value))} min={18} max={64} className="rounded-xl" />
+            </div>
+
+            <div>
+              <label className="text-sm text-muted-foreground mb-1.5 block">MPF 現有結餘 (HKD)</label>
+              <Input type="number" value={currentBalance} onChange={(e) => setCurrentBalance(Number(e.target.value))} min={0} className="rounded-xl" />
+            </div>
+
+            <div>
+              <label className="text-sm text-muted-foreground mb-1.5 block">現時月薪 (HKD)</label>
+              <Input type="number" value={monthlySalary} onChange={(e) => setMonthlySalary(Number(e.target.value))} min={0} className="rounded-xl" />
+            </div>
+
+            <div>
+              <label className="text-sm text-muted-foreground mb-1.5 block">每月 TVC 供款 (HKD)</label>
+              <Input type="number" value={monthlyTVC} onChange={(e) => setMonthlyTVC(Number(e.target.value))} min={0} className="rounded-xl" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-muted-foreground mb-1.5 block">預期年回報 (%)</label>
+                <Input type="number" value={annualReturn} onChange={(e) => setAnnualReturn(Number(e.target.value))} min={0} max={20} step={0.5} className="rounded-xl" />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1.5 block">預期通脹率 (%)</label>
+                <Input type="number" value={inflationRate} onChange={(e) => setInflationRate(Number(e.target.value))} min={0} max={10} step={0.5} className="rounded-xl" />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm text-muted-foreground mb-1.5 block">退休後每月預期開支 (以今日物價計 HKD)</label>
+              <Input type="number" value={monthlyExpense} onChange={(e) => setMonthlyExpense(Number(e.target.value))} min={0} className="rounded-xl" />
+            </div>
           </div>
         </div>
 
-        <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">每月供款 (HK$)</label>
-          <Input type="number" value={monthlyContrib} onChange={(e) => setMonthlyContrib(Number(e.target.value))} min={0} className="rounded-2xl" />
-          <p className="text-xs text-muted-foreground mt-1">僱主 + 僱員每月總供款</p>
-        </div>
+        {/* Right: Results */}
+        <div className="space-y-6">
+          {result && (
+            <>
+              {/* Main result card */}
+              <div className="bg-[hsl(220,30%,20%)] text-white rounded-2xl p-6 space-y-6">
+                <div>
+                  <p className="text-sm text-amber-400 font-medium mb-2">65歲時 MPF 總額 (名義價值)</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-bold tracking-tight">HK$ {formatWan(result.nominalTotal)}</span>
+                    <span className="text-lg text-white/70">萬</span>
+                  </div>
+                </div>
 
-        <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">現有強積金結餘 (HK$)</label>
-          <Input type="number" value={currentBalance} onChange={(e) => setCurrentBalance(Number(e.target.value))} min={0} className="rounded-2xl" />
-        </div>
+                <div className="border-t border-white/10 pt-4 grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-xs text-white/60 mb-1">折算實質購買力 (扣除通脹後)</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-bold">HK$ {formatWan(result.realTotal)}</span>
+                      <span className="text-sm text-white/60">萬</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <div className="w-2 h-2 rounded-full bg-white/40" />
+                      <p className="text-xs text-white/60">預計資金可支撐年數</p>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-bold">
+                        {result.sustainYears === Infinity ? '∞' : result.sustainYears.toFixed(1)}
+                      </span>
+                      <span className="text-sm text-white/60">年</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-        <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">預期年均回報率 (%)</label>
-          <Select value={String(annualReturn)} onValueChange={(v) => setAnnualReturn(Number(v))}>
-            <SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {[2, 3, 4, 5, 6, 7, 8, 10].map(r => <SelectItem key={r} value={String(r)}>{r}%</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground mt-1">過去10年強積金平均年回報約 4-6%</p>
+              {/* Advisor insight */}
+              <div className="glass-card rounded-2xl p-6 border-l-4 border-amber-500">
+                <p className="font-semibold text-foreground mb-2">
+                  <span className="mr-1">💡</span> 顧問洞察：
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  在假設年回報 {annualReturn}% 與通脹率 {inflationRate}% 的情況下，您在 65 歲時的強積金結餘將達到{' '}
+                  <strong className="text-foreground">HK${formatWan(result.nominalTotal)}萬</strong>。受通脹影響，其真實購買力相當於今天的{' '}
+                  <strong className="text-foreground">HK${formatWan(result.realTotal)}萬</strong>。
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed mt-3">
+                  若希望維持每月 HK${monthlyExpense.toLocaleString()} 的生活質素，這筆資金大約可維持{' '}
+                  <strong className="text-foreground">{result.sustainYears === Infinity ? '無限' : result.sustainYears.toFixed(1)} 年</strong>。
+                  {result.sustainYears < 20 && (
+                    <>建議透過 TVC (可扣稅自願性供款) 或重整高增長投資組合，以拉長您的退休跑道。</>
+                  )}
+                </p>
+              </div>
+            </>
+          )}
         </div>
-
-        <Button onClick={() => setShowResult(true)} className="w-full rounded-2xl" size="lg">
-          <Calculator className="h-4 w-4 mr-2" /> 計算退休儲蓄
-        </Button>
       </div>
-
-      {showResult && years > 0 && (
-        <div className="glass-card rounded-3xl p-6 space-y-4">
-          <h3 className="font-semibold text-foreground text-lg">預計退休時強積金結餘</h3>
-          <div className="text-center py-4">
-            <div className="text-4xl font-bold text-primary">HK$ {totalAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
-            <div className="text-sm text-muted-foreground mt-1">約 {formatCurrency(totalAmount)} 港元</div>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-muted/30 rounded-2xl p-4 text-center">
-              <Calendar className="h-5 w-5 text-primary mx-auto mb-1" />
-              <div className="text-xs text-muted-foreground">供款年期</div>
-              <div className="font-semibold text-foreground mt-0.5">{years} 年</div>
-            </div>
-            <div className="bg-muted/30 rounded-2xl p-4 text-center">
-              <Banknote className="h-5 w-5 text-primary mx-auto mb-1" />
-              <div className="text-xs text-muted-foreground">總供款</div>
-              <div className="font-semibold text-foreground mt-0.5">{formatCurrency(totalContributed)}</div>
-            </div>
-            <div className="bg-muted/30 rounded-2xl p-4 text-center">
-              <TrendingUp className="h-5 w-5 text-positive mx-auto mb-1" />
-              <div className="text-xs text-muted-foreground">投資回報</div>
-              <div className="font-semibold text-positive mt-0.5">{formatCurrency(totalGains)}</div>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground text-center">* 以上計算僅供參考，實際回報視乎市場表現而定。不計通脹因素。</p>
-        </div>
-      )}
     </div>
   );
 }
