@@ -1,5 +1,20 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
+
+const numInputProps = (value: number, setter: (v: number) => void, min?: number, max?: number, step?: number) => ({
+  type: "text" as const,
+  inputMode: "decimal" as const,
+  value: String(value),
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/[^0-9.\-]/g, '');
+    if (raw === '' || raw === '-') { setter(0); return; }
+    const n = Number(raw);
+    if (!isNaN(n)) setter(n);
+  },
+  onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select(),
+  min, max, step,
+  className: "rounded-xl",
+});
 
 export default function RetirementCalc() {
   const [age, setAge] = useState(35);
