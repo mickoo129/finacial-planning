@@ -120,17 +120,17 @@ export default function SearchFunds() {
       {/* Results table */}
       <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full banking-table min-w-[500px]">
+          <table className="w-full banking-table">
             <thead>
               <tr className="border-b border-border/60 bg-muted/30">
-                <th className="text-left px-5 py-2 text-muted-foreground w-8">#</th>
-                <th className="text-left px-5 py-2 text-muted-foreground">基金名稱</th>
-                <th className="text-left px-5 py-2 text-muted-foreground">受託人</th>
-                <th className="text-left px-5 py-2 text-muted-foreground">類別</th>
+                <th className="text-left px-2.5 sm:px-5 py-2 text-muted-foreground w-6 sm:w-8">#</th>
+                <th className="text-left px-2.5 sm:px-5 py-2 text-muted-foreground">基金名稱</th>
+                <th className="text-left px-2.5 sm:px-5 py-2 text-muted-foreground hide-mobile">受託人</th>
+                <th className="text-left px-2.5 sm:px-5 py-2 text-muted-foreground hide-mobile">類別</th>
                 {visibleFields.map(field => (
                   <th
                     key={field}
-                    className="text-right px-5 py-2 text-muted-foreground cursor-pointer hover:text-foreground"
+                    className="text-right px-2.5 sm:px-5 py-2 text-muted-foreground cursor-pointer hover:text-foreground"
                     onClick={() => toggleSort(field)}
                   >
                     <span className={`inline-flex items-center gap-0.5 ${sortBy === field ? 'text-primary font-semibold' : ''}`}>
@@ -143,16 +143,17 @@ export default function SearchFunds() {
             <tbody className="divide-y divide-border/40">
               {filteredFunds.map((fund, i) => (
                 <tr key={fund.id || fund.etnet_fund_id}>
-                  <td className="px-5 py-2.5 text-[10px] text-muted-foreground">{i + 1}</td>
-                  <td className="px-5 py-2.5">
-                    <div className="text-sm font-medium text-foreground leading-tight max-w-[220px] truncate">{fund.name_zh || fund.name}</div>
+                  <td className="px-2.5 sm:px-5 py-2.5 text-[10px] text-muted-foreground">{i + 1}</td>
+                  <td className="px-2.5 sm:px-5 py-2.5">
+                    <div className="text-xs sm:text-sm font-medium text-foreground leading-tight max-w-[140px] sm:max-w-[220px] truncate">{fund.name_zh || fund.name}</div>
+                    <div className="sm:hidden text-[10px] text-muted-foreground mt-0.5">{resolveTrustee(fund)} · {fund.sub_category || fund.category || '未分類'}</div>
                   </td>
-                  <td className="px-5 py-2.5 text-xs text-muted-foreground">{resolveTrustee(fund)}</td>
-                  <td className="px-5 py-2.5">
+                  <td className="px-2.5 sm:px-5 py-2.5 text-xs text-muted-foreground hide-mobile">{resolveTrustee(fund)}</td>
+                  <td className="px-2.5 sm:px-5 py-2.5 hide-mobile">
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">{fund.sub_category || fund.category || '未分類'}</span>
                   </td>
                   {visibleFields.map(field => (
-                    <td key={field} className="px-5 py-2.5 text-right"><ReturnValue value={fund[field]} /></td>
+                    <td key={field} className="px-2.5 sm:px-5 py-2.5 text-right"><ReturnValue value={fund[field]} /></td>
                   ))}
                 </tr>
               ))}

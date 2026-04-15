@@ -159,7 +159,7 @@ export default function TrusteeCompare() {
           <h2 className="text-sm font-semibold text-foreground">全部受託人排名（{RETURN_LABELS[period]} 平均回報）</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full banking-table min-w-[500px]">
+          <table className="w-full banking-table">
             <thead>
               <tr className="border-y border-border/60 bg-muted/30">
                 <th className="text-left px-5 py-2 text-muted-foreground w-8">#</th>

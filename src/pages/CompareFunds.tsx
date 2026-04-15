@@ -64,7 +64,7 @@ export default function CompareFunds() {
       {selectedFunds.length > 0 ? (
         <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm banking-table min-w-[500px]">
+            <table className="w-full text-sm banking-table min-w-[320px]">
               <thead>
                 <tr className="border-b border-border/60 bg-muted/30">
                   <th className="text-left px-5 py-3 font-medium text-muted-foreground min-w-[80px]">項目</th>
