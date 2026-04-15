@@ -80,33 +80,33 @@ export default function RetirementCalc() {
 
             <div>
               <label className="text-sm text-muted-foreground mb-1.5 block">MPF 現有結餘 (HKD)</label>
-              <Input type="number" value={currentBalance} onChange={(e) => setCurrentBalance(Number(e.target.value))} min={0} className="rounded-xl" />
+              <Input {...numInputProps(currentBalance, setCurrentBalance, 0)} />
             </div>
 
             <div>
               <label className="text-sm text-muted-foreground mb-1.5 block">現時月薪 (HKD)</label>
-              <Input type="number" value={monthlySalary} onChange={(e) => setMonthlySalary(Number(e.target.value))} min={0} className="rounded-xl" />
+              <Input {...numInputProps(monthlySalary, setMonthlySalary, 0)} />
             </div>
 
             <div>
               <label className="text-sm text-muted-foreground mb-1.5 block">每月 TVC 供款 (HKD)</label>
-              <Input type="number" value={monthlyTVC} onChange={(e) => setMonthlyTVC(Number(e.target.value))} min={0} className="rounded-xl" />
+              <Input {...numInputProps(monthlyTVC, setMonthlyTVC, 0)} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-muted-foreground mb-1.5 block">預期年回報 (%)</label>
-                <Input type="number" value={annualReturn} onChange={(e) => setAnnualReturn(Number(e.target.value))} min={0} max={20} step={0.5} className="rounded-xl" />
+                <Input {...numInputProps(annualReturn, setAnnualReturn, 0, 20, 0.5)} />
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-1.5 block">預期通脹率 (%)</label>
-                <Input type="number" value={inflationRate} onChange={(e) => setInflationRate(Number(e.target.value))} min={0} max={10} step={0.5} className="rounded-xl" />
+                <Input {...numInputProps(inflationRate, setInflationRate, 0, 10, 0.5)} />
               </div>
             </div>
 
             <div>
               <label className="text-sm text-muted-foreground mb-1.5 block">退休後每月預期開支 (以今日物價計 HKD)</label>
-              <Input type="number" value={monthlyExpense} onChange={(e) => setMonthlyExpense(Number(e.target.value))} min={0} className="rounded-xl" />
+              <Input {...numInputProps(monthlyExpense, setMonthlyExpense, 0)} />
             </div>
           </div>
         </div>
