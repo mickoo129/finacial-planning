@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
+import { ChartContainer, ChartConfig, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Area, AreaChart, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'recharts';
 
 const numInputProps = (value: number, setter: (v: number) => void, min?: number, max?: number, step?: number) => ({
   type: "text" as const,
@@ -15,6 +17,11 @@ const numInputProps = (value: number, setter: (v: number) => void, min?: number,
   min, max, step,
   className: "rounded-xl",
 });
+
+const chartConfig: ChartConfig = {
+  nominal: { label: "名義價值 (萬)", color: "hsl(var(--primary))" },
+  real: { label: "實質購買力 (萬)", color: "hsl(var(--accent))" },
+};
 
 export default function RetirementCalc() {
   const [age, setAge] = useState(35);
@@ -47,6 +54,32 @@ export default function RetirementCalc() {
 
     return { nominalTotal, realTotal, sustainYears, years, totalMonthlyContrib };
   }, [age, currentBalance, monthlySalary, monthlyTVC, employerExtra, annualReturn, inflationRate, monthlyExpense]);
+
+  const chartData = useMemo(() => {
+    const years = retireAge - age;
+    if (years <= 0) return [];
+
+    const mandatoryMonthly = Math.min(monthlySalary * 0.05, 1500) * 2;
+    const totalMonthlyContrib = mandatoryMonthly + monthlyTVC + employerExtra;
+    const monthlyRate = annualReturn / 100 / 12;
+
+    const data = [];
+    for (let y = 0; y <= years; y++) {
+      const m = y * 12;
+      const fvB = currentBalance * Math.pow(1 + monthlyRate, m);
+      const fvC = monthlyRate > 0
+        ? totalMonthlyContrib * ((Math.pow(1 + monthlyRate, m) - 1) / monthlyRate)
+        : totalMonthlyContrib * m;
+      const nominal = fvB + fvC;
+      const real = nominal / Math.pow(1 + inflationRate / 100, y);
+      data.push({
+        year: age + y,
+        nominal: Math.round(nominal / 10000 * 10) / 10,
+        real: Math.round(real / 10000 * 10) / 10,
+      });
+    }
+    return data;
+  }, [age, currentBalance, monthlySalary, monthlyTVC, employerExtra, annualReturn, inflationRate]);
 
   const formatWan = (n: number) => {
     const wan = n / 10000;
@@ -90,7 +123,7 @@ export default function RetirementCalc() {
                 <Input {...numInputProps(monthlyTVC, setMonthlyTVC, 0)} />
               </div>
               <div>
-                <label className="text-sm text-muted-foreground mb-1.5 block"><label className="text-sm text-muted-foreground mb-1.5 block">每月公司額外供款 (HKD)</label></label>
+                <label className="text-sm text-muted-foreground mb-1.5 block">每月公司額外供款 (HKD)</label>
                 <Input {...numInputProps(employerExtra, setEmployerExtra, 0)} />
               </div>
             </div>
@@ -149,6 +182,74 @@ export default function RetirementCalc() {
                   </div>
                 </div>
               </div>
+
+              {/* Growth Chart */}
+              {chartData.length > 0 && (
+                <div className="glass-card rounded-2xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1 h-6 bg-primary rounded-full" />
+                    <h2 className="font-semibold text-foreground text-lg">累積金額增長曲線</h2>
+                  </div>
+                  <div className="flex gap-4 mb-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 rounded-sm bg-primary" />
+                      <span>名義價值</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 rounded-sm bg-accent" />
+                      <span>實質購買力</span>
+                    </div>
+                  </div>
+                  <ChartContainer config={chartConfig} className="h-[260px] w-full">
+                    <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="fillNominal" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                        </linearGradient>
+                        <linearGradient id="fillReal" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
+                      <XAxis
+                        dataKey="year"
+                        tick={{ fontSize: 11 }}
+                        tickLine={false}
+                        axisLine={false}
+                        className="fill-muted-foreground"
+                        label={{ value: '年齡', position: 'insideBottomRight', offset: -5, fontSize: 11, className: 'fill-muted-foreground' }}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 11 }}
+                        tickLine={false}
+                        axisLine={false}
+                        className="fill-muted-foreground"
+                        label={{ value: '萬 HKD', angle: -90, position: 'insideLeft', offset: 10, fontSize: 11, className: 'fill-muted-foreground' }}
+                      />
+                      <ChartTooltip
+                        content={<ChartTooltipContent labelFormatter={(v) => `${v} 歲`} formatter={(value, name) => [`${value} 萬`, name === 'nominal' ? '名義價值' : '實質購買力']} />}
+                      />
+                      <ReferenceLine x={65} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" strokeOpacity={0.5} />
+                      <Area
+                        type="monotone"
+                        dataKey="nominal"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={2}
+                        fill="url(#fillNominal)"
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="real"
+                        stroke="hsl(var(--accent))"
+                        strokeWidth={2}
+                        fill="url(#fillReal)"
+                      />
+                    </AreaChart>
+                  </ChartContainer>
+                </div>
+              )}
 
               {/* Advisor insight */}
               <div className="glass-card rounded-2xl p-6 border-l-4 border-accent">
