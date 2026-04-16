@@ -90,7 +90,7 @@ export default function RetirementCalc() {
                 <Input {...numInputProps(monthlyTVC, setMonthlyTVC, 0)} />
               </div>
               <div>
-                <label className="text-sm text-muted-foreground mb-1.5 block">公司額外供款 (HKD/月)</label>
+                <label className="text-sm text-muted-foreground mb-1.5 block"><label className="text-sm text-muted-foreground mb-1.5 block">每月公司額外供款 (HKD)</label></label>
                 <Input {...numInputProps(employerExtra, setEmployerExtra, 0)} />
               </div>
             </div>
