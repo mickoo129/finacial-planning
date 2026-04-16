@@ -20,7 +20,8 @@ const numInputProps = (value: number, setter: (v: number) => void, min?: number,
 
 const chartConfig: ChartConfig = {
   nominal: { label: "名義價值 (萬)", color: "hsl(var(--primary))" },
-  real: { label: "實質購買力 (萬)", color: "hsl(var(--accent))" },
+  real: { label: "實質購買力 (萬)", color: "hsl(25 95% 53%)" },
+  principal: { label: "供款本金 (萬)", color: "hsl(var(--muted-foreground))" },
 };
 
 export default function RetirementCalc() {
@@ -72,10 +73,12 @@ export default function RetirementCalc() {
         : totalMonthlyContrib * m;
       const nominal = fvB + fvC;
       const real = nominal / Math.pow(1 + inflationRate / 100, y);
+      const principal = currentBalance + totalMonthlyContrib * m;
       data.push({
         year: age + y,
         nominal: Math.round(nominal / 10000 * 10) / 10,
         real: Math.round(real / 10000 * 10) / 10,
+        principal: Math.round(principal / 10000 * 10) / 10,
       });
     }
     return data;
