@@ -199,8 +199,12 @@ export default function RetirementCalc() {
                       <span>名義價值</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <div className="w-3 h-3 rounded-sm bg-accent" />
+                      <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'hsl(25 95% 53%)' }} />
                       <span>實質購買力</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 rounded-sm bg-muted-foreground" />
+                      <span>供款本金</span>
                     </div>
                   </div>
                   <ChartContainer config={chartConfig} className="h-[260px] w-full">
@@ -211,8 +215,12 @@ export default function RetirementCalc() {
                           <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
                         </linearGradient>
                         <linearGradient id="fillReal" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.3} />
-                          <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0.02} />
+                          <stop offset="0%" stopColor="hsl(25 95% 53%)" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="hsl(25 95% 53%)" stopOpacity={0.02} />
+                        </linearGradient>
+                        <linearGradient id="fillPrincipal" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.15} />
+                          <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.02} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
@@ -232,7 +240,10 @@ export default function RetirementCalc() {
                         label={{ value: '萬 HKD', angle: -90, position: 'insideLeft', offset: 10, fontSize: 11, className: 'fill-muted-foreground' }}
                       />
                       <ChartTooltip
-                        content={<ChartTooltipContent labelFormatter={(v) => `${v} 歲`} formatter={(value, name) => [`${value} 萬`, name === 'nominal' ? '名義價值' : '實質購買力']} />}
+                        content={<ChartTooltipContent labelFormatter={(v) => `${v} 歲`} formatter={(value, name) => {
+                          const labels: Record<string, string> = { nominal: '名義價值', real: '實質購買力', principal: '供款本金' };
+                          return [`${value} 萬`, labels[name as string] || String(name)];
+                        }} />}
                       />
                       <ReferenceLine x={65} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" strokeOpacity={0.5} />
                       <Area
@@ -245,9 +256,17 @@ export default function RetirementCalc() {
                       <Area
                         type="monotone"
                         dataKey="real"
-                        stroke="hsl(var(--accent))"
+                        stroke="hsl(25 95% 53%)"
                         strokeWidth={2}
                         fill="url(#fillReal)"
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="principal"
+                        stroke="hsl(var(--muted-foreground))"
+                        strokeWidth={1.5}
+                        strokeDasharray="5 3"
+                        fill="url(#fillPrincipal)"
                       />
                     </AreaChart>
                   </ChartContainer>
