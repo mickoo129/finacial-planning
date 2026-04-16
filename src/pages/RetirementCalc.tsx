@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 
 const numInputProps = (value: number, setter: (v: number) => void, min?: number, max?: number, step?: number) => ({
@@ -21,6 +21,7 @@ export default function RetirementCalc() {
   const [currentBalance, setCurrentBalance] = useState(200000);
   const [monthlySalary, setMonthlySalary] = useState(30000);
   const [monthlyTVC, setMonthlyTVC] = useState(0);
+  const [employerExtra, setEmployerExtra] = useState(0);
   const [annualReturn, setAnnualReturn] = useState(5);
   const [inflationRate, setInflationRate] = useState(2);
   const [monthlyExpense, setMonthlyExpense] = useState(15000);
@@ -31,26 +32,21 @@ export default function RetirementCalc() {
     const years = retireAge - age;
     if (years <= 0) return null;
 
-    // Monthly mandatory contribution (employee 5% + employer 5% = 10% of salary, capped at HK$1500 each side)
     const mandatoryMonthly = Math.min(monthlySalary * 0.05, 1500) * 2;
-    const totalMonthlyContrib = mandatoryMonthly + monthlyTVC;
+    const totalMonthlyContrib = mandatoryMonthly + monthlyTVC + employerExtra;
 
     const monthlyRate = annualReturn / 100 / 12;
     const months = years * 12;
 
-    // Future value
     const fvBalance = currentBalance * Math.pow(1 + monthlyRate, months);
     const fvContrib = totalMonthlyContrib * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
     const nominalTotal = fvBalance + fvContrib;
 
-    // Real purchasing power (adjusted for inflation)
     const realTotal = nominalTotal / Math.pow(1 + inflationRate / 100, years);
-
-    // How many years the fund can sustain monthly expense (in today's dollars)
     const sustainYears = monthlyExpense > 0 ? realTotal / (monthlyExpense * 12) : Infinity;
 
     return { nominalTotal, realTotal, sustainYears, years, totalMonthlyContrib };
-  }, [age, currentBalance, monthlySalary, monthlyTVC, annualReturn, inflationRate, monthlyExpense]);
+  }, [age, currentBalance, monthlySalary, monthlyTVC, employerExtra, annualReturn, inflationRate, monthlyExpense]);
 
   const formatWan = (n: number) => {
     const wan = n / 10000;
@@ -60,7 +56,7 @@ export default function RetirementCalc() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">退休計算器</h1>
+        <h1 className="text-2xl font-bold text-foreground">退休計算機</h1>
         <p className="text-sm text-muted-foreground mt-1">估算你的強積金退休儲蓄</p>
       </div>
 
@@ -88,9 +84,15 @@ export default function RetirementCalc() {
               <Input {...numInputProps(monthlySalary, setMonthlySalary, 0)} />
             </div>
 
-            <div>
-              <label className="text-sm text-muted-foreground mb-1.5 block">每月 TVC 供款 (HKD)</label>
-              <Input {...numInputProps(monthlyTVC, setMonthlyTVC, 0)} />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-muted-foreground mb-1.5 block">每月 TVC 供款 (HKD)</label>
+                <Input {...numInputProps(monthlyTVC, setMonthlyTVC, 0)} />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1.5 block">公司額外供款 (HKD/月)</label>
+                <Input {...numInputProps(employerExtra, setEmployerExtra, 0)} />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -116,40 +118,40 @@ export default function RetirementCalc() {
           {result && (
             <>
               {/* Main result card */}
-              <div className="bg-[hsl(220,30%,20%)] text-white rounded-2xl p-6 space-y-6">
+              <div className="bg-primary text-primary-foreground rounded-2xl p-6 space-y-6">
                 <div>
-                  <p className="text-sm text-amber-400 font-medium mb-2">65歲時 MPF 總額 (名義價值)</p>
+                  <p className="text-sm font-medium mb-2 opacity-90">65歲時 MPF 總額 (名義價值)</p>
                   <div className="flex items-baseline gap-2">
                     <span className="text-5xl font-bold tracking-tight">HK$ {formatWan(result.nominalTotal)}</span>
-                    <span className="text-lg text-white/70">萬</span>
+                    <span className="text-lg opacity-70">萬</span>
                   </div>
                 </div>
 
-                <div className="border-t border-white/10 pt-4 grid grid-cols-2 gap-6">
+                <div className="border-t border-primary-foreground/10 pt-4 grid grid-cols-2 gap-6">
                   <div>
-                    <p className="text-xs text-white/60 mb-1">折算實質購買力 (扣除通脹後)</p>
+                    <p className="text-xs opacity-60 mb-1">折算實質購買力 (扣除通脹後)</p>
                     <div className="flex items-baseline gap-1">
                       <span className="text-2xl font-bold">HK$ {formatWan(result.realTotal)}</span>
-                      <span className="text-sm text-white/60">萬</span>
+                      <span className="text-sm opacity-60">萬</span>
                     </div>
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5 mb-1">
-                      <div className="w-2 h-2 rounded-full bg-white/40" />
-                      <p className="text-xs text-white/60">預計資金可支撐年數</p>
+                      <div className="w-2 h-2 rounded-full bg-primary-foreground/40" />
+                      <p className="text-xs opacity-60">預計資金可支撐年數</p>
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span className="text-2xl font-bold">
                         {result.sustainYears === Infinity ? '∞' : result.sustainYears.toFixed(1)}
                       </span>
-                      <span className="text-sm text-white/60">年</span>
+                      <span className="text-sm opacity-60">年</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Advisor insight */}
-              <div className="glass-card rounded-2xl p-6 border-l-4 border-amber-500">
+              <div className="glass-card rounded-2xl p-6 border-l-4 border-accent">
                 <p className="font-semibold text-foreground mb-2">
                   <span className="mr-1">💡</span> 顧問洞察：
                 </p>
