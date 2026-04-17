@@ -82,21 +82,50 @@ export default function Categories() {
           </div>
           <div className="space-y-2">
             {(() => {
+              const hasNegative = chartData.some(c => c.avgReturn < 0);
               const maxAbs = Math.max(...chartData.map(c => Math.abs(c.avgReturn)), 0.01);
-              return chartData.map((cat) => {
+              // Distinct HSL hues per category for visual differentiation
+              const palette = [
+                'hsl(210 90% 55%)', // blue
+                'hsl(160 70% 42%)', // teal/green
+                'hsl(280 65% 58%)', // purple
+                'hsl(35 92% 55%)',  // orange
+                'hsl(340 75% 55%)', // pink/red
+                'hsl(190 80% 45%)', // cyan
+                'hsl(50 90% 50%)',  // yellow
+                'hsl(10 80% 55%)',  // coral
+                'hsl(130 55% 45%)', // green
+                'hsl(250 70% 60%)', // indigo
+              ];
+              return chartData.map((cat, idx) => {
                 const isPositive = cat.avgReturn >= 0;
-                const widthPct = Math.min(Math.abs(cat.avgReturn) / maxAbs * 50, 50);
+                const color = palette[idx % palette.length];
+                let barStyle: React.CSSProperties;
+                if (hasNegative) {
+                  // Center axis layout
+                  const widthPct = Math.min(Math.abs(cat.avgReturn) / maxAbs * 50, 50);
+                  barStyle = {
+                    width: `${widthPct}%`,
+                    backgroundColor: color,
+                    [isPositive ? 'left' : 'right']: '50%',
+                  };
+                } else {
+                  // Left-aligned full-width layout
+                  const widthPct = Math.min(Math.abs(cat.avgReturn) / maxAbs * 100, 100);
+                  barStyle = {
+                    width: `${widthPct}%`,
+                    backgroundColor: color,
+                    left: 0,
+                  };
+                }
                 return (
                   <div key={cat.name} className="flex items-center gap-3">
                     <span className="text-xs text-muted-foreground w-24 text-right shrink-0">{cat.shortName}</span>
                     <div className="flex-1 h-6 bg-muted/30 rounded-full overflow-hidden relative">
-                      {/* Center line */}
-                      <div className="absolute top-0 bottom-0 left-1/2 w-px bg-border/60" />
-                      {/* Bar */}
-                      <div
-                        className={`absolute top-0 bottom-0 ${isPositive ? 'bg-positive left-1/2' : 'bg-negative right-1/2'}`}
-                        style={{ width: `${widthPct}%` }}
-                      />
+                      {hasNegative && (
+                        <div className="absolute top-0 bottom-0 left-1/2 w-px bg-border/60" />
+                      )}
+                      <div className="absolute top-0 bottom-0" style={barStyle} />
                     </div>
                     <ReturnValue value={cat.avgReturn} className="w-16 text-right" />
                   </div>
