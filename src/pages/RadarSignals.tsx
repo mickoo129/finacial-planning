@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useMpfFunds } from '@/hooks/useMpfFunds';
 import { ReturnValue } from '@/components/ReturnValue';
 import { resolveTrustee } from '@/lib/trusteeMap';
+import { getMainCategory } from '@/components/CascadingFundFilter';
 import { Zap } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -43,26 +44,33 @@ function calculateScore(fund: any): FundScore {
 export default function RadarSignals() {
   const { data: funds, isLoading } = useMpfFunds();
   const [category, setCategory] = useState('all');
+  const [trustee, setTrustee] = useState('all');
   const [signalFilter, setSignalFilter] = useState<string>('all');
   const [sortField, setSortField] = useState<'score' | 'momentum' | 'return_1y'>('score');
 
   const categories = useMemo(() => {
     if (!funds) return [];
-    return Array.from(new Set(funds.map(f => f.category).filter(Boolean))).sort();
+    return Array.from(new Set(funds.map(f => getMainCategory(f)).filter(Boolean))).sort();
+  }, [funds]);
+
+  const trustees = useMemo(() => {
+    if (!funds) return [];
+    return Array.from(new Set(funds.map(f => resolveTrustee(f)).filter(Boolean))).sort() as string[];
   }, [funds]);
 
   const scoredFunds = useMemo(() => {
     if (!funds) return [];
     let filtered = funds;
-    if (category !== 'all') filtered = filtered.filter(f => f.category === category);
-    const scored = filtered.map(calculateScore);
-    if (signalFilter !== 'all') return scored.filter(s => s.signal === signalFilter);
+    if (category !== 'all') filtered = filtered.filter(f => getMainCategory(f) === category);
+    if (trustee !== 'all') filtered = filtered.filter(f => resolveTrustee(f) === trustee);
+    let scored = filtered.map(calculateScore);
+    if (signalFilter !== 'all') scored = scored.filter(s => s.signal === signalFilter);
     return scored.sort((a, b) => {
       if (sortField === 'score') return b.score - a.score;
       if (sortField === 'momentum') return b.momentum - a.momentum;
       return (b.fund.return_1y ?? 0) - (a.fund.return_1y ?? 0);
     });
-  }, [funds, category, signalFilter, sortField]);
+  }, [funds, category, trustee, signalFilter, sortField]);
 
   const signalSummary = useMemo(() => {
     if (!funds) return {};
@@ -106,6 +114,16 @@ export default function RadarSignals() {
             </Select>
           </div>
           <div className="flex-1 min-w-[140px]">
+            <label className="text-xs text-muted-foreground mb-1 block">受託人</label>
+            <Select value={trustee} onValueChange={setTrustee}>
+              <SelectTrigger className="rounded-2xl"><SelectValue placeholder="全部受託人" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部受託人</SelectItem>
+                {trustees.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1 min-w-[140px]">
             <label className="text-xs text-muted-foreground mb-1 block">排序</label>
             <Select value={sortField} onValueChange={(v: any) => setSortField(v)}>
               <SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger>
@@ -137,7 +155,7 @@ export default function RadarSignals() {
                       <span className="text-xs font-bold text-foreground">{s.score}分</span>
                     </div>
                     <div className="font-medium text-foreground text-sm mt-1 truncate">{s.fund.name}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">{resolveTrustee(s.fund)} · {s.fund.category} · {s.fund.risk_level || '—'}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">{resolveTrustee(s.fund)} · {getMainCategory(s.fund)} · {s.fund.risk_level || '—'}</div>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <ReturnValue value={s.fund.return_1y} className="text-sm font-bold" />
