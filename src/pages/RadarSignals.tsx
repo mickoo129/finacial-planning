@@ -82,7 +82,7 @@ export default function RadarSignals() {
       if (sortField === 'momentum') return b.momentum - a.momentum;
       return (b.fund.return_1y ?? 0) - (a.fund.return_1y ?? 0);
     });
-  }, [funds, category, trustee, signalFilter, sortField]);
+  }, [funds, category, trustee, scheme, signalFilter, sortField]);
 
   const signalSummary = useMemo(() => {
     if (!funds) return {};
@@ -117,7 +117,7 @@ export default function RadarSignals() {
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 min-w-[140px]">
             <label className="text-xs text-muted-foreground mb-1 block">類別</label>
-            <Select value={category} onValueChange={setCategory}>
+            <Select value={category} onValueChange={(v) => { setCategory(v); setTrustee('all'); setScheme('all'); }}>
               <SelectTrigger className="rounded-2xl"><SelectValue placeholder="全部類別" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全部類別</SelectItem>
@@ -127,11 +127,21 @@ export default function RadarSignals() {
           </div>
           <div className="flex-1 min-w-[140px]">
             <label className="text-xs text-muted-foreground mb-1 block">受託人</label>
-            <Select value={trustee} onValueChange={setTrustee}>
+            <Select value={trustee} onValueChange={(v) => { setTrustee(v); setScheme('all'); }}>
               <SelectTrigger className="rounded-2xl"><SelectValue placeholder="全部受託人" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全部受託人</SelectItem>
                 {trustees.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1 min-w-[140px]">
+            <label className="text-xs text-muted-foreground mb-1 block">計劃名稱</label>
+            <Select value={scheme} onValueChange={setScheme}>
+              <SelectTrigger className="rounded-2xl"><SelectValue placeholder="全部計劃" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部計劃</SelectItem>
+                {schemes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
