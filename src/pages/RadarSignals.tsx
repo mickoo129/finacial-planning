@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useMpfFunds } from '@/hooks/useMpfFunds';
 import { ReturnValue } from '@/components/ReturnValue';
 import { resolveTrustee } from '@/lib/trusteeMap';
+import { getMainCategory } from '@/components/CascadingFundFilter';
 import { Zap } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
