@@ -82,8 +82,12 @@ export default function Categories() {
           </div>
           <div className="space-y-2">
             {(() => {
-              const hasNegative = chartData.some(c => c.avgReturn < 0);
-              const maxAbs = Math.max(...chartData.map(c => Math.abs(c.avgReturn)), 0.01);
+              const maxPos = Math.max(...chartData.map(c => c.avgReturn > 0 ? c.avgReturn : 0), 0);
+              const maxNeg = Math.max(...chartData.map(c => c.avgReturn < 0 ? -c.avgReturn : 0), 0);
+              const hasNegative = maxNeg > 0;
+              const total = maxPos + maxNeg || 0.01;
+              // Axis position (% from left): negative side占 maxNeg/total，正側占 maxPos/total
+              const axisPct = hasNegative ? (maxNeg / total) * 100 : 0;
               // Distinct HSL hues per category for visual differentiation
               const palette = [
                 'hsl(210 90% 55%)', // blue
@@ -102,16 +106,25 @@ export default function Categories() {
                 const color = palette[idx % palette.length];
                 let barStyle: React.CSSProperties;
                 if (hasNegative) {
-                  // Center axis layout
-                  const widthPct = Math.min(Math.abs(cat.avgReturn) / maxAbs * 50, 50);
-                  barStyle = {
-                    width: `${widthPct}%`,
-                    backgroundColor: color,
-                    [isPositive ? 'left' : 'right']: '50%',
-                  };
+                  // Dynamic axis layout: 正數佔右側 (100 - axisPct)%, 負數佔左側 axisPct%
+                  if (isPositive) {
+                    const widthPct = maxPos > 0 ? (cat.avgReturn / maxPos) * (100 - axisPct) : 0;
+                    barStyle = {
+                      width: `${widthPct}%`,
+                      backgroundColor: color,
+                      left: `${axisPct}%`,
+                    };
+                  } else {
+                    const widthPct = maxNeg > 0 ? (Math.abs(cat.avgReturn) / maxNeg) * axisPct : 0;
+                    barStyle = {
+                      width: `${widthPct}%`,
+                      backgroundColor: color,
+                      left: `${axisPct - widthPct}%`,
+                    };
+                  }
                 } else {
                   // Left-aligned full-width layout
-                  const widthPct = Math.min(Math.abs(cat.avgReturn) / maxAbs * 100, 100);
+                  const widthPct = maxPos > 0 ? Math.min((cat.avgReturn / maxPos) * 100, 100) : 0;
                   barStyle = {
                     width: `${widthPct}%`,
                     backgroundColor: color,
@@ -123,7 +136,7 @@ export default function Categories() {
                     <span className="text-xs text-muted-foreground w-24 text-right shrink-0">{cat.shortName}</span>
                     <div className="flex-1 h-6 bg-muted/30 rounded-full overflow-hidden relative">
                       {hasNegative && (
-                        <div className="absolute top-0 bottom-0 left-1/2 w-px bg-border/60" />
+                        <div className="absolute top-0 bottom-0 w-px bg-border/60" style={{ left: `${axisPct}%` }} />
                       )}
                       <div className="absolute top-0 bottom-0" style={barStyle} />
                     </div>
