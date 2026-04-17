@@ -198,6 +198,24 @@ export default function RadarSignals() {
                     </div>
                   ))}
                 </div>
+                {(() => {
+                  const reasons: string[] = [];
+                  if (s.momentum >= 70) reasons.push('動量強勁');
+                  else if (s.momentum <= 35) reasons.push('動量轉弱');
+                  if (s.consistency >= 75) reasons.push('回報穩定一致');
+                  else if (s.consistency <= 35) reasons.push('回報波動大');
+                  if (s.riskAdj >= 70) reasons.push('風險調整佳');
+                  else if (s.riskAdj <= 35) reasons.push('風險回報失衡');
+                  if ((s.fund.return_1y ?? 0) > 10) reasons.push('1年回報突出');
+                  else if ((s.fund.return_1y ?? 0) < -5) reasons.push('1年錄得虧損');
+                  if (reasons.length === 0) reasons.push('表現中規中矩');
+                  const action = s.signal === 'strong_buy' || s.signal === 'buy' ? '可考慮買入' : s.signal === 'hold' ? '建議持有觀望' : '建議減持';
+                  return (
+                    <div className="mt-2 text-[10px] text-muted-foreground bg-muted/30 rounded-lg px-2 py-1.5">
+                      <span className="font-medium text-foreground">點解揀佢：</span>{reasons.join('、')}，故{action}。
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}
