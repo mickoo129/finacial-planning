@@ -136,7 +136,6 @@ export default function RadarSignals() {
           </div>
         </div>
       </div>
-      </div>
 
       {/* Scored fund list */}
       <div className="glass-card rounded-3xl overflow-hidden">
