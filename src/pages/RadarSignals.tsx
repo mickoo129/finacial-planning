@@ -114,6 +114,16 @@ export default function RadarSignals() {
             </Select>
           </div>
           <div className="flex-1 min-w-[140px]">
+            <label className="text-xs text-muted-foreground mb-1 block">受託人</label>
+            <Select value={trustee} onValueChange={setTrustee}>
+              <SelectTrigger className="rounded-2xl"><SelectValue placeholder="全部受託人" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部受託人</SelectItem>
+                {trustees.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1 min-w-[140px]">
             <label className="text-xs text-muted-foreground mb-1 block">排序</label>
             <Select value={sortField} onValueChange={(v: any) => setSortField(v)}>
               <SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger>
@@ -125,6 +135,7 @@ export default function RadarSignals() {
             </Select>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Scored fund list */}
