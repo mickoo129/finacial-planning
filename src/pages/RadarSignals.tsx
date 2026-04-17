@@ -45,6 +45,7 @@ export default function RadarSignals() {
   const { data: funds, isLoading } = useMpfFunds();
   const [category, setCategory] = useState('all');
   const [trustee, setTrustee] = useState('all');
+  const [scheme, setScheme] = useState('all');
   const [signalFilter, setSignalFilter] = useState<string>('all');
   const [sortField, setSortField] = useState<'score' | 'momentum' | 'return_1y'>('score');
 
@@ -55,14 +56,25 @@ export default function RadarSignals() {
 
   const trustees = useMemo(() => {
     if (!funds) return [];
-    return Array.from(new Set(funds.map(f => resolveTrustee(f)).filter(Boolean))).sort() as string[];
-  }, [funds]);
+    let pool = funds;
+    if (category !== 'all') pool = pool.filter(f => getMainCategory(f) === category);
+    return Array.from(new Set(pool.map(f => resolveTrustee(f)).filter(Boolean))).sort() as string[];
+  }, [funds, category]);
+
+  const schemes = useMemo(() => {
+    if (!funds) return [];
+    let pool = funds;
+    if (category !== 'all') pool = pool.filter(f => getMainCategory(f) === category);
+    if (trustee !== 'all') pool = pool.filter(f => resolveTrustee(f) === trustee);
+    return Array.from(new Set(pool.map(f => f.scheme_name).filter(Boolean))).sort() as string[];
+  }, [funds, category, trustee]);
 
   const scoredFunds = useMemo(() => {
     if (!funds) return [];
     let filtered = funds;
     if (category !== 'all') filtered = filtered.filter(f => getMainCategory(f) === category);
     if (trustee !== 'all') filtered = filtered.filter(f => resolveTrustee(f) === trustee);
+    if (scheme !== 'all') filtered = filtered.filter(f => f.scheme_name === scheme);
     let scored = filtered.map(calculateScore);
     if (signalFilter !== 'all') scored = scored.filter(s => s.signal === signalFilter);
     return scored.sort((a, b) => {
@@ -70,7 +82,7 @@ export default function RadarSignals() {
       if (sortField === 'momentum') return b.momentum - a.momentum;
       return (b.fund.return_1y ?? 0) - (a.fund.return_1y ?? 0);
     });
-  }, [funds, category, trustee, signalFilter, sortField]);
+  }, [funds, category, trustee, scheme, signalFilter, sortField]);
 
   const signalSummary = useMemo(() => {
     if (!funds) return {};
@@ -105,7 +117,7 @@ export default function RadarSignals() {
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 min-w-[140px]">
             <label className="text-xs text-muted-foreground mb-1 block">類別</label>
-            <Select value={category} onValueChange={setCategory}>
+            <Select value={category} onValueChange={(v) => { setCategory(v); setTrustee('all'); setScheme('all'); }}>
               <SelectTrigger className="rounded-2xl"><SelectValue placeholder="全部類別" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全部類別</SelectItem>
@@ -115,11 +127,21 @@ export default function RadarSignals() {
           </div>
           <div className="flex-1 min-w-[140px]">
             <label className="text-xs text-muted-foreground mb-1 block">受託人</label>
-            <Select value={trustee} onValueChange={setTrustee}>
+            <Select value={trustee} onValueChange={(v) => { setTrustee(v); setScheme('all'); }}>
               <SelectTrigger className="rounded-2xl"><SelectValue placeholder="全部受託人" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全部受託人</SelectItem>
                 {trustees.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1 min-w-[140px]">
+            <label className="text-xs text-muted-foreground mb-1 block">計劃名稱</label>
+            <Select value={scheme} onValueChange={setScheme}>
+              <SelectTrigger className="rounded-2xl"><SelectValue placeholder="全部計劃" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部計劃</SelectItem>
+                {schemes.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -176,6 +198,24 @@ export default function RadarSignals() {
                     </div>
                   ))}
                 </div>
+                {(() => {
+                  const reasons: string[] = [];
+                  if (s.momentum >= 70) reasons.push('動量強勁');
+                  else if (s.momentum <= 35) reasons.push('動量轉弱');
+                  if (s.consistency >= 75) reasons.push('回報穩定一致');
+                  else if (s.consistency <= 35) reasons.push('回報波動大');
+                  if (s.riskAdj >= 70) reasons.push('風險調整佳');
+                  else if (s.riskAdj <= 35) reasons.push('風險回報失衡');
+                  if ((s.fund.return_1y ?? 0) > 10) reasons.push('1年回報突出');
+                  else if ((s.fund.return_1y ?? 0) < -5) reasons.push('1年錄得虧損');
+                  if (reasons.length === 0) reasons.push('表現中規中矩');
+                  const action = s.signal === 'strong_buy' || s.signal === 'buy' ? '可考慮買入' : s.signal === 'hold' ? '建議持有觀望' : '建議減持';
+                  return (
+                    <div className="mt-2 text-[10px] text-muted-foreground bg-muted/30 rounded-lg px-2 py-1.5">
+                      <span className="font-medium text-foreground">點解揀佢：</span>{reasons.join('、')}，故{action}。
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}
