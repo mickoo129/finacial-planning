@@ -81,19 +81,28 @@ export default function Categories() {
             <span className="text-[10px] text-muted-foreground">{RETURN_LABELS[sortBy]}</span>
           </div>
           <div className="space-y-2">
-            {chartData.map((cat, i) => {
-              const colors = ['bg-blue-400', 'bg-amber-400', 'bg-violet-400', 'bg-emerald-400', 'bg-rose-400', 'bg-cyan-400', 'bg-orange-400', 'bg-pink-400'];
-              const barColor = colors[i % colors.length];
-              return (
-                <div key={cat.name} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground w-24 text-right shrink-0">{cat.shortName}</span>
-                  <div className="flex-1 h-6 bg-muted/30 rounded-full overflow-hidden relative">
-                    <div className={`h-full rounded-full ${barColor}`} style={{ width: `${Math.min(Math.abs(cat.avgReturn) / Math.max(...chartData.map(c => Math.abs(c.avgReturn))) * 100, 100)}%` }} />
+            {(() => {
+              const maxAbs = Math.max(...chartData.map(c => Math.abs(c.avgReturn)), 0.01);
+              return chartData.map((cat) => {
+                const isPositive = cat.avgReturn >= 0;
+                const widthPct = Math.min(Math.abs(cat.avgReturn) / maxAbs * 50, 50);
+                return (
+                  <div key={cat.name} className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground w-24 text-right shrink-0">{cat.shortName}</span>
+                    <div className="flex-1 h-6 bg-muted/30 rounded-full overflow-hidden relative">
+                      {/* Center line */}
+                      <div className="absolute top-0 bottom-0 left-1/2 w-px bg-border/60" />
+                      {/* Bar */}
+                      <div
+                        className={`absolute top-0 bottom-0 ${isPositive ? 'bg-positive left-1/2' : 'bg-negative right-1/2'}`}
+                        style={{ width: `${widthPct}%` }}
+                      />
+                    </div>
+                    <ReturnValue value={cat.avgReturn} className="w-16 text-right" />
                   </div>
-                  <ReturnValue value={cat.avgReturn} className="w-16 text-right" />
-                </div>
-              );
-            })}
+                );
+              });
+            })()}
           </div>
         </div>
       )}
