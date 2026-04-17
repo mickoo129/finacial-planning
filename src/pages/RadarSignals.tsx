@@ -44,26 +44,33 @@ function calculateScore(fund: any): FundScore {
 export default function RadarSignals() {
   const { data: funds, isLoading } = useMpfFunds();
   const [category, setCategory] = useState('all');
+  const [trustee, setTrustee] = useState('all');
   const [signalFilter, setSignalFilter] = useState<string>('all');
   const [sortField, setSortField] = useState<'score' | 'momentum' | 'return_1y'>('score');
 
   const categories = useMemo(() => {
     if (!funds) return [];
-    return Array.from(new Set(funds.map(f => f.category).filter(Boolean))).sort();
+    return Array.from(new Set(funds.map(f => getMainCategory(f)).filter(Boolean))).sort();
+  }, [funds]);
+
+  const trustees = useMemo(() => {
+    if (!funds) return [];
+    return Array.from(new Set(funds.map(f => resolveTrustee(f)).filter(Boolean))).sort() as string[];
   }, [funds]);
 
   const scoredFunds = useMemo(() => {
     if (!funds) return [];
     let filtered = funds;
-    if (category !== 'all') filtered = filtered.filter(f => f.category === category);
-    const scored = filtered.map(calculateScore);
-    if (signalFilter !== 'all') return scored.filter(s => s.signal === signalFilter);
+    if (category !== 'all') filtered = filtered.filter(f => getMainCategory(f) === category);
+    if (trustee !== 'all') filtered = filtered.filter(f => resolveTrustee(f) === trustee);
+    let scored = filtered.map(calculateScore);
+    if (signalFilter !== 'all') scored = scored.filter(s => s.signal === signalFilter);
     return scored.sort((a, b) => {
       if (sortField === 'score') return b.score - a.score;
       if (sortField === 'momentum') return b.momentum - a.momentum;
       return (b.fund.return_1y ?? 0) - (a.fund.return_1y ?? 0);
     });
-  }, [funds, category, signalFilter, sortField]);
+  }, [funds, category, trustee, signalFilter, sortField]);
 
   const signalSummary = useMemo(() => {
     if (!funds) return {};
