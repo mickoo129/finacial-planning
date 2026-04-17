@@ -155,7 +155,7 @@ export default function RadarSignals() {
                       <span className="text-xs font-bold text-foreground">{s.score}分</span>
                     </div>
                     <div className="font-medium text-foreground text-sm mt-1 truncate">{s.fund.name}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">{resolveTrustee(s.fund)} · {s.fund.category} · {s.fund.risk_level || '—'}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">{resolveTrustee(s.fund)} · {getMainCategory(s.fund)} · {s.fund.risk_level || '—'}</div>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <ReturnValue value={s.fund.return_1y} className="text-sm font-bold" />
