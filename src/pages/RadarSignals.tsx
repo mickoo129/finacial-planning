@@ -57,12 +57,23 @@ export default function RadarSignals() {
   const scoredFunds = useMemo(() => {
     let scored = filteredScored;
     if (signalFilter !== 'all') scored = scored.filter(s => s.signal === signalFilter);
+    const r5 = (f: any) => f.return_5y ?? -999;
+    const r3 = (f: any) => f.return_3y ?? -999;
+    const r10 = (f: any) => f.return_10y ?? -999;
     return [...scored].sort((a, b) => {
-      if (sortField === 'score') return b.score - a.score;
-      if (sortField === 'longTerm') return b.longTerm - a.longTerm;
-      if (sortField === 'return_10y') return (b.fund.return_10y ?? -999) - (a.fund.return_10y ?? -999);
-      if (sortField === 'return_5y') return (b.fund.return_5y ?? -999) - (a.fund.return_5y ?? -999);
-      return (b.fund.return_3y ?? -999) - (a.fund.return_3y ?? -999);
+      if (sortField === 'score') {
+        // 主排：綜合分；同分先比 5y、再比 3y、再比基金規模
+        return (b.score - a.score)
+          || (r5(b.fund) - r5(a.fund))
+          || (r3(b.fund) - r3(a.fund))
+          || ((b.fund.fund_size ?? 0) - (a.fund.fund_size ?? 0));
+      }
+      if (sortField === 'longTerm') {
+        return (b.longTerm - a.longTerm) || (r5(b.fund) - r5(a.fund)) || (r10(b.fund) - r10(a.fund));
+      }
+      if (sortField === 'return_10y') return (r10(b.fund) - r10(a.fund)) || (r5(b.fund) - r5(a.fund));
+      if (sortField === 'return_5y') return (r5(b.fund) - r5(a.fund)) || (r3(b.fund) - r3(a.fund));
+      return (r3(b.fund) - r3(a.fund)) || (r5(b.fund) - r5(a.fund));
     });
   }, [filteredScored, signalFilter, sortField]);
 
