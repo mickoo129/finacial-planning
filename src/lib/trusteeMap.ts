@@ -68,15 +68,48 @@ export const PLAN_TRUSTEE_MAP: Record<string, { trustee: string; scheme: string 
   ETNSI66: { trustee: '信安', scheme: '易富之選' },
 };
 
-// Normalize trustee names that are incorrectly separated in data sources
-// Based on MPFA official approved trustee list (https://www.mpfa.org.hk)
+// Normalize trustee names to match MPFA official approved trustee list
+// Reference: https://www.mpfa.org.hk/sc/info-centre/public-registers/mpf-approved-trustees
+// MPFA 截至 2026 年現有核准受託人約 12 間，部分品牌名實際隸屬同一受託人法人
 const TRUSTEE_ALIAS: Record<string, string> = {
-  'AMTD': '銀聯信託',  // AMTD計劃受託人為銀聯信託有限公司
+  // AMTD 強積金計劃受託人為「銀聯信託有限公司」
+  'AMTD': '銀聯信託',
+  // 新鴻基 MPF 僱主自選計劃受託人為「銀聯信託」
+  '新鴻基': '銀聯信託',
+  // 海通 MPF 退休金計劃於 2024 年由宏利接手作受託人
+  '海通': '宏利',
+  // 恒生強積金由「滙豐機構信託服務（亞洲）」擔任受託人，恒生係滙豐集團成員
+  '恒生': '滙豐',
+  // 「匯豐」與「滙豐」統一為官方繁體寫法「滙豐」
+  '匯豐': '滙豐',
 };
+
+// MPFA 官方 12 個現有核准受託人顯示名稱（用於檢查 / 完整列表）
+export const MPFA_APPROVED_TRUSTEES = [
+  '友邦',
+  '銀聯信託',
+  '交通銀行',
+  '東亞',
+  '中銀保誠',
+  '中國人壽',
+  '花旗',
+  '滙豐',
+  '宏利',
+  '永明',
+  '信安',
+  '富達',
+  '景順',
+  'BCT',
+  '萬通',
+];
 
 // Infer trustee from fund name when trustee_name is null/missing
 const FUND_NAME_TRUSTEE_PATTERNS: { pattern: RegExp; trustee: string; scheme: string }[] = [
-  { pattern: /^(?:orientiert)?AMTD/i, trustee: '銀聯信託', scheme: 'AMTD強積金計劃' },
+  { pattern: /AMTD/i, trustee: '銀聯信託', scheme: 'AMTD強積金計劃' },
+  { pattern: /新鴻基|新鸿基/i, trustee: '銀聯信託', scheme: '新鴻基強積金僱主自選計劃' },
+  { pattern: /海通/i, trustee: '宏利', scheme: '海通MPF退休金' },
+  { pattern: /恒生/i, trustee: '滙豐', scheme: '恒生強積金智選計劃' },
+  { pattern: /匯豐|滙豐|HSBC/i, trustee: '滙豐', scheme: '滙豐強積金智選計劃' },
 ];
 
 export function normalizeTrusteeName(name: string | null | undefined): string {
