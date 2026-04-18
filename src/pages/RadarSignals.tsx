@@ -47,7 +47,7 @@ export default function RadarSignals() {
   const [trustee, setTrustee] = useState('all');
   const [scheme, setScheme] = useState('all');
   const [signalFilter, setSignalFilter] = useState<string>('all');
-  const [sortField, setSortField] = useState<'score' | 'momentum' | 'return_1y'>('score');
+  const [sortField, setSortField] = useState<'score' | 'momentum' | 'return_1y' | 'return_3y' | 'return_5y'>('score');
 
   const categories = useMemo(() => {
     if (!funds) return [];
@@ -80,17 +80,22 @@ export default function RadarSignals() {
     return scored.sort((a, b) => {
       if (sortField === 'score') return b.score - a.score;
       if (sortField === 'momentum') return b.momentum - a.momentum;
+      if (sortField === 'return_3y') return (b.fund.return_3y ?? 0) - (a.fund.return_3y ?? 0);
+      if (sortField === 'return_5y') return (b.fund.return_5y ?? 0) - (a.fund.return_5y ?? 0);
       return (b.fund.return_1y ?? 0) - (a.fund.return_1y ?? 0);
     });
   }, [funds, category, trustee, scheme, signalFilter, sortField]);
 
   const signalSummary = useMemo(() => {
-    if (!funds) return {};
-    const allScored = funds.map(calculateScore);
+    if (!funds) return {} as Record<Signal, number>;
+    let pool = funds;
+    if (category !== 'all') pool = pool.filter(f => getMainCategory(f) === category);
+    if (trustee !== 'all') pool = pool.filter(f => resolveTrustee(f) === trustee);
+    if (scheme !== 'all') pool = pool.filter(f => f.scheme_name === scheme);
     const summary: Record<Signal, number> = { strong_buy: 0, buy: 0, hold: 0, sell: 0, strong_sell: 0 };
-    allScored.forEach(s => summary[s.signal]++);
+    pool.map(calculateScore).forEach(s => summary[s.signal]++);
     return summary;
-  }, [funds]);
+  }, [funds, category, trustee, scheme]);
 
   if (isLoading) return <div className="flex items-center justify-center min-h-[400px]"><div className="text-muted-foreground text-sm">載入中...</div></div>;
 
@@ -153,6 +158,8 @@ export default function RadarSignals() {
                 <SelectItem value="score">綜合評分</SelectItem>
                 <SelectItem value="momentum">動量評分</SelectItem>
                 <SelectItem value="return_1y">1年回報</SelectItem>
+                <SelectItem value="return_3y">3年回報</SelectItem>
+                <SelectItem value="return_5y">5年回報</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -212,7 +219,7 @@ export default function RadarSignals() {
                   const action = s.signal === 'strong_buy' || s.signal === 'buy' ? '可考慮買入' : s.signal === 'hold' ? '建議持有觀望' : '建議減持';
                   return (
                     <div className="mt-2 text-[10px] text-muted-foreground bg-muted/30 rounded-lg px-2 py-1.5">
-                      <span className="font-medium text-foreground">點解揀佢：</span>{reasons.join('、')}，故{action}。
+                      <span className="font-medium text-foreground">選擇原因：</span>{reasons.join('、')}，故{action}。
                     </div>
                   );
                 })()}
