@@ -32,22 +32,36 @@ export default function PortfolioSimulator() {
     if (!fundId || portfolio.length >= 5) return;
     const fund = funds?.find(f => f.id === fundId);
     if (fund) {
-      const remainingWeight = 100 - portfolio.reduce((sum, p) => sum + p.weight, 0);
+      const remainingWeight = Math.max(0, 100 - portfolio.reduce((sum, p) => sum + p.weight, 0));
+      if (remainingWeight === 0) return;
       setPortfolio([...portfolio, { fund, weight: Math.min(remainingWeight, 20) }]);
       setFundId('');
     }
   };
 
   const removeFund = (id: string) => setPortfolio(portfolio.filter(p => p.fund.etnet_fund_id !== id));
-  const updateWeight = (id: string, weight: number) => setPortfolio(portfolio.map(p => p.fund.etnet_fund_id === id ? { ...p, weight } : p));
+  const updateWeight = (id: string, weight: number) => {
+    const otherWeight = portfolio.filter(p => p.fund.etnet_fund_id !== id).reduce((sum, p) => sum + p.weight, 0);
+    const maxAllowed = 100 - otherWeight;
+    const capped = Math.min(weight, maxAllowed);
+    setPortfolio(portfolio.map(p => p.fund.etnet_fund_id === id ? { ...p, weight: capped } : p));
+  };
   const totalWeight = portfolio.reduce((sum, p) => sum + p.weight, 0);
+
+  // Weighted average that skips funds with null data and re-normalises remaining weights
+  const weightedAvg = (getter: (f: MpfFund) => number | null | undefined) => {
+    const valid = portfolio.filter(p => getter(p.fund) != null && p.weight > 0);
+    const w = valid.reduce((s, p) => s + p.weight, 0);
+    if (w === 0) return 0;
+    return valid.reduce((s, p) => s + (getter(p.fund) as number) * (p.weight / w), 0);
+  };
 
   const metrics = useMemo(() => {
     if (portfolio.length === 0 || totalWeight === 0) return null;
-    const weightedReturn1y = portfolio.reduce((sum, p) => sum + (p.fund.return_1y ?? 0) * (p.weight / totalWeight), 0);
-    const weightedReturn3y = portfolio.reduce((sum, p) => sum + (p.fund.return_3y ?? 0) * (p.weight / totalWeight), 0);
-    const weightedReturnYtd = portfolio.reduce((sum, p) => sum + (p.fund.return_ytd ?? 0) * (p.weight / totalWeight), 0);
-    const weightedReturn3m = portfolio.reduce((sum, p) => sum + (p.fund.return_3m ?? 0) * (p.weight / totalWeight), 0);
+    const weightedReturn1y = weightedAvg(f => f.return_1y);
+    const weightedReturn3y = weightedAvg(f => f.return_3y);
+    const weightedReturnYtd = weightedAvg(f => f.return_ytd);
+    const weightedReturn3m = weightedAvg(f => f.return_3m);
     const annualReturn = weightedReturn1y / 100;
     const returns = [weightedReturnYtd, weightedReturn3m * 4, weightedReturn1y, weightedReturn3y / 3];
     const validReturns = returns.filter(r => r !== 0);
@@ -110,7 +124,7 @@ export default function PortfolioSimulator() {
                 <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i] }} />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-medium text-foreground truncate">{p.fund.name_zh || p.fund.name}</div>
-                  <Slider value={[p.weight]} max={100} step={5} onValueChange={([v]) => updateWeight(p.fund.etnet_fund_id, v)} className="mt-1" />
+                  <Slider value={[p.weight]} max={Math.min(100, p.weight + (100 - totalWeight))} step={5} onValueChange={([v]) => updateWeight(p.fund.etnet_fund_id, v)} className="mt-1" />
                 </div>
                 <span className="text-xs font-medium text-foreground w-10 text-right">{p.weight}%</span>
                 <button onClick={() => removeFund(p.fund.etnet_fund_id)} className="text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
@@ -127,11 +141,11 @@ export default function PortfolioSimulator() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">初始投入 (HK$)</label>
-              <Input type="number" value={initialAmount} onChange={e => setInitialAmount(Number(e.target.value))} min={0} step={10000} className="rounded-2xl" />
+              <Input type="number" value={initialAmount === 0 ? '' : initialAmount} onChange={e => setInitialAmount(e.target.value === '' ? 0 : Number(e.target.value))} min={0} step={10000} className="rounded-2xl" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">每月供款 (HK$)</label>
-              <Input type="number" value={monthlyContribution} onChange={e => setMonthlyContribution(Number(e.target.value))} min={0} step={500} className="rounded-2xl" />
+              <Input type="number" value={monthlyContribution === 0 ? '' : monthlyContribution} onChange={e => setMonthlyContribution(e.target.value === '' ? 0 : Number(e.target.value))} min={0} step={500} className="rounded-2xl" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">投資年期</label>
