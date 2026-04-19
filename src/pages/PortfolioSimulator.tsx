@@ -23,8 +23,8 @@ export default function PortfolioSimulator() {
   const [filteredFunds, setFilteredFunds] = useState<MpfFund[]>([]);
 
   const handleFilterChange = useCallback((filtered: MpfFund[]) => {
-    setFilteredFunds(filtered.filter(f => !portfolio.find(p => p.fund.etnet_fund_id === f.etnet_fund_id)));
-  }, [portfolio]);
+    setFilteredFunds(filtered);
+  }, []);
 
   const handleFundSelect = (id: string) => setFundId(id);
 
