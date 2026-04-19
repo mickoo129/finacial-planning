@@ -172,17 +172,17 @@ export default function PortfolioSimulator() {
         <p className="text-[11px] text-muted-foreground">一鍵套用基於 3 年回報嘅熱門基金組合</p>
         <div className="grid grid-cols-3 gap-2">
           <Button onClick={() => applyPreset('conservative')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
-            <Shield className="h-4 w-4 text-blue-600" />
+            <Shield className="h-4 w-4 text-primary" />
             <span className="text-[11px] font-medium">保守型</span>
             <span className="text-[9px] text-muted-foreground">低風險穩定</span>
           </Button>
           <Button onClick={() => applyPreset('balanced')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
-            <BarChart3 className="h-4 w-4 text-green-600" />
+            <BarChart3 className="h-4 w-4 text-positive" />
             <span className="text-[11px] font-medium">平衡型</span>
             <span className="text-[9px] text-muted-foreground">風險回報並重</span>
           </Button>
           <Button onClick={() => applyPreset('aggressive')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
-            <Rocket className="h-4 w-4 text-orange-600" />
+            <Rocket className="h-4 w-4 text-destructive" />
             <span className="text-[11px] font-medium">進取型</span>
             <span className="text-[9px] text-muted-foreground">高增長潛力</span>
           </Button>
