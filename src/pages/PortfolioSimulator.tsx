@@ -60,14 +60,32 @@ export default function PortfolioSimulator() {
     setFundId('');
   };
 
+  // Composite score: 5y 50% + 3y 30% + 10y 20%, redistribute weight if data missing
+  const compositeScore = (f: MpfFund): number | null => {
+    const periods: Array<{ v: number | null; w: number }> = [
+      { v: f.return_5y, w: 0.5 },
+      { v: f.return_3y, w: 0.3 },
+      { v: f.return_10y, w: 0.2 },
+    ];
+    const valid = periods.filter(p => p.v != null);
+    if (valid.length === 0) return null;
+    const totalW = valid.reduce((s, p) => s + p.w, 0);
+    return valid.reduce((s, p) => s + (p.v as number) * (p.w / totalW), 0);
+  };
+
   const applyPreset = (preset: 'conservative' | 'balanced' | 'aggressive') => {
     if (!funds?.length) return;
 
+    // Use filtered pool if user narrowed by trustee/scheme; otherwise use all
+    const pool = filteredFunds.length > 0 && filteredFunds.length < funds.length ? filteredFunds : funds;
+
     const topByCategory = (matcher: (f: MpfFund) => boolean, n: number, exclude: Set<string>): MpfFund[] => {
-      return funds
-        .filter(f => matcher(f) && f.return_3y != null && !exclude.has(f.etnet_fund_id))
-        .sort((a, b) => (b.return_3y ?? -Infinity) - (a.return_3y ?? -Infinity))
-        .slice(0, n);
+      return pool
+        .map(f => ({ f, score: compositeScore(f) }))
+        .filter(({ f, score }) => matcher(f) && score != null && !exclude.has(f.etnet_fund_id))
+        .sort((a, b) => (b.score as number) - (a.score as number))
+        .slice(0, n)
+        .map(x => x.f);
     };
 
     const isMoneyMarket = (f: MpfFund) =>
@@ -95,6 +113,18 @@ export default function PortfolioSimulator() {
     } else {
       selected = [...pick(isEquity, 4), ...pick(isMixed, 1)];
       weights = [25, 25, 20, 15, 15];
+    }
+
+    // Fallback: if a category has no funds in pool (e.g. trustee only has equity), fill with top scored from pool
+    if (selected.length < 3) {
+      const fillers = pool
+        .map(f => ({ f, score: compositeScore(f) }))
+        .filter(({ f, score }) => score != null && !seen.has(f.etnet_fund_id))
+        .sort((a, b) => (b.score as number) - (a.score as number))
+        .slice(0, 5 - selected.length)
+        .map(x => x.f);
+      selected = [...selected, ...fillers];
+      weights = [25, 25, 20, 15, 15].slice(0, selected.length);
     }
 
     selected = selected.slice(0, 5);
