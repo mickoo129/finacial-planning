@@ -124,7 +124,12 @@ export default function PortfolioSimulator() {
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">基金配置</span>
-              <span className={totalWeight === 100 ? 'text-positive font-medium' : 'text-negative font-medium'}>總比重: {totalWeight}%</span>
+              <div className="flex items-center gap-2">
+                <Button onClick={distributeEvenly} variant="outline" size="sm" className="h-7 px-2 text-[11px] rounded-xl">
+                  <Scale className="h-3 w-3 mr-1" /> 平均分配
+                </Button>
+                <span className={totalWeight === 100 ? 'text-positive font-medium' : 'text-negative font-medium'}>總比重: {totalWeight}%</span>
+              </div>
             </div>
             {portfolio.map((p, i) => (
               <div key={p.fund.etnet_fund_id} className="flex items-center gap-3">
