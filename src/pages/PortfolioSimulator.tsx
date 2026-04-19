@@ -58,10 +58,10 @@ export default function PortfolioSimulator() {
 
   const metrics = useMemo(() => {
     if (portfolio.length === 0 || totalWeight === 0) return null;
-    const weightedReturn1y = portfolio.reduce((sum, p) => sum + (p.fund.return_1y ?? 0) * (p.weight / totalWeight), 0);
-    const weightedReturn3y = portfolio.reduce((sum, p) => sum + (p.fund.return_3y ?? 0) * (p.weight / totalWeight), 0);
-    const weightedReturnYtd = portfolio.reduce((sum, p) => sum + (p.fund.return_ytd ?? 0) * (p.weight / totalWeight), 0);
-    const weightedReturn3m = portfolio.reduce((sum, p) => sum + (p.fund.return_3m ?? 0) * (p.weight / totalWeight), 0);
+    const weightedReturn1y = weightedAvg(f => f.return_1y);
+    const weightedReturn3y = weightedAvg(f => f.return_3y);
+    const weightedReturnYtd = weightedAvg(f => f.return_ytd);
+    const weightedReturn3m = weightedAvg(f => f.return_3m);
     const annualReturn = weightedReturn1y / 100;
     const returns = [weightedReturnYtd, weightedReturn3m * 4, weightedReturn1y, weightedReturn3y / 3];
     const validReturns = returns.filter(r => r !== 0);
