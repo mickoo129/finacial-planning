@@ -6,7 +6,7 @@ import { RETURN_LABELS } from '@/lib/returnFields';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
-import { Plus, X, Calculator, TrendingUp, AlertTriangle, PieChart, Scale } from 'lucide-react';
+import { Plus, X, Calculator, TrendingUp, AlertTriangle, PieChart, Scale, RotateCcw, Shield, BarChart3, Rocket } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, PieChart as RPieChart, Pie, Cell } from 'recharts';
 
 const COLORS = ['hsl(217, 91%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(45, 93%, 47%)', 'hsl(262, 83%, 58%)', 'hsl(24, 95%, 53%)'];
@@ -53,6 +53,60 @@ export default function PortfolioSimulator() {
     const base = Math.floor(100 / portfolio.length);
     const remainder = 100 - base * portfolio.length;
     setPortfolio(portfolio.map((p, i) => ({ ...p, weight: base + (i === 0 ? remainder : 0) })));
+  };
+
+  const resetPortfolio = () => {
+    setPortfolio([]);
+    setFundId('');
+  };
+
+  const applyPreset = (preset: 'conservative' | 'balanced' | 'aggressive') => {
+    if (!funds?.length) return;
+
+    const topByCategory = (matcher: (f: MpfFund) => boolean, n: number, exclude: Set<string>): MpfFund[] => {
+      return funds
+        .filter(f => matcher(f) && f.return_3y != null && !exclude.has(f.etnet_fund_id))
+        .sort((a, b) => (b.return_3y ?? -Infinity) - (a.return_3y ?? -Infinity))
+        .slice(0, n);
+    };
+
+    const isMoneyMarket = (f: MpfFund) =>
+      (f.category ?? '').includes('貨幣市場') || (f.category ?? '').includes('保守') || (f.category ?? '').includes('保證');
+    const isBond = (f: MpfFund) => (f.category ?? '').includes('債券');
+    const isMixed = (f: MpfFund) => (f.category ?? '').includes('混合資產') || (f.category ?? '').includes('預設投資');
+    const isEquity = (f: MpfFund) => (f.category ?? '').includes('股票');
+
+    const seen = new Set<string>();
+    const pick = (matcher: (f: MpfFund) => boolean, n: number) => {
+      const r = topByCategory(matcher, n, seen);
+      r.forEach(f => seen.add(f.etnet_fund_id));
+      return r;
+    };
+
+    let selected: MpfFund[] = [];
+    let weights: number[] = [];
+
+    if (preset === 'conservative') {
+      selected = [...pick(isMoneyMarket, 2), ...pick(isBond, 2), ...pick(isMixed, 1)];
+      weights = [30, 30, 20, 10, 10];
+    } else if (preset === 'balanced') {
+      selected = [...pick(isMixed, 2), ...pick(isEquity, 1), ...pick(isBond, 1), ...pick(isMoneyMarket, 1)];
+      weights = [25, 25, 30, 10, 10];
+    } else {
+      selected = [...pick(isEquity, 4), ...pick(isMixed, 1)];
+      weights = [25, 25, 20, 15, 15];
+    }
+
+    selected = selected.slice(0, 5);
+    weights = weights.slice(0, selected.length);
+    if (selected.length === 0) return;
+
+    const sumW = weights.reduce((s, w) => s + w, 0);
+    const normalised = weights.map(w => Math.round((w / sumW) * 100));
+    normalised[0] += 100 - normalised.reduce((s, w) => s + w, 0);
+
+    setPortfolio(selected.map((fund, i) => ({ fund, weight: normalised[i] })));
+    setFundId('');
   };
 
   // Weighted average that skips funds with null data and re-normalises remaining weights
@@ -112,6 +166,29 @@ export default function PortfolioSimulator() {
         <p className="text-xs text-muted-foreground mt-1">回測組合表現 · 計算風險指標 · 模擬未來增長</p>
       </div>
 
+      {/* Preset templates */}
+      <div className="glass-card rounded-3xl p-4 space-y-3">
+        <div className="text-sm font-medium text-foreground">預設組合範本</div>
+        <p className="text-[11px] text-muted-foreground">一鍵套用基於 3 年回報嘅熱門基金組合</p>
+        <div className="grid grid-cols-3 gap-2">
+          <Button onClick={() => applyPreset('conservative')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
+            <Shield className="h-4 w-4 text-primary" />
+            <span className="text-[11px] font-medium">保守型</span>
+            <span className="text-[9px] text-muted-foreground">低風險穩定</span>
+          </Button>
+          <Button onClick={() => applyPreset('balanced')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
+            <BarChart3 className="h-4 w-4 text-positive" />
+            <span className="text-[11px] font-medium">平衡型</span>
+            <span className="text-[9px] text-muted-foreground">風險回報並重</span>
+          </Button>
+          <Button onClick={() => applyPreset('aggressive')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
+            <Rocket className="h-4 w-4 text-destructive" />
+            <span className="text-[11px] font-medium">進取型</span>
+            <span className="text-[9px] text-muted-foreground">高增長潛力</span>
+          </Button>
+        </div>
+      </div>
+
       {/* Fund selection */}
       <div className="glass-card rounded-3xl p-4 space-y-4">
         <div className="text-sm font-medium text-foreground">選擇基金（最多 5 隻）</div>
@@ -122,11 +199,14 @@ export default function PortfolioSimulator() {
 
         {portfolio.length > 0 && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between text-xs flex-wrap gap-2">
               <span className="text-muted-foreground">基金配置</span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Button onClick={distributeEvenly} variant="outline" size="sm" className="h-7 px-2 text-[11px] rounded-xl">
                   <Scale className="h-3 w-3 mr-1" /> 平均分配
+                </Button>
+                <Button onClick={resetPortfolio} variant="outline" size="sm" className="h-7 px-2 text-[11px] rounded-xl text-destructive hover:text-destructive">
+                  <RotateCcw className="h-3 w-3 mr-1" /> 重置
                 </Button>
                 <span className={totalWeight === 100 ? 'text-positive font-medium' : 'text-negative font-medium'}>總比重: {totalWeight}%</span>
               </div>
