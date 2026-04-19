@@ -124,7 +124,7 @@ export default function PortfolioSimulator() {
                 <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i] }} />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-medium text-foreground truncate">{p.fund.name_zh || p.fund.name}</div>
-                  <Slider value={[p.weight]} max={100} step={5} onValueChange={([v]) => updateWeight(p.fund.etnet_fund_id, v)} className="mt-1" />
+                  <Slider value={[p.weight]} max={Math.min(100, p.weight + (100 - totalWeight))} step={5} onValueChange={([v]) => updateWeight(p.fund.etnet_fund_id, v)} className="mt-1" />
                 </div>
                 <span className="text-xs font-medium text-foreground w-10 text-right">{p.weight}%</span>
                 <button onClick={() => removeFund(p.fund.etnet_fund_id)} className="text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
