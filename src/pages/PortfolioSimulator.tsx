@@ -166,6 +166,29 @@ export default function PortfolioSimulator() {
         <p className="text-xs text-muted-foreground mt-1">回測組合表現 · 計算風險指標 · 模擬未來增長</p>
       </div>
 
+      {/* Preset templates */}
+      <div className="glass-card rounded-3xl p-4 space-y-3">
+        <div className="text-sm font-medium text-foreground">預設組合範本</div>
+        <p className="text-[11px] text-muted-foreground">一鍵套用基於 3 年回報嘅熱門基金組合</p>
+        <div className="grid grid-cols-3 gap-2">
+          <Button onClick={() => applyPreset('conservative')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
+            <Shield className="h-4 w-4 text-blue-600" />
+            <span className="text-[11px] font-medium">保守型</span>
+            <span className="text-[9px] text-muted-foreground">低風險穩定</span>
+          </Button>
+          <Button onClick={() => applyPreset('balanced')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
+            <BarChart3 className="h-4 w-4 text-green-600" />
+            <span className="text-[11px] font-medium">平衡型</span>
+            <span className="text-[9px] text-muted-foreground">風險回報並重</span>
+          </Button>
+          <Button onClick={() => applyPreset('aggressive')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
+            <Rocket className="h-4 w-4 text-orange-600" />
+            <span className="text-[11px] font-medium">進取型</span>
+            <span className="text-[9px] text-muted-foreground">高增長潛力</span>
+          </Button>
+        </div>
+      </div>
+
       {/* Fund selection */}
       <div className="glass-card rounded-3xl p-4 space-y-4">
         <div className="text-sm font-medium text-foreground">選擇基金（最多 5 隻）</div>
@@ -176,11 +199,14 @@ export default function PortfolioSimulator() {
 
         {portfolio.length > 0 && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between text-xs flex-wrap gap-2">
               <span className="text-muted-foreground">基金配置</span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Button onClick={distributeEvenly} variant="outline" size="sm" className="h-7 px-2 text-[11px] rounded-xl">
                   <Scale className="h-3 w-3 mr-1" /> 平均分配
+                </Button>
+                <Button onClick={resetPortfolio} variant="outline" size="sm" className="h-7 px-2 text-[11px] rounded-xl text-destructive hover:text-destructive">
+                  <RotateCcw className="h-3 w-3 mr-1" /> 重置
                 </Button>
                 <span className={totalWeight === 100 ? 'text-positive font-medium' : 'text-negative font-medium'}>總比重: {totalWeight}%</span>
               </div>
