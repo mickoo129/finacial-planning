@@ -141,11 +141,11 @@ export default function PortfolioSimulator() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">初始投入 (HK$)</label>
-              <Input type="number" value={initialAmount} onChange={e => setInitialAmount(Number(e.target.value))} min={0} step={10000} className="rounded-2xl" />
+              <Input type="number" value={initialAmount === 0 ? '' : initialAmount} onChange={e => setInitialAmount(e.target.value === '' ? 0 : Number(e.target.value))} min={0} step={10000} className="rounded-2xl" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">每月供款 (HK$)</label>
-              <Input type="number" value={monthlyContribution} onChange={e => setMonthlyContribution(Number(e.target.value))} min={0} step={500} className="rounded-2xl" />
+              <Input type="number" value={monthlyContribution === 0 ? '' : monthlyContribution} onChange={e => setMonthlyContribution(e.target.value === '' ? 0 : Number(e.target.value))} min={0} step={500} className="rounded-2xl" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">投資年期</label>
