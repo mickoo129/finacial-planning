@@ -48,6 +48,13 @@ export default function PortfolioSimulator() {
   };
   const totalWeight = portfolio.reduce((sum, p) => sum + p.weight, 0);
 
+  const distributeEvenly = () => {
+    if (portfolio.length === 0) return;
+    const base = Math.floor(100 / portfolio.length);
+    const remainder = 100 - base * portfolio.length;
+    setPortfolio(portfolio.map((p, i) => ({ ...p, weight: base + (i === 0 ? remainder : 0) })));
+  };
+
   // Weighted average that skips funds with null data and re-normalises remaining weights
   const weightedAvg = (getter: (f: MpfFund) => number | null | undefined) => {
     const valid = portfolio.filter(p => getter(p.fund) != null && p.weight > 0);
