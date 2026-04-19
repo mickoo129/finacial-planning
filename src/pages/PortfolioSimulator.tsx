@@ -32,15 +32,29 @@ export default function PortfolioSimulator() {
     if (!fundId || portfolio.length >= 5) return;
     const fund = funds?.find(f => f.id === fundId);
     if (fund) {
-      const remainingWeight = 100 - portfolio.reduce((sum, p) => sum + p.weight, 0);
+      const remainingWeight = Math.max(0, 100 - portfolio.reduce((sum, p) => sum + p.weight, 0));
+      if (remainingWeight === 0) return;
       setPortfolio([...portfolio, { fund, weight: Math.min(remainingWeight, 20) }]);
       setFundId('');
     }
   };
 
   const removeFund = (id: string) => setPortfolio(portfolio.filter(p => p.fund.etnet_fund_id !== id));
-  const updateWeight = (id: string, weight: number) => setPortfolio(portfolio.map(p => p.fund.etnet_fund_id === id ? { ...p, weight } : p));
+  const updateWeight = (id: string, weight: number) => {
+    const otherWeight = portfolio.filter(p => p.fund.etnet_fund_id !== id).reduce((sum, p) => sum + p.weight, 0);
+    const maxAllowed = 100 - otherWeight;
+    const capped = Math.min(weight, maxAllowed);
+    setPortfolio(portfolio.map(p => p.fund.etnet_fund_id === id ? { ...p, weight: capped } : p));
+  };
   const totalWeight = portfolio.reduce((sum, p) => sum + p.weight, 0);
+
+  // Weighted average that skips funds with null data and re-normalises remaining weights
+  const weightedAvg = (getter: (f: MpfFund) => number | null | undefined) => {
+    const valid = portfolio.filter(p => getter(p.fund) != null && p.weight > 0);
+    const w = valid.reduce((s, p) => s + p.weight, 0);
+    if (w === 0) return 0;
+    return valid.reduce((s, p) => s + (getter(p.fund) as number) * (p.weight / w), 0);
+  };
 
   const metrics = useMemo(() => {
     if (portfolio.length === 0 || totalWeight === 0) return null;
