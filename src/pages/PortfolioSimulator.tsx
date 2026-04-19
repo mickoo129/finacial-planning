@@ -6,7 +6,7 @@ import { RETURN_LABELS } from '@/lib/returnFields';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
-import { Plus, X, Calculator, TrendingUp, AlertTriangle, PieChart } from 'lucide-react';
+import { Plus, X, Calculator, TrendingUp, AlertTriangle, PieChart, Scale } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, PieChart as RPieChart, Pie, Cell } from 'recharts';
 
 const COLORS = ['hsl(217, 91%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(45, 93%, 47%)', 'hsl(262, 83%, 58%)', 'hsl(24, 95%, 53%)'];
@@ -47,6 +47,13 @@ export default function PortfolioSimulator() {
     setPortfolio(portfolio.map(p => p.fund.etnet_fund_id === id ? { ...p, weight: capped } : p));
   };
   const totalWeight = portfolio.reduce((sum, p) => sum + p.weight, 0);
+
+  const distributeEvenly = () => {
+    if (portfolio.length === 0) return;
+    const base = Math.floor(100 / portfolio.length);
+    const remainder = 100 - base * portfolio.length;
+    setPortfolio(portfolio.map((p, i) => ({ ...p, weight: base + (i === 0 ? remainder : 0) })));
+  };
 
   // Weighted average that skips funds with null data and re-normalises remaining weights
   const weightedAvg = (getter: (f: MpfFund) => number | null | undefined) => {
@@ -117,7 +124,12 @@ export default function PortfolioSimulator() {
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">基金配置</span>
-              <span className={totalWeight === 100 ? 'text-positive font-medium' : 'text-negative font-medium'}>總比重: {totalWeight}%</span>
+              <div className="flex items-center gap-2">
+                <Button onClick={distributeEvenly} variant="outline" size="sm" className="h-7 px-2 text-[11px] rounded-xl">
+                  <Scale className="h-3 w-3 mr-1" /> 平均分配
+                </Button>
+                <span className={totalWeight === 100 ? 'text-positive font-medium' : 'text-negative font-medium'}>總比重: {totalWeight}%</span>
+              </div>
             </div>
             {portfolio.map((p, i) => (
               <div key={p.fund.etnet_fund_id} className="flex items-center gap-3">
