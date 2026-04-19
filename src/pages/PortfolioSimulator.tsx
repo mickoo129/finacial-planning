@@ -55,6 +55,60 @@ export default function PortfolioSimulator() {
     setPortfolio(portfolio.map((p, i) => ({ ...p, weight: base + (i === 0 ? remainder : 0) })));
   };
 
+  const resetPortfolio = () => {
+    setPortfolio([]);
+    setFundId('');
+  };
+
+  const applyPreset = (preset: 'conservative' | 'balanced' | 'aggressive') => {
+    if (!funds?.length) return;
+
+    const topByCategory = (matcher: (f: MpfFund) => boolean, n: number, exclude: Set<string>): MpfFund[] => {
+      return funds
+        .filter(f => matcher(f) && f.return_3y != null && !exclude.has(f.etnet_fund_id))
+        .sort((a, b) => (b.return_3y ?? -Infinity) - (a.return_3y ?? -Infinity))
+        .slice(0, n);
+    };
+
+    const isMoneyMarket = (f: MpfFund) =>
+      (f.category ?? '').includes('貨幣市場') || (f.category ?? '').includes('保守') || (f.category ?? '').includes('保證');
+    const isBond = (f: MpfFund) => (f.category ?? '').includes('債券');
+    const isMixed = (f: MpfFund) => (f.category ?? '').includes('混合資產') || (f.category ?? '').includes('預設投資');
+    const isEquity = (f: MpfFund) => (f.category ?? '').includes('股票');
+
+    const seen = new Set<string>();
+    const pick = (matcher: (f: MpfFund) => boolean, n: number) => {
+      const r = topByCategory(matcher, n, seen);
+      r.forEach(f => seen.add(f.etnet_fund_id));
+      return r;
+    };
+
+    let selected: MpfFund[] = [];
+    let weights: number[] = [];
+
+    if (preset === 'conservative') {
+      selected = [...pick(isMoneyMarket, 2), ...pick(isBond, 2), ...pick(isMixed, 1)];
+      weights = [30, 30, 20, 10, 10];
+    } else if (preset === 'balanced') {
+      selected = [...pick(isMixed, 2), ...pick(isEquity, 1), ...pick(isBond, 1), ...pick(isMoneyMarket, 1)];
+      weights = [25, 25, 30, 10, 10];
+    } else {
+      selected = [...pick(isEquity, 4), ...pick(isMixed, 1)];
+      weights = [25, 25, 20, 15, 15];
+    }
+
+    selected = selected.slice(0, 5);
+    weights = weights.slice(0, selected.length);
+    if (selected.length === 0) return;
+
+    const sumW = weights.reduce((s, w) => s + w, 0);
+    const normalised = weights.map(w => Math.round((w / sumW) * 100));
+    normalised[0] += 100 - normalised.reduce((s, w) => s + w, 0);
+
+    setPortfolio(selected.map((fund, i) => ({ fund, weight: normalised[i] })));
+    setFundId('');
+  };
+
   // Weighted average that skips funds with null data and re-normalises remaining weights
   const weightedAvg = (getter: (f: MpfFund) => number | null | undefined) => {
     const valid = portfolio.filter(p => getter(p.fund) != null && p.weight > 0);
