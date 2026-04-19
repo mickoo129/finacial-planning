@@ -6,7 +6,7 @@ import { RETURN_LABELS } from '@/lib/returnFields';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
-import { Plus, X, Calculator, TrendingUp, AlertTriangle, PieChart, Scale } from 'lucide-react';
+import { Plus, X, Calculator, TrendingUp, AlertTriangle, PieChart, Scale, RotateCcw, Shield, BarChart3, Rocket } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, PieChart as RPieChart, Pie, Cell } from 'recharts';
 
 const COLORS = ['hsl(217, 91%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(45, 93%, 47%)', 'hsl(262, 83%, 58%)', 'hsl(24, 95%, 53%)'];
