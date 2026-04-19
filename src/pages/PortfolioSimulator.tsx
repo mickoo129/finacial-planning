@@ -196,65 +196,86 @@ export default function PortfolioSimulator() {
         <p className="text-xs text-muted-foreground mt-1">回測組合表現 · 計算風險指標 · 模擬未來增長</p>
       </div>
 
-      {/* Preset templates */}
-      <div className="glass-card rounded-3xl p-4 space-y-3">
-        <div className="text-sm font-medium text-foreground">預設組合範本</div>
-        <p className="text-[11px] text-muted-foreground">一鍵套用基於 3 年回報嘅熱門基金組合</p>
-        <div className="grid grid-cols-3 gap-2">
-          <Button onClick={() => applyPreset('conservative')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
-            <Shield className="h-4 w-4 text-primary" />
-            <span className="text-[11px] font-medium">保守型</span>
-            <span className="text-[9px] text-muted-foreground">低風險穩定</span>
-          </Button>
-          <Button onClick={() => applyPreset('balanced')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
-            <BarChart3 className="h-4 w-4 text-positive" />
-            <span className="text-[11px] font-medium">平衡型</span>
-            <span className="text-[9px] text-muted-foreground">風險回報並重</span>
-          </Button>
-          <Button onClick={() => applyPreset('aggressive')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
-            <Rocket className="h-4 w-4 text-destructive" />
-            <span className="text-[11px] font-medium">進取型</span>
-            <span className="text-[9px] text-muted-foreground">高增長潛力</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Fund selection */}
+      {/* Fund filter & selection */}
       <div className="glass-card rounded-3xl p-4 space-y-4">
-        <div className="text-sm font-medium text-foreground">選擇基金（最多 5 隻）</div>
+        <div className="text-sm font-medium text-foreground">篩選 & 選擇基金（最多 5 隻）</div>
         <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} showFundSelector selectedFundId={fundId} onFundSelect={handleFundSelect} />
         <Button onClick={addFund} disabled={!fundId || portfolio.length >= 5} className="w-full rounded-2xl" size="sm">
           <Plus className="h-4 w-4 mr-2" /> 加入組合
         </Button>
+      </div>
 
-        {portfolio.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs flex-wrap gap-2">
-              <span className="text-muted-foreground">基金配置</span>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Button onClick={distributeEvenly} variant="outline" size="sm" className="h-7 px-2 text-[11px] rounded-xl">
-                  <Scale className="h-3 w-3 mr-1" /> 平均分配
-                </Button>
-                <Button onClick={resetPortfolio} variant="outline" size="sm" className="h-7 px-2 text-[11px] rounded-xl text-destructive hover:text-destructive">
-                  <RotateCcw className="h-3 w-3 mr-1" /> 重置
-                </Button>
-                <span className={totalWeight === 100 ? 'text-positive font-medium' : 'text-negative font-medium'}>總比重: {totalWeight}%</span>
+      {/* Preset templates */}
+      {(() => {
+        const usingFiltered = filteredFunds.length > 0 && filteredFunds.length < (funds?.length ?? 0);
+        return (
+          <div className="glass-card rounded-3xl p-4 space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="text-sm font-medium text-foreground">預設組合範本</div>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  綜合評分：5 年回報 50% + 3 年 30% + 10 年 20%（缺數據自動重新分配）
+                </p>
               </div>
             </div>
-            {portfolio.map((p, i) => (
-              <div key={p.fund.etnet_fund_id} className="flex items-center gap-3">
-                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i] }} />
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-medium text-foreground truncate">{p.fund.name_zh || p.fund.name}</div>
-                  <Slider value={[p.weight]} max={Math.min(100, p.weight + (100 - totalWeight))} step={5} onValueChange={([v]) => updateWeight(p.fund.etnet_fund_id, v)} className="mt-1" />
-                </div>
-                <span className="text-xs font-medium text-foreground w-10 text-right">{p.weight}%</span>
-                <button onClick={() => removeFund(p.fund.etnet_fund_id)} className="text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
-              </div>
-            ))}
+            <div className={`text-[10px] px-2.5 py-1.5 rounded-xl ${usingFiltered ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+              {usingFiltered
+                ? `🎯 範本將從上方已篩選嘅 ${filteredFunds.length} 隻基金中揀選`
+                : '💡 範本會從全部基金揀選；可先喺上方揀指定受託人/計劃，範本就會限喺嗰個範圍'}
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <Button onClick={() => applyPreset('conservative')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
+                <Shield className="h-4 w-4 text-primary" />
+                <span className="text-[11px] font-medium">保守型</span>
+                <span className="text-[9px] text-muted-foreground">低風險穩定</span>
+              </Button>
+              <Button onClick={() => applyPreset('balanced')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
+                <BarChart3 className="h-4 w-4 text-positive" />
+                <span className="text-[11px] font-medium">平衡型</span>
+                <span className="text-[9px] text-muted-foreground">風險回報並重</span>
+              </Button>
+              <Button onClick={() => applyPreset('aggressive')} variant="outline" size="sm" className="rounded-2xl h-auto py-2.5 flex-col gap-1">
+                <Rocket className="h-4 w-4 text-destructive" />
+                <span className="text-[11px] font-medium">進取型</span>
+                <span className="text-[9px] text-muted-foreground">高增長潛力</span>
+              </Button>
+            </div>
+            <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground bg-muted/40 rounded-xl px-2.5 py-1.5">
+              <AlertTriangle className="h-3 w-3 flex-shrink-0 mt-0.5" />
+              <span>過往表現不代表未來回報，建議每 <span className="font-semibold text-foreground">3 年</span>檢視一次組合並適時調整。</span>
+            </div>
           </div>
-        )}
-      </div>
+        );
+      })()}
+
+      {/* Portfolio configuration */}
+      {portfolio.length > 0 && (
+        <div className="glass-card rounded-3xl p-4 space-y-3">
+          <div className="flex items-center justify-between text-xs flex-wrap gap-2">
+            <span className="text-sm font-medium text-foreground">基金配置</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button onClick={distributeEvenly} variant="outline" size="sm" className="h-7 px-2 text-[11px] rounded-xl">
+                <Scale className="h-3 w-3 mr-1" /> 平均分配
+              </Button>
+              <Button onClick={resetPortfolio} variant="outline" size="sm" className="h-7 px-2 text-[11px] rounded-xl text-destructive hover:text-destructive">
+                <RotateCcw className="h-3 w-3 mr-1" /> 重置
+              </Button>
+              <span className={totalWeight === 100 ? 'text-positive font-medium' : 'text-negative font-medium'}>總比重: {totalWeight}%</span>
+            </div>
+          </div>
+          {portfolio.map((p, i) => (
+            <div key={p.fund.etnet_fund_id} className="flex items-center gap-3">
+              <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i] }} />
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-medium text-foreground truncate">{p.fund.name_zh || p.fund.name}</div>
+                <Slider value={[p.weight]} max={Math.min(100, p.weight + (100 - totalWeight))} step={5} onValueChange={([v]) => updateWeight(p.fund.etnet_fund_id, v)} className="mt-1" />
+              </div>
+              <span className="text-xs font-medium text-foreground w-10 text-right">{p.weight}%</span>
+              <button onClick={() => removeFund(p.fund.etnet_fund_id)} className="text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Simulation params */}
       {portfolio.length > 0 && (
