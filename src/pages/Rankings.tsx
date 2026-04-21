@@ -214,7 +214,7 @@ export default function Rankings() {
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
           <RankingTable title="表現最佳 Top 10" icon={TrendingUp} data={topFunds} colorClass="bg-positive" />
-          <RankingTable title="表現最差 Bottom 10" icon={TrendingDown} data={bottomFunds} colorClass="bg-negative" />
+          <RankingTable title="表現最差 Bottom 5" icon={TrendingDown} data={bottomFunds} colorClass="bg-negative" />
         </div>
       )}
     </div>
