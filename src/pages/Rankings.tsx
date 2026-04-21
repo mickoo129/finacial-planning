@@ -24,17 +24,27 @@ export default function Rankings() {
   const hasRealData = funds && funds.length > 0;
   const displayFunds = cascadeFiltered.length > 0 || !hasRealData ? cascadeFiltered : (funds || []);
 
-  const { topFunds, bottomFunds, dedupedCount } = useMemo(() => {
-    const deduped = deduplicateFunds(displayFunds, sortBy);
+  const { topFunds, bottomFunds, dedupedCount, latestDate } = useMemo(() => {
+    // Find the latest data_date across all funds (etnet snapshot date)
+    const latest = displayFunds.reduce<string | null>((acc, f) => {
+      if (!f.data_date) return acc;
+      return !acc || f.data_date > acc ? f.data_date : acc;
+    }, null);
+    // Only include funds from the latest etnet snapshot (drops stale MPFA-only legacy unit classes)
+    const activeOnly = latest
+      ? displayFunds.filter(f => f.data_date === latest)
+      : displayFunds;
+    const deduped = deduplicateFunds(activeOnly, sortBy);
     const sorted = deduped
       .filter(f => f[sortBy] != null)
       .sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0));
     const topCount = Math.min(sorted.length, 10);
-    const bottomCount = Math.min(sorted.length, 10);
+    const bottomCount = Math.min(sorted.length, 5);
     return {
       topFunds: sorted.slice(0, topCount),
       bottomFunds: [...sorted.slice(-bottomCount)].reverse(),
       dedupedCount: deduped.length,
+      latestDate: latest,
     };
   }, [displayFunds, sortBy]);
 
@@ -204,7 +214,7 @@ export default function Rankings() {
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
           <RankingTable title="表現最佳 Top 10" icon={TrendingUp} data={topFunds} colorClass="bg-positive" />
-          <RankingTable title="表現最差 Bottom 10" icon={TrendingDown} data={bottomFunds} colorClass="bg-negative" />
+          <RankingTable title="表現最差 Bottom 5" icon={TrendingDown} data={bottomFunds} colorClass="bg-negative" />
         </div>
       )}
     </div>
