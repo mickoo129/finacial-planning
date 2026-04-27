@@ -119,26 +119,58 @@ export function normalizeTrusteeName(name: string | null | undefined): string {
   return TRUSTEE_ALIAS[name] || name;
 }
 
+// 受託人合併嘅生效年份
+// 2024 年中起：海通 → 渣打信託；積金易階段，AMTD/新鴻基 由銀聯信託統一接手；
+// 「匯豐/恒生」MPF 業務由滙豐機構信託服務統一管理。
+// 換言之 2021–2023 年嘅歷史資料應該保留當其時嘅原本受託人名，
+// 而 2024 年起 / 短中長期回報統一顯示積金易合併後嘅最新受託人。
+export const TRUSTEE_MERGE_EFFECTIVE_YEAR = 2024;
+
+// 判斷某個 return field 應唔應該套用 alias（合併規則）
+// - 個別年度 2021/2022/2023 → 唔合併（保留歷史原狀）
+// - 個別年度 2024/2025 → 合併
+// - 其餘短/中/長期（YTD/1M/3M/1Y/3Y/5Y/10Y） → 用最新狀態，合併
+export function shouldApplyTrusteeAlias(field?: string | null): boolean {
+  if (!field) return true;
+  const yearMatch = /^return_(\d{4})$/.exec(field);
+  if (yearMatch) {
+    const y = parseInt(yearMatch[1], 10);
+    return y >= TRUSTEE_MERGE_EFFECTIVE_YEAR;
+  }
+  return true;
+}
+
 /**
  * Resolve trustee for a fund using all available signals:
- * 1. trustee_name (with alias normalization)
+ * 1. trustee_name (with optional alias normalization based on time period)
  * 2. etnet_plan_id mapping
  * 3. Fund name pattern matching (for corrupted/missing data)
+ *
+ * @param field optional return field — 用嚟決定要唔要套用合併 alias。
+ *   舊年度（2021–2023）保留原本受託人名；其他時段套用最新合併後狀態。
  */
-export function resolveTrustee(fund: { trustee_name?: string | null; etnet_plan_id?: string | null; name?: string; name_zh?: string | null }): string {
-  // 1. Check trustee_name with alias
+export function resolveTrustee(
+  fund: { trustee_name?: string | null; etnet_plan_id?: string | null; name?: string; name_zh?: string | null },
+  field?: string | null,
+): string {
+  const applyAlias = shouldApplyTrusteeAlias(field);
+
+  // 1. Check trustee_name (conditionally with alias)
   if (fund.trustee_name) {
-    const normalized = TRUSTEE_ALIAS[fund.trustee_name] || fund.trustee_name;
+    const normalized = applyAlias ? (TRUSTEE_ALIAS[fund.trustee_name] || fund.trustee_name) : fund.trustee_name;
     if (normalized !== '未知') return normalized;
   }
-  // 2. Check plan ID mapping
+  // 2. Check plan ID mapping (conditionally with alias)
   if (fund.etnet_plan_id && PLAN_TRUSTEE_MAP[fund.etnet_plan_id]) {
-    return PLAN_TRUSTEE_MAP[fund.etnet_plan_id].trustee;
+    const raw = PLAN_TRUSTEE_MAP[fund.etnet_plan_id].trustee;
+    return applyAlias ? (TRUSTEE_ALIAS[raw] || raw) : raw;
   }
-  // 3. Infer from fund name
-  const fundName = fund.name_zh || fund.name || '';
-  for (const { pattern, trustee } of FUND_NAME_TRUSTEE_PATTERNS) {
-    if (pattern.test(fundName)) return trustee;
+  // 3. Infer from fund name (only when alias enabled — pattern map 已經係合併後)
+  if (applyAlias) {
+    const fundName = fund.name_zh || fund.name || '';
+    for (const { pattern, trustee } of FUND_NAME_TRUSTEE_PATTERNS) {
+      if (pattern.test(fundName)) return trustee;
+    }
   }
   return '未知';
 }

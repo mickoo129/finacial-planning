@@ -90,7 +90,7 @@ export default function SearchFunds() {
             className="pl-10 h-9 text-sm rounded-2xl"
           />
         </div>
-        <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} />
+        <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} selectedField={sortBy} />
         <div>
           <label className="text-[10px] text-muted-foreground mb-1 block">顯示時間段（點擊開關）</label>
           <div className="flex flex-wrap gap-1 bg-muted/30 rounded-2xl p-1">
@@ -146,9 +146,9 @@ export default function SearchFunds() {
                   <td className="px-2.5 sm:px-5 py-2.5 text-[10px] text-muted-foreground">{i + 1}</td>
                   <td className="px-2.5 sm:px-5 py-2.5">
                     <div className="text-xs sm:text-sm font-medium text-foreground leading-tight max-w-[140px] sm:max-w-[220px] truncate">{fund.name_zh || fund.name}</div>
-                    <div className="sm:hidden text-[10px] text-muted-foreground mt-0.5">{resolveTrustee(fund)} · {fund.sub_category || fund.category || '未分類'}</div>
+                    <div className="sm:hidden text-[10px] text-muted-foreground mt-0.5">{resolveTrustee(fund, sortBy)} · {fund.sub_category || fund.category || '未分類'}</div>
                   </td>
-                  <td className="px-2.5 sm:px-5 py-2.5 text-xs text-muted-foreground hide-mobile">{resolveTrustee(fund)}</td>
+                  <td className="px-2.5 sm:px-5 py-2.5 text-xs text-muted-foreground hide-mobile">{resolveTrustee(fund, sortBy)}</td>
                   <td className="px-2.5 sm:px-5 py-2.5 hide-mobile">
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground">{fund.sub_category || fund.category || '未分類'}</span>
                   </td>

@@ -41,9 +41,11 @@ interface CascadingFundFilterProps {
   showFundSelector?: boolean;
   selectedFundId?: string;
   onFundSelect?: (fundId: string) => void;
+  /** 當前用戶揀緊嘅回報時段，用嚟判斷受託人合併規則（舊年度保留歷史） */
+  selectedField?: string | null;
 }
 
-export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSelector = false, selectedFundId, onFundSelect }: CascadingFundFilterProps) {
+export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSelector = false, selectedFundId, onFundSelect, selectedField }: CascadingFundFilterProps) {
   const [mainCategory, setMainCategory] = useState('all');
   const [subCategory, setSubCategory] = useState('all');
   const [trustee, setTrustee] = useState('all');
@@ -53,8 +55,8 @@ export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSele
   const filteredByMain = useMemo(() => mainCategory === 'all' ? funds : funds.filter(f => getMainCategory(f) === mainCategory), [funds, mainCategory]);
   const subCategories = useMemo(() => [...new Set(filteredByMain.map(f => f.sub_category || f.category).filter(Boolean))].sort() as string[], [filteredByMain]);
   const filteredBySub = useMemo(() => subCategory === 'all' ? filteredByMain : filteredByMain.filter(f => (f.sub_category || f.category) === subCategory), [filteredByMain, subCategory]);
-  const trustees = useMemo(() => [...new Set(filteredBySub.map(f => resolveTrustee(f)).filter(Boolean))].sort() as string[], [filteredBySub]);
-  const filteredByTrustee = useMemo(() => trustee === 'all' ? filteredBySub : filteredBySub.filter(f => resolveTrustee(f) === trustee), [filteredBySub, trustee]);
+  const trustees = useMemo(() => [...new Set(filteredBySub.map(f => resolveTrustee(f, selectedField)).filter(Boolean))].sort() as string[], [filteredBySub, selectedField]);
+  const filteredByTrustee = useMemo(() => trustee === 'all' ? filteredBySub : filteredBySub.filter(f => resolveTrustee(f, selectedField) === trustee), [filteredBySub, trustee, selectedField]);
   const schemes = useMemo(() => [...new Set(filteredByTrustee.map(f => f.scheme_name).filter(Boolean))].sort() as string[], [filteredByTrustee]);
   const filteredByScheme = useMemo(() => scheme === 'all' ? filteredByTrustee : filteredByTrustee.filter(f => f.scheme_name === scheme), [filteredByTrustee, scheme]);
 
@@ -121,7 +123,7 @@ export function CascadingFundFilter({ funds, onFilteredFundsChange, showFundSele
                 {dedupedFunds.map(f => (
                   <SelectItem key={f.id} value={f.id}>
                     {f.name_zh || f.name}
-                    {f.trustee_name && <span className="text-muted-foreground ml-1">({resolveTrustee(f)})</span>}
+                    {f.trustee_name && <span className="text-muted-foreground ml-1">({resolveTrustee(f, selectedField)})</span>}
                   </SelectItem>
                 ))}
               </SelectContent>

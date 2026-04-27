@@ -64,7 +64,7 @@ export default function Categories() {
 
       {/* Filters */}
       <div className="glass-card rounded-3xl p-4 space-y-3">
-        {funds && <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} />}
+        {funds && <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} selectedField={sortBy} />}
         <div className="flex flex-wrap gap-1 bg-muted/30 rounded-2xl p-1">
           {RETURN_FIELDS.map(key => (
             <button key={key} onClick={() => setSortBy(key)} className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-colors ${sortBy === key ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
@@ -190,7 +190,7 @@ export default function Categories() {
                             <Link to={`/fund/${fund.id}`} className="text-primary hover:underline text-xs">
                               <span className="max-w-[220px] truncate inline-block align-bottom">{fund.name_zh || fund.name}</span>
                             </Link>
-                            <div className="text-[10px] text-muted-foreground mt-0.5">{resolveTrustee(fund)} · {fund.scheme_name}</div>
+                            <div className="text-[10px] text-muted-foreground mt-0.5">{resolveTrustee(fund, sortBy)} · {fund.scheme_name}</div>
                           </td>
                           
                           <td className="px-5 py-2.5 text-right">
