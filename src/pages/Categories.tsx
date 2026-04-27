@@ -65,15 +65,12 @@ export default function Categories() {
       {/* Filters */}
       <div className="glass-card rounded-3xl p-4 space-y-3">
         {funds && <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} />}
-        <div className="space-y-2">
-          <div className="flex flex-wrap gap-1 bg-muted/30 rounded-2xl p-1">
-            {RETURN_FIELDS.map(key => (
-              <button key={key} onClick={() => setSortBy(key)} className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-colors ${sortBy === key ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-                {RETURN_LABELS[key]}
-              </button>
-            ))}
-          </div>
-          <DataSourceBadge field={sortBy} />
+        <div className="flex flex-wrap gap-1 bg-muted/30 rounded-2xl p-1">
+          {RETURN_FIELDS.map(key => (
+            <button key={key} onClick={() => setSortBy(key)} className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-colors ${sortBy === key ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+              {RETURN_LABELS[key]}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -212,6 +209,11 @@ export default function Categories() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Data source footer */}
+      <div className="pt-4 mt-2 border-t border-border/40 flex justify-center">
+        <DataSourceBadge field={sortBy} />
       </div>
     </div>
   );

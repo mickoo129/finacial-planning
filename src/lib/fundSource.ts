@@ -14,21 +14,24 @@ export function detectSource(etnet_fund_id: string | null | undefined): DataSour
 }
 
 // 每個回報欄位最佳來源
+// 根據實際數據覆蓋率分配：
+// - ETNET 強：YTD/1M/3M/1Y（短線即時）+ 3Y（MPFA 只有 14 條 3Y）
+// - MPFA 強：年度回報 2021-2025（覆蓋 100%）+ 5Y/10Y（覆蓋 286/244 條）
 export function sourceForField(field: ReturnField): DataSource {
   switch (field) {
-    // 短線 + 年度 → ETNET
+    // 短線 + 3年 → ETNET
     case 'return_ytd':
     case 'return_1m':
     case 'return_3m':
     case 'return_1y':
+    case 'return_3y':
+      return 'ETNET';
+    // 年度回報 + 長線 → MPFA
     case 'return_2025':
     case 'return_2024':
     case 'return_2023':
     case 'return_2022':
     case 'return_2021':
-      return 'ETNET';
-    // 長線 → MPFA
-    case 'return_3y':
     case 'return_5y':
     case 'return_10y':
       return 'MPFA';
