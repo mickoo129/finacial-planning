@@ -5,6 +5,7 @@ import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { CascadingFundFilter } from '@/components/CascadingFundFilter';
 import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { deduplicateFunds } from '@/lib/fundGrouping';
+import { filterFundsBySource, sourceForField } from '@/lib/fundSource';
 import { TrendingUp, TrendingDown, RefreshCw, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,17 +26,11 @@ export default function Rankings() {
   const hasRealData = funds && funds.length > 0;
   const displayFunds = cascadeFiltered.length > 0 || !hasRealData ? cascadeFiltered : (funds || []);
 
-  const { topFunds, bottomFunds, topTrustees, bottomTrustees, dedupedCount, latestDate } = useMemo(() => {
-    // Find the latest data_date across all funds (etnet snapshot date)
-    const latest = displayFunds.reduce<string | null>((acc, f) => {
-      if (!f.data_date) return acc;
-      return !acc || f.data_date > acc ? f.data_date : acc;
-    }, null);
-    // Only include funds from the latest etnet snapshot (drops stale MPFA-only legacy unit classes)
-    const activeOnly = latest
-      ? displayFunds.filter(f => f.data_date === latest)
-      : displayFunds;
-    const deduped = deduplicateFunds(activeOnly, sortBy);
+  const { topFunds, bottomFunds, topTrustees, bottomTrustees, dedupedCount, activeSource } = useMemo(() => {
+    // 雙源策略：根據時段揀對應來源（短線 ETNET / 長線 MPFA）
+    const source = sourceForField(sortBy);
+    const sourceFiltered = filterFundsBySource(displayFunds, sortBy);
+    const deduped = deduplicateFunds(sourceFiltered, sortBy);
     const sorted = deduped
       .filter(f => f[sortBy] != null)
       .sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0));
@@ -65,7 +60,7 @@ export default function Rankings() {
       topTrustees: trusteeRanked.slice(0, tTopCount),
       bottomTrustees: [...trusteeRanked.slice(-tBottomCount)].reverse(),
       dedupedCount: deduped.length,
-      latestDate: latest,
+      activeSource: source,
     };
   }, [displayFunds, sortBy]);
 
