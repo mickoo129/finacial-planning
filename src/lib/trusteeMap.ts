@@ -76,36 +76,40 @@ const TRUSTEE_ALIAS: Record<string, string> = {
   'AMTD': '銀聯信託',
   // 新鴻基 MPF 僱主自選計劃受託人為「銀聯信託」
   '新鴻基': '銀聯信託',
-  // 恒生強積金由「滙豐機構信託服務（亞洲）」擔任受託人，恒生係滙豐集團成員
+  // 恒生強積金由「滙豐機構信託服務（亞洲）」擔任受託人
   '恒生': '滙豐',
-  // 「匯豐」與「滙豐」統一為官方繁體寫法「滙豐」
+  // 「匯豐」與「滙豐」統一為官方繁體寫法
   '匯豐': '滙豐',
+  // 海通 MPF 退休金計劃自 2024 年起由「渣打信託（香港）」接手做受託人，
+  // 「海通」只係保薦人/品牌名，唔係 MPFA 核准受託人
+  '海通': '渣打信託',
 };
 
-// MPFA 官方 12 個現有核准受託人顯示名稱（用於檢查 / 完整列表）
+// MPFA 官方 13 個現有核准受託人顯示名稱（用於檢查 / 完整列表）
+// 來源：https://www.mpfa.org.hk/sc/info-centre/public-registers/mpf-approved-trustees
 export const MPFA_APPROVED_TRUSTEES = [
+  '東亞',
   '友邦',
   '銀聯信託',
   '交通銀行',
-  '東亞',
   '中銀保誠',
   '中國人壽',
   '滙豐',
   '宏利',
-  '永明',
   '信安',
+  '渣打信託',
+  '永明',
+  '萬通',
   '富達',
   '景順',
   'BCT',
-  '萬通',
-  '海通',
 ];
 
 // Infer trustee from fund name when trustee_name is null/missing
 const FUND_NAME_TRUSTEE_PATTERNS: { pattern: RegExp; trustee: string; scheme: string }[] = [
   { pattern: /AMTD/i, trustee: '銀聯信託', scheme: 'AMTD強積金計劃' },
   { pattern: /新鴻基|新鸿基/i, trustee: '銀聯信託', scheme: '新鴻基強積金僱主自選計劃' },
-  { pattern: /海通/i, trustee: '海通', scheme: '海通MPF退休金' },
+  { pattern: /海通/i, trustee: '渣打信託', scheme: '海通MPF退休金計劃' },
   { pattern: /恒生/i, trustee: '滙豐', scheme: '恒生強積金智選計劃' },
   { pattern: /匯豐|滙豐|HSBC/i, trustee: '滙豐', scheme: '滙豐強積金智選計劃' },
 ];
