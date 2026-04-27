@@ -249,14 +249,15 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Scrape error:', error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('Scrape error:', msg);
     if (logEntry) {
       await supabase.from('mpf_scrape_logs')
-        .update({ status: 'error', error_message: error.message })
+        .update({ status: 'error', error_message: msg })
         .eq('id', logEntry.id);
     }
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: msg }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
