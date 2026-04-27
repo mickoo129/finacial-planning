@@ -42,7 +42,7 @@ export default function Rankings() {
     for (const f of deduped) {
       const v = f[sortBy];
       if (v == null) continue;
-      const t = resolveTrustee(f);
+      const t = resolveTrustee(f, sortBy);
       if (t === '未知') continue;
       const cur = trusteeMap.get(t) ?? { sum: 0, count: 0 };
       cur.sum += v as number;
@@ -121,7 +121,7 @@ export default function Rankings() {
           </thead>
           <tbody className="divide-y divide-border/40">
             {data.map((fund, i) => {
-              const trustee = resolveTrustee(fund);
+              const trustee = resolveTrustee(fund, sortBy);
               return (
                 <tr key={fund.etnet_fund_id} className="group">
                   <td className="px-3 sm:px-5 py-2.5">
@@ -247,7 +247,7 @@ export default function Rankings() {
       {/* Cascading filter */}
       {hasRealData && (
         <div className="glass-card rounded-3xl p-4">
-          <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} />
+          <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} selectedField={sortBy} />
         </div>
       )}
 
