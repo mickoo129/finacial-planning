@@ -208,6 +208,7 @@ export default function Rankings() {
   );
 
   return (
+    <div className="space-y-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">MPF 基金排名</h1>
