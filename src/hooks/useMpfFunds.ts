@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { detectSource, type DataSource } from '@/lib/fundSource';
 
 export interface MpfFund {
+  dataSource: DataSource;
   id: string;
   etnet_fund_id: string;
   etnet_plan_id: string | null;
@@ -39,13 +41,19 @@ export function useMpfFunds() {
   return useQuery({
     queryKey: ['mpf-funds'],
     queryFn: async () => {
+      // 雙源策略：取齊全部，唔再用 data_date filter
+      // 分頁攞，避免 Supabase 1000 row 限制（雖然依家 559 條，預留位）
       const { data, error } = await supabase
         .from('mpf_funds')
         .select('*')
-        .order('return_1y', { ascending: false, nullsFirst: false });
-      
+        .order('return_1y', { ascending: false, nullsFirst: false })
+        .range(0, 1999);
+
       if (error) throw error;
-      return (data || []) as MpfFund[];
+      return (data || []).map((f) => ({
+        ...f,
+        dataSource: detectSource(f.etnet_fund_id),
+      })) as MpfFund[];
     },
     staleTime: 1000 * 60 * 30,
   });
