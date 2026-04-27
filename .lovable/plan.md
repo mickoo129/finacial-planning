@@ -1,48 +1,36 @@
+## 目標
+喺所有頁面嘅時間分段加多一項「1個月」（`1m`），其他邏輯/排序/UI 唔變。
 
+## DB 數據現況
+- `mpf_funds.return_1m`：559 隻基金中有 158 隻有數據（約 28%）
+- 無數據嘅基金喺該分段會顯示「-」（沿用現有 NULL 處理）
 
-# MPF 強積金比較平台
+## 改動清單
 
-## 概覽
-建立一個專業簡潔的深色主題 MPF 強積金比較網站，支援多時段比較、基金排名、走勢圖及受托人比較功能。全繁體中文介面。
+### 1. `src/types/mpf.ts`
+- `TimePeriod` union 加 `'1m'`
+- `TIME_PERIOD_LABELS` 加 `'1m': '1個月'`
 
-## 數據方案
-- 使用 Supabase 數據庫儲存 MPF 基金數據（基金名稱、受托人、類型、每日價格）
-- 建立 Supabase Edge Function 定期從 MPFA 積金局網站抓取最新數據
-- 初期先以真實結構的示範數據建立介面，確認功能後再接入 MPFA 數據源
+### 2. `src/lib/returnFields.ts`
+- `ReturnField` union 加 `'return_1m'`
+- `RETURN_LABELS` 加 `return_1m: '1個月'`
+- `RETURN_FIELDS` array 喺 `return_3m` 之前加 `'return_1m'`
+- 移除頂部「return_1m removed」嘅過時註解
 
-## 頁面結構
+### 3. `src/components/TimePeriodSelector.tsx`
+- `periods` array 喺 `'3m'` 之前加 `'1m'`，令所有用呢個 selector 嘅頁面（Rankings、Categories、SearchFunds、TrusteeCompare、CompareFunds、PortfolioSimulator、FundDetail）自動有「1個月」掣
 
-### 1. 首頁 — 排名總覽
-- 頂部時段選擇器：每日 / 每週 / 每月 / 月至今 / 年至今 / 3個月 / 6個月 / 1年 / 3年 / 5年 / 10年
-- 兩個並排表格：**頭十名**（綠色主調）及**尾十名**（紅色主調）
-- 顯示：基金名稱、受托人、回報率(%)、基金類型
-- 點擊基金名進入詳情頁
+### 4. `src/pages/FundDetail.tsx`
+- `CHART_DAYS` map 加 `'1m': 30`（決定價格走勢圖顯示幾耐）
 
-### 2. 基金詳情頁
-- 基金基本資料（受托人、類型、管理費等）
-- 互動走勢圖（可切換時段）
-- 各時段回報率一覽表
+### 5. `src/data/mockData.ts`（如有用到）
+- 檢查 mock fund 嘅 `returns` 物件有冇缺 `'1m'` key，缺嘅補一個合理數字避免 type error
 
-### 3. 基金類型比較頁
-- 按類型分組：股票基金、債券基金、混合基金、貨幣市場基金、保證基金、預設投資策略（DIS）等
-- 選擇時段後顯示各類型平均回報及排名
-- 每個類型可展開查看旗下所有基金
+## 唔會郁
+- DB schema、scraper、edge functions、hooks、排序邏輯、預設組合範本嘅 3y/5y/10y 加權公式
+- 預設排序欄位（Rankings 預設 1y、Index Top/Bottom 邏輯）
 
-### 4. 受托人比較頁
-- 用戶選擇兩間受托人
-- 指定時段後並排列出兩間受托人所有基金表現
-- 高亮顯示表現差異
-
-## 設計風格
-- 深色主題（深藍/灰黑底）
-- 綠色表示正回報，紅色表示負回報
-- 專業金融風格圖表（使用 Recharts）
-- 響應式設計，支援手機及桌面
-
-## 技術細節
-- React + TypeScript + Tailwind CSS
-- Recharts 圖表庫
-- React Router 頁面路由
-- Supabase 儲存基金數據
-- Edge Function 處理 MPFA 數據抓取
-
+## 驗證
+1. Rankings / Categories / SearchFunds / TrusteeCompare / CompareFunds / PortfolioSimulator 嘅時段切換掣會見到「1個月」喺「年初至今」同「3個月」之間
+2. FundDetail 撳「1個月」價格圖會顯示最近 30 日
+3. 冇 1個月數據嘅基金會顯示「-」，唔會 crash
