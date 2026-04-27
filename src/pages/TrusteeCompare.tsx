@@ -5,6 +5,7 @@ import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { getFallbackReturn } from '@/lib/fallbackReturn';
 import { resolveTrustee, resolveScheme } from '@/lib/trusteeMap';
 import { groupFundsByName, type FundGroup } from '@/lib/fundGrouping';
+import { filterFundsBySource } from '@/lib/fundSource';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, ChevronDown } from 'lucide-react';
 
@@ -42,8 +43,10 @@ export default function TrusteeCompare() {
 
   const trusteeGroups = useMemo(() => {
     if (!funds?.length) return [];
+    // 雙源策略：按時段揀來源（短線 ETNET、長線 MPFA）
+    const sourced = filterFundsBySource(funds, period);
     const groups: Record<string, typeof funds> = {};
-    for (const fund of funds) {
+    for (const fund of sourced) {
       const trustee = resolveTrustee(fund);
       if (!trustee) continue;
       if (!groups[trustee]) groups[trustee] = [];
