@@ -7,6 +7,7 @@ import { ReturnField, RETURN_LABELS, RETURN_FIELDS } from '@/lib/returnFields';
 import { getFallbackReturn } from '@/lib/fallbackReturn';
 import { deduplicateFunds } from '@/lib/fundGrouping';
 import { resolveTrustee } from '@/lib/trusteeMap';
+import { filterFundsBySource } from '@/lib/fundSource';
 import { ChevronDown, ChevronUp, BarChart3 } from 'lucide-react';
 
 export default function Categories() {
@@ -21,7 +22,9 @@ export default function Categories() {
 
   const displayFunds = useMemo(() => {
     const base = cascadeFiltered.length > 0 ? cascadeFiltered : (funds || []);
-    return deduplicateFunds(base, sortBy);
+    // 雙源策略：按時段揀來源（短線 ETNET、長線 MPFA）
+    const sourced = filterFundsBySource(base, sortBy);
+    return deduplicateFunds(sourced, sortBy);
   }, [cascadeFiltered, funds, sortBy]);
 
   const categoryData = useMemo(() => {
