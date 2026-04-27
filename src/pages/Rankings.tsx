@@ -172,7 +172,6 @@ export default function Rankings() {
             <tr className="border-b border-border/60 bg-muted/30">
               <th className="text-left px-3 sm:px-5 py-2 text-muted-foreground w-6 sm:w-8">#</th>
               <th className="text-left px-3 sm:px-5 py-2 text-muted-foreground">受託人</th>
-              <th className="text-right px-3 sm:px-5 py-2 text-muted-foreground hide-mobile">基金數</th>
               <th className="text-right px-3 sm:px-5 py-2 text-muted-foreground">平均回報</th>
             </tr>
           </thead>
@@ -188,10 +187,6 @@ export default function Rankings() {
                 </td>
                 <td className="px-3 sm:px-5 py-2.5">
                   <div className="font-medium text-foreground text-xs sm:text-sm">{row.trustee}</div>
-                  <div className="sm:hidden text-[10px] text-muted-foreground mt-0.5">{row.count} 隻基金</div>
-                </td>
-                <td className="px-3 sm:px-5 py-2.5 text-right hide-mobile">
-                  <span className="text-xs text-muted-foreground">{row.count}</span>
                 </td>
                 <td className="px-3 sm:px-5 py-2.5 text-right">
                   <ReturnValue value={row.avg} />
