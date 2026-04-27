@@ -111,8 +111,11 @@ export const MPFA_APPROVED_TRUSTEES = [
 const FUND_NAME_TRUSTEE_PATTERNS: { pattern: RegExp; trustee: string; scheme: string }[] = [
   { pattern: /AMTD/i, trustee: '銀聯信託', scheme: 'AMTD強積金計劃' },
   { pattern: /新鴻基|新鸿基/i, trustee: '銀聯信託', scheme: '新鴻基強積金僱主自選計劃' },
-  { pattern: /海通/i, trustee: '海通', scheme: '海通MPF退休金' },
+  { pattern: /海通/i, trustee: '渣打信託', scheme: '海通MPF退休金計劃' },
   { pattern: /恒生/i, trustee: '滙豐', scheme: '恒生強積金智選計劃' },
+  { pattern: /富達|Fidelity/i, trustee: '滙豐', scheme: '富達退休集成信託' },
+  { pattern: /景順|Invesco/i, trustee: '銀聯信託', scheme: '景順強積金策略計劃' },
+  { pattern: /BCT|銀聯集團/i, trustee: '銀聯信託', scheme: 'BCT（強積金）行業計劃' },
   { pattern: /匯豐|滙豐|HSBC/i, trustee: '滙豐', scheme: '滙豐強積金智選計劃' },
 ];
 
