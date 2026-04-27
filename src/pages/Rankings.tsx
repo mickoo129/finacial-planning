@@ -251,24 +251,20 @@ export default function Rankings() {
         </div>
       )}
 
-      {/* Period selector */}
-      <div className="space-y-2">
-        <div className="flex flex-wrap gap-1 bg-white/70 backdrop-blur-xl rounded-2xl border border-border p-1.5">
-          {RETURN_FIELDS.map(key => (
-            <button
-              key={key}
-              onClick={() => setSortBy(key)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                sortBy === key
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
-            >
-              {RETURN_LABELS[key]}
-            </button>
-          ))}
-        </div>
-        <DataSourceBadge field={sortBy} />
+      <div className="flex flex-wrap gap-1 bg-white/70 backdrop-blur-xl rounded-2xl border border-border p-1.5">
+        {RETURN_FIELDS.map(key => (
+          <button
+            key={key}
+            onClick={() => setSortBy(key)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+              sortBy === key
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+            }`}
+          >
+            {RETURN_LABELS[key]}
+          </button>
+        ))}
       </div>
 
       {isLoading ? (
@@ -298,6 +294,11 @@ export default function Rankings() {
           </TabsContent>
         </Tabs>
       )}
+
+      {/* Data source footer */}
+      <div className="pt-4 mt-2 border-t border-border/40 flex justify-center">
+        <DataSourceBadge field={sortBy} />
+      </div>
     </div>
   );
 }
