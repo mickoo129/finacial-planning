@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ReturnValue } from '@/components/ReturnValue';
 import { useMpfFunds, MpfFund } from '@/hooks/useMpfFunds';
 import { CascadingFundFilter } from '@/components/CascadingFundFilter';
@@ -283,16 +284,20 @@ export default function Rankings() {
           <p className="text-muted-foreground text-xs">點擊上方「更新數據」按鈕從 etnet 抓取最新排名</p>
         </div>
       ) : (
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+        <Tabs defaultValue="funds" className="space-y-5">
+          <TabsList className="grid w-full grid-cols-2 max-w-sm rounded-2xl">
+            <TabsTrigger value="funds" className="rounded-xl text-xs">基金排名</TabsTrigger>
+            <TabsTrigger value="trustees" className="rounded-xl text-xs">受託人排名</TabsTrigger>
+          </TabsList>
+          <TabsContent value="funds" className="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-0">
             <RankingTable title="表現最佳 Top 10" icon={TrendingUp} data={topFunds} colorClass="bg-positive" />
             <RankingTable title="表現最差 Bottom 5" icon={TrendingDown} data={bottomFunds} colorClass="bg-negative" />
-          </div>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          </TabsContent>
+          <TabsContent value="trustees" className="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-0">
             <TrusteeRankingTable title="受託人 Top 10" icon={TrendingUp} data={topTrustees} colorClass="bg-positive" />
             <TrusteeRankingTable title="受託人 Bottom 5" icon={TrendingDown} data={bottomTrustees} colorClass="bg-negative" />
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );
