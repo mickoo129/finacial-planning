@@ -48,7 +48,7 @@ export default function TrusteeCompare() {
     const sourced = filterFundsBySource(funds, period);
     const groups: Record<string, typeof funds> = {};
     for (const fund of sourced) {
-      const trustee = resolveTrustee(fund);
+      const trustee = resolveTrustee(fund, period);
       if (!trustee) continue;
       if (!groups[trustee]) groups[trustee] = [];
       groups[trustee].push(fund);
