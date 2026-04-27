@@ -24,7 +24,7 @@ export default function Rankings() {
   const hasRealData = funds && funds.length > 0;
   const displayFunds = cascadeFiltered.length > 0 || !hasRealData ? cascadeFiltered : (funds || []);
 
-  const { topFunds, bottomFunds, dedupedCount, latestDate } = useMemo(() => {
+  const { topFunds, bottomFunds, topTrustees, bottomTrustees, dedupedCount, latestDate } = useMemo(() => {
     // Find the latest data_date across all funds (etnet snapshot date)
     const latest = displayFunds.reduce<string | null>((acc, f) => {
       if (!f.data_date) return acc;
