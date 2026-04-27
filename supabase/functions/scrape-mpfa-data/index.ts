@@ -335,6 +335,23 @@ Deno.serve(async (req) => {
     for (const log of matchLog) console.log(log);
     console.log(`Match results: ${matched} matched, ${newCount} new`);
 
+    // Coverage check: count non-null values per return field in parsed batch
+    const fields = ['ret_1y_ann','ret_5y_ann','ret_10y_ann','ret_since_launch','ret_2025','ret_2024','ret_2023','ret_2022','ret_2021'] as const;
+    const coverage: Record<string, number> = {};
+    for (const f of fields) {
+      coverage[f] = parsed.filter((p) => (p as any)[f] !== null && (p as any)[f] !== undefined).length;
+    }
+    const total = parsed.length || 1;
+    const covSummary = Object.entries(coverage).map(([k,v]) => `${k}=${v}/${total} (${Math.round(v/total*100)}%)`).join(', ');
+    console.log(`Coverage: ${covSummary}`);
+    // Sanity: warn if any long-term field drops below 50%
+    for (const f of ['ret_5y_ann','ret_10y_ann'] as const) {
+      const pct = coverage[f] / total;
+      if (pct < 0.5) console.warn(`⚠️ ${f} coverage low (${Math.round(pct*100)}%) — possible parser column shift`);
+    }
+    // NOTE: MPFA does NOT publish 3Y annualised returns. If a future schema change adds it,
+    // update parseMpfaMarkdown() to extract ret_3y_ann and surface here. Currently 3Y stays on ETNET.
+
     // Step 5: Deduplicate by etnet_fund_id (keep last occurrence) then batch upsert
     const deduped = new Map<string, Record<string, unknown>>();
     for (const rec of upsertRecords) {
@@ -375,8 +392,9 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
-    console.error('MPFA scrape error:', error);
-    return new Response(JSON.stringify({ success: false, error: error.message }),
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('MPFA scrape error:', msg);
+    return new Response(JSON.stringify({ success: false, error: msg }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });

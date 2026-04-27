@@ -3,7 +3,7 @@ import { sourceForField, type DataSource } from '@/lib/fundSource';
 import { Database } from 'lucide-react';
 
 const SOURCE_RULE: Record<DataSource, string> = {
-  ETNET: '短線（年初至今 / 1個月 / 3個月 / 1年 / 3年）',
+  ETNET: '短線（年初至今 / 1個月 / 3個月 / 1年 / 3年）※MPFA 平台不提供 3 年數據',
   MPFA: '年度回報（2021-2025）／長線（5年 / 10年）',
   OTHER: '其他',
 };
