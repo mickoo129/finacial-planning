@@ -24,7 +24,7 @@ export default function Rankings() {
   const hasRealData = funds && funds.length > 0;
   const displayFunds = cascadeFiltered.length > 0 || !hasRealData ? cascadeFiltered : (funds || []);
 
-  const { topFunds, bottomFunds, dedupedCount, latestDate } = useMemo(() => {
+  const { topFunds, bottomFunds, topTrustees, bottomTrustees, dedupedCount, latestDate } = useMemo(() => {
     // Find the latest data_date across all funds (etnet snapshot date)
     const latest = displayFunds.reduce<string | null>((acc, f) => {
       if (!f.data_date) return acc;
@@ -40,9 +40,29 @@ export default function Rankings() {
       .sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0));
     const topCount = Math.min(sorted.length, 10);
     const bottomCount = Math.min(sorted.length, 5);
+    // Trustee aggregation: average return across all funds of a trustee for the selected period
+    const trusteeMap = new Map<string, { sum: number; count: number }>();
+    for (const f of deduped) {
+      const v = f[sortBy];
+      if (v == null) continue;
+      const t = resolveTrustee(f);
+      if (t === '未知') continue;
+      const cur = trusteeMap.get(t) ?? { sum: 0, count: 0 };
+      cur.sum += v as number;
+      cur.count += 1;
+      trusteeMap.set(t, cur);
+    }
+    const trusteeRanked = Array.from(trusteeMap.entries())
+      .filter(([, v]) => v.count > 0)
+      .map(([trustee, v]) => ({ trustee, avg: v.sum / v.count, count: v.count }))
+      .sort((a, b) => b.avg - a.avg);
+    const tTopCount = Math.min(trusteeRanked.length, 10);
+    const tBottomCount = Math.min(trusteeRanked.length, 5);
     return {
       topFunds: sorted.slice(0, topCount),
       bottomFunds: [...sorted.slice(-bottomCount)].reverse(),
+      topTrustees: trusteeRanked.slice(0, tTopCount),
+      bottomTrustees: [...trusteeRanked.slice(-tBottomCount)].reverse(),
       dedupedCount: deduped.length,
       latestDate: latest,
     };
@@ -136,6 +156,57 @@ export default function Rankings() {
     </div>
   );
 
+  const TrusteeRankingTable = ({ title, icon: Icon, data, colorClass }: {
+    title: string;
+    icon: any;
+    data: { trustee: string; avg: number; count: number }[];
+    colorClass: string;
+  }) => (
+    <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
+        <div className={`w-1.5 h-5 rounded-full ${colorClass}`} />
+        <Icon className={`h-4 w-4 ${colorClass === 'bg-positive' ? 'text-positive' : 'text-negative'}`} />
+        <h2 className="font-semibold text-foreground text-sm">{title}（{RETURN_LABELS[sortBy]}平均回報）</h2>
+        <span className="text-[10px] text-muted-foreground ml-auto">{data.length} 間受託人</span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full banking-table">
+          <thead>
+            <tr className="border-b border-border/60 bg-muted/30">
+              <th className="text-left px-3 sm:px-5 py-2 text-muted-foreground w-6 sm:w-8">#</th>
+              <th className="text-left px-3 sm:px-5 py-2 text-muted-foreground">受託人</th>
+              <th className="text-right px-3 sm:px-5 py-2 text-muted-foreground hide-mobile">基金數</th>
+              <th className="text-right px-3 sm:px-5 py-2 text-muted-foreground">平均回報</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/40">
+            {data.map((row, i) => (
+              <tr key={row.trustee} className="group">
+                <td className="px-3 sm:px-5 py-2.5">
+                  <span className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full text-[10px] sm:text-xs font-bold ${
+                    i < 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {i + 1}
+                  </span>
+                </td>
+                <td className="px-3 sm:px-5 py-2.5">
+                  <div className="font-medium text-foreground text-xs sm:text-sm">{row.trustee}</div>
+                  <div className="sm:hidden text-[10px] text-muted-foreground mt-0.5">{row.count} 隻基金</div>
+                </td>
+                <td className="px-3 sm:px-5 py-2.5 text-right hide-mobile">
+                  <span className="text-xs text-muted-foreground">{row.count}</span>
+                </td>
+                <td className="px-3 sm:px-5 py-2.5 text-right">
+                  <ReturnValue value={row.avg} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-5">
       <div className="flex items-start justify-between gap-4">
@@ -212,9 +283,15 @@ export default function Rankings() {
           <p className="text-muted-foreground text-xs">點擊上方「更新數據」按鈕從 etnet 抓取最新排名</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-          <RankingTable title="表現最佳 Top 10" icon={TrendingUp} data={topFunds} colorClass="bg-positive" />
-          <RankingTable title="表現最差 Bottom 5" icon={TrendingDown} data={bottomFunds} colorClass="bg-negative" />
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <RankingTable title="表現最佳 Top 10" icon={TrendingUp} data={topFunds} colorClass="bg-positive" />
+            <RankingTable title="表現最差 Bottom 5" icon={TrendingDown} data={bottomFunds} colorClass="bg-negative" />
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <TrusteeRankingTable title="受託人 Top 10" icon={TrendingUp} data={topTrustees} colorClass="bg-positive" />
+            <TrusteeRankingTable title="受託人 Bottom 5" icon={TrendingDown} data={bottomTrustees} colorClass="bg-negative" />
+          </div>
         </div>
       )}
     </div>
