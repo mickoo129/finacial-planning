@@ -28,22 +28,28 @@ export function DataSourceBadge({ field, className = '' }: Props) {
   const note = SOURCE_NOTE[source];
   return (
     <div
-      className={`inline-flex flex-wrap items-center gap-x-2 gap-y-1 px-3 py-1.5 rounded-full border text-[11px] leading-tight ${SOURCE_STYLE[source]} ${className}`}
+      className={`inline-flex flex-col sm:flex-row sm:items-center gap-y-1 sm:gap-x-2 px-3 py-1.5 rounded-2xl sm:rounded-full border text-[11px] leading-tight ${SOURCE_STYLE[source]} ${className}`}
       title={`「${RETURN_LABELS[field]}」使用 ${source} 數據源｜${SOURCE_RULE[source]}${note ? `（${note}）` : ''}`}
     >
+      {/* 第一行：數據源名 */}
       <span className="inline-flex items-center gap-1.5 font-semibold">
         <Database className="h-3 w-3" />
         數據源 {source}
       </span>
-      <span className="opacity-30">|</span>
-      <span className="opacity-90">{SOURCE_RULE[source]}</span>
-      {note && (
-        <>
-          <span className="opacity-30">|</span>
-          <span className="opacity-70">※ {note}</span>
-        </>
-      )}
+      {/* 桌面版分隔線 */}
+      <span className="hidden sm:inline opacity-30">|</span>
+      {/* 第二行：規則描述（手機）／同行（桌面） */}
+      <span className="inline-flex flex-wrap items-center gap-x-2 opacity-90">
+        <span>{SOURCE_RULE[source]}</span>
+        {note && (
+          <>
+            <span className="opacity-40">·</span>
+            <span className="opacity-70">※ {note}</span>
+          </>
+        )}
+      </span>
     </div>
   );
 }
+
 
