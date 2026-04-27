@@ -283,9 +283,15 @@ export default function Rankings() {
           <p className="text-muted-foreground text-xs">點擊上方「更新數據」按鈕從 etnet 抓取最新排名</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-          <RankingTable title="表現最佳 Top 10" icon={TrendingUp} data={topFunds} colorClass="bg-positive" />
-          <RankingTable title="表現最差 Bottom 5" icon={TrendingDown} data={bottomFunds} colorClass="bg-negative" />
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <RankingTable title="表現最佳 Top 10" icon={TrendingUp} data={topFunds} colorClass="bg-positive" />
+            <RankingTable title="表現最差 Bottom 5" icon={TrendingDown} data={bottomFunds} colorClass="bg-negative" />
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <TrusteeRankingTable title="受託人 Top 10" icon={TrendingUp} data={topTrustees} colorClass="bg-positive" />
+            <TrusteeRankingTable title="受託人 Bottom 5" icon={TrendingDown} data={bottomTrustees} colorClass="bg-negative" />
+          </div>
         </div>
       )}
     </div>
