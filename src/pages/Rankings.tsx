@@ -156,8 +156,58 @@ export default function Rankings() {
     </div>
   );
 
+  const TrusteeRankingTable = ({ title, icon: Icon, data, colorClass }: {
+    title: string;
+    icon: any;
+    data: { trustee: string; avg: number; count: number }[];
+    colorClass: string;
+  }) => (
+    <div className="glass-card rounded-3xl shadow-[0_8px_30px_-12px_hsl(230_60%_70%/0.15)] overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-border/60 flex items-center gap-2">
+        <div className={`w-1.5 h-5 rounded-full ${colorClass}`} />
+        <Icon className={`h-4 w-4 ${colorClass === 'bg-positive' ? 'text-positive' : 'text-negative'}`} />
+        <h2 className="font-semibold text-foreground text-sm">{title}（{RETURN_LABELS[sortBy]}平均回報）</h2>
+        <span className="text-[10px] text-muted-foreground ml-auto">{data.length} 間受託人</span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full banking-table">
+          <thead>
+            <tr className="border-b border-border/60 bg-muted/30">
+              <th className="text-left px-3 sm:px-5 py-2 text-muted-foreground w-6 sm:w-8">#</th>
+              <th className="text-left px-3 sm:px-5 py-2 text-muted-foreground">受託人</th>
+              <th className="text-right px-3 sm:px-5 py-2 text-muted-foreground hide-mobile">基金數</th>
+              <th className="text-right px-3 sm:px-5 py-2 text-muted-foreground">平均回報</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/40">
+            {data.map((row, i) => (
+              <tr key={row.trustee} className="group">
+                <td className="px-3 sm:px-5 py-2.5">
+                  <span className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full text-[10px] sm:text-xs font-bold ${
+                    i < 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {i + 1}
+                  </span>
+                </td>
+                <td className="px-3 sm:px-5 py-2.5">
+                  <div className="font-medium text-foreground text-xs sm:text-sm">{row.trustee}</div>
+                  <div className="sm:hidden text-[10px] text-muted-foreground mt-0.5">{row.count} 隻基金</div>
+                </td>
+                <td className="px-3 sm:px-5 py-2.5 text-right hide-mobile">
+                  <span className="text-xs text-muted-foreground">{row.count}</span>
+                </td>
+                <td className="px-3 sm:px-5 py-2.5 text-right">
+                  <ReturnValue value={row.avg} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">MPF 基金排名</h1>
