@@ -40,9 +40,29 @@ export default function Rankings() {
       .sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0));
     const topCount = Math.min(sorted.length, 10);
     const bottomCount = Math.min(sorted.length, 5);
+    // Trustee aggregation: average return across all funds of a trustee for the selected period
+    const trusteeMap = new Map<string, { sum: number; count: number }>();
+    for (const f of deduped) {
+      const v = f[sortBy];
+      if (v == null) continue;
+      const t = resolveTrustee(f);
+      if (t === '未知') continue;
+      const cur = trusteeMap.get(t) ?? { sum: 0, count: 0 };
+      cur.sum += v as number;
+      cur.count += 1;
+      trusteeMap.set(t, cur);
+    }
+    const trusteeRanked = Array.from(trusteeMap.entries())
+      .filter(([, v]) => v.count > 0)
+      .map(([trustee, v]) => ({ trustee, avg: v.sum / v.count, count: v.count }))
+      .sort((a, b) => b.avg - a.avg);
+    const tTopCount = Math.min(trusteeRanked.length, 10);
+    const tBottomCount = Math.min(trusteeRanked.length, 5);
     return {
       topFunds: sorted.slice(0, topCount),
       bottomFunds: [...sorted.slice(-bottomCount)].reverse(),
+      topTrustees: trusteeRanked.slice(0, tTopCount),
+      bottomTrustees: [...trusteeRanked.slice(-tBottomCount)].reverse(),
       dedupedCount: deduped.length,
       latestDate: latest,
     };
