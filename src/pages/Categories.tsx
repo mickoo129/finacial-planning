@@ -9,6 +9,7 @@ import { deduplicateFunds } from '@/lib/fundGrouping';
 import { resolveTrustee } from '@/lib/trusteeMap';
 import { filterFundsBySource } from '@/lib/fundSource';
 import { ChevronDown, ChevronUp, BarChart3 } from 'lucide-react';
+import { DataSourceBadge } from '@/components/DataSourceBadge';
 
 export default function Categories() {
   const [sortBy, setSortBy] = useState<ReturnField>('return_1y');
@@ -64,12 +65,15 @@ export default function Categories() {
       {/* Filters */}
       <div className="glass-card rounded-3xl p-4 space-y-3">
         {funds && <CascadingFundFilter funds={funds} onFilteredFundsChange={handleFilterChange} />}
-        <div className="flex flex-wrap gap-1 bg-muted/30 rounded-2xl p-1">
-          {RETURN_FIELDS.map(key => (
-            <button key={key} onClick={() => setSortBy(key)} className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-colors ${sortBy === key ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-              {RETURN_LABELS[key]}
-            </button>
-          ))}
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-1 bg-muted/30 rounded-2xl p-1">
+            {RETURN_FIELDS.map(key => (
+              <button key={key} onClick={() => setSortBy(key)} className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-colors ${sortBy === key ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                {RETURN_LABELS[key]}
+              </button>
+            ))}
+          </div>
+          <DataSourceBadge field={sortBy} />
         </div>
       </div>
 

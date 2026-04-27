@@ -8,6 +8,7 @@ import { groupFundsByName, type FundGroup } from '@/lib/fundGrouping';
 import { filterFundsBySource } from '@/lib/fundSource';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, ChevronDown } from 'lucide-react';
+import { DataSourceBadge } from '@/components/DataSourceBadge';
 
 const CANDY_COLORS = [
   { bg: 'hsl(var(--candy-blue))', fg: 'hsl(var(--candy-blue-fg))' },
@@ -119,35 +120,38 @@ export default function TrusteeCompare() {
       </div>
 
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-        <Select value={t1} onValueChange={v => { setTrustee1(v); setScheme1('all'); }}>
-          <SelectTrigger className="w-full sm:w-44 h-9 text-xs rounded-2xl"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {trusteeNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <span className="text-muted-foreground text-xs self-center font-medium">VS</span>
-        <Select value={t2} onValueChange={v => { setTrustee2(v); setScheme2('all'); }}>
-          <SelectTrigger className="w-full sm:w-44 h-9 text-xs rounded-2xl"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {trusteeNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <div className="flex flex-wrap gap-1 sm:ml-auto bg-white/70 backdrop-blur-xl rounded-2xl border border-border p-1">
-          {RETURN_FIELDS.map(key => (
-            <button
-              key={key}
-              onClick={() => setPeriod(key)}
-              className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-all ${
-                period === key
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {RETURN_LABELS[key]}
-            </button>
-          ))}
+      <div className="space-y-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <Select value={t1} onValueChange={v => { setTrustee1(v); setScheme1('all'); }}>
+            <SelectTrigger className="w-full sm:w-44 h-9 text-xs rounded-2xl"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {trusteeNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <span className="text-muted-foreground text-xs self-center font-medium">VS</span>
+          <Select value={t2} onValueChange={v => { setTrustee2(v); setScheme2('all'); }}>
+            <SelectTrigger className="w-full sm:w-44 h-9 text-xs rounded-2xl"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {trusteeNames.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <div className="flex flex-wrap gap-1 sm:ml-auto bg-white/70 backdrop-blur-xl rounded-2xl border border-border p-1">
+            {RETURN_FIELDS.map(key => (
+              <button
+                key={key}
+                onClick={() => setPeriod(key)}
+                className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-all ${
+                  period === key
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {RETURN_LABELS[key]}
+              </button>
+            ))}
+          </div>
         </div>
+        <DataSourceBadge field={period} />
       </div>
 
       {/* Side-by-side cards */}

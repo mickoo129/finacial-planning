@@ -8,6 +8,7 @@ import { deduplicateFunds } from '@/lib/fundGrouping';
 import { filterFundsBySource, sourceForField } from '@/lib/fundSource';
 import { TrendingUp, TrendingDown, RefreshCw, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DataSourceBadge } from '@/components/DataSourceBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { resolveTrustee } from '@/lib/trusteeMap';
@@ -251,20 +252,23 @@ export default function Rankings() {
       )}
 
       {/* Period selector */}
-      <div className="flex flex-wrap gap-1 bg-white/70 backdrop-blur-xl rounded-2xl border border-border p-1.5">
-        {RETURN_FIELDS.map(key => (
-          <button
-            key={key}
-            onClick={() => setSortBy(key)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-              sortBy === key
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-            }`}
-          >
-            {RETURN_LABELS[key]}
-          </button>
-        ))}
+      <div className="space-y-2">
+        <div className="flex flex-wrap gap-1 bg-white/70 backdrop-blur-xl rounded-2xl border border-border p-1.5">
+          {RETURN_FIELDS.map(key => (
+            <button
+              key={key}
+              onClick={() => setSortBy(key)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                sortBy === key
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              {RETURN_LABELS[key]}
+            </button>
+          ))}
+        </div>
+        <DataSourceBadge field={sortBy} />
       </div>
 
       {isLoading ? (
