@@ -62,6 +62,7 @@ function calcReturns(history: { date: string; price: number }[]) {
 
   return {
     ytd: r(get(Math.max(1, daysInYear))),
+    '1m': r(get(30)),
     '3m': r(get(90)),
     '1y': r(get(365)),
     '3y': r(get(1095)),

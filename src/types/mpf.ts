@@ -1,9 +1,10 @@
 export type FundCategory = '股票基金' | '債券基金' | '混合資產基金' | '貨幣市場基金' | '保證基金' | '預設投資策略';
 
-export type TimePeriod = 'ytd' | '3m' | '1y' | '3y' | '5y' | '10y' | '2025' | '2024' | '2023' | '2022' | '2021';
+export type TimePeriod = 'ytd' | '1m' | '3m' | '1y' | '3y' | '5y' | '10y' | '2025' | '2024' | '2023' | '2022' | '2021';
 
 export const TIME_PERIOD_LABELS: Record<TimePeriod, string> = {
   ytd: '年初至今',
+  '1m': '1個月',
   '3m': '3個月',
   '1y': '1年',
   '3y': '3年',

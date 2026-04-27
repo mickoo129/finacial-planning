@@ -8,7 +8,7 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianG
 import { TimePeriodSelector } from '@/components/TimePeriodSelector';
 
 const CHART_DAYS: Record<TimePeriod, number> = {
-  ytd: 365, '3m': 90, '1y': 365, '3y': 1095, '5y': 1825, '10y': 3650,
+  ytd: 365, '1m': 30, '3m': 90, '1y': 365, '3y': 1095, '5y': 1825, '10y': 3650,
   '2025': 365, '2024': 365, '2023': 365, '2022': 365, '2021': 365,
 };
 
