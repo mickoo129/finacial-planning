@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>理財需求分析｜MKPA</title>
-<meta name="description" content="透過互動情景及「四桶金」理財金字塔，檢查應急錢、保障、退休及增值四方面的現狀，並整理優先行動清單。">
+<meta name="description" content="用五條關於自己的問題，了解醫療、停工、家人、退休及心願五方面的需要，整理出自己的理財優先次序。">
 <link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -144,7 +144,7 @@ body[data-fam="single"] .only-fam,body:not([data-fam="single"]) .only-single{dis
 
 /* 客戶定位 */
 .persona{display:grid;gap:10px 24px;grid-template-columns:minmax(0,1fr)}
-@media (min-width:900px){.persona{grid-template-columns:repeat(3,minmax(0,auto));justify-content:start}}
+@media (min-width:900px){.persona{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .pgroup{min-width:0}
 .pgroup>b{display:block;font-size:12.5px;color:var(--mk-muted);font-weight:700;margin-bottom:4px}
 .pills{display:flex;flex-wrap:wrap;gap:6px}
@@ -154,6 +154,11 @@ body[data-fam="single"] .only-fam,body:not([data-fam="single"]) .only-single{dis
 .pill[aria-pressed="true"] small{color:#D9F2E5}
 .script{margin-top:12px;padding:10px 14px;border-left:4px solid var(--mk-brand);background:var(--mk-brand-soft);border-radius:0 10px 10px 0;font-size:15px}
 .script b{color:var(--mk-brand-ink)}
+.script ul{margin:4px 0 0;padding-left:1.2em}
+.script li{margin:1px 0}
+.pill-chk{display:inline-flex;align-items:center;gap:6px;border-style:dashed}
+.pill-chk input{width:16px;height:16px;accent-color:var(--mk-brand);margin:0}
+.pill-chk:has(input:checked){background:var(--mk-brand-soft);border-color:var(--mk-brand);border-style:solid;color:var(--mk-brand-ink);font-weight:700}
 
 /* 輸入 */
 .flds{display:grid;gap:10px 14px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:12px}
@@ -185,6 +190,10 @@ input[type=range]{width:100%;accent-color:var(--mk-brand);height:28px;margin:2px
 .note.key{padding:10px 14px;border-radius:10px;background:var(--mk-brand-soft);border-left:4px solid var(--mk-brand)}
 .note.bad{padding:10px 14px;border-radius:10px;background:var(--mk-danger-soft);border-left:4px solid var(--mk-danger)}
 .fine{font-size:12.5px;color:var(--mk-muted);margin-top:8px}
+.fine a,.more a{color:var(--mk-brand-ink);font-weight:700}
+.more{font-size:13.5px;margin-top:4px;display:flex;flex-wrap:wrap;gap:4px 14px}
+.cost{margin-top:10px;padding:10px 14px;border-radius:10px;background:var(--mk-bg);font-size:14.5px}
+[hidden]{display:none!important}
 .st{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:1px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
 .st.ok{background:var(--mk-brand-soft);color:var(--mk-brand-ink)}
 .st.warn{background:var(--mk-warn-soft);color:var(--mk-warn)}
@@ -277,7 +286,6 @@ input[type=range]{width:100%;accent-color:var(--mk-brand);height:28px;margin:2px
 .plan-grid{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:900px){.plan-grid{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}}
 .plan-grid>.card{margin:0}
-.next{display:none}
 
 /* 頁尾 */
 .mk-footer{margin-top:24px;padding:22px 0 28px;font-size:13.5px;color:var(--mk-muted)}
@@ -287,10 +295,10 @@ input[type=range]{width:100%;accent-color:var(--mk-brand);height:28px;margin:2px
 @media (max-width:600px){.card{padding:16px}.pill{padding:6px 12px;font-size:14px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
-@page{size:A4 portrait;margin:12mm}
+@page{size:A4 portrait;margin:10mm 12mm}
 @media print{
   body{background:#fff!important;font-size:10.5pt;line-height:1.45}
-  .mk-header,.band,#persona,#p-mind,#p-assess,.btnrow,.no-print{display:none!important}
+  .mk-header,.band,#persona,#p-mind,#p-assess,.btnrow,.no-print,.more{display:none!important}
   #p-plan{display:block!important}
   main{padding:0}.mk-wrap{padding:0;max-width:none}
   .card{border:0;padding:0;margin:0 0 10px;border-radius:0}
@@ -303,23 +311,107 @@ input[type=range]{width:100%;accent-color:var(--mk-brand);height:28px;margin:2px
   .act-n{width:32px;height:32px;font-size:15px;line-height:30px;border-radius:8px}
   .act h3{font-size:11pt}.act p,.later,.b4 p,.b4 b{font-size:9.5pt}
   .b4{grid-template-columns:1fr 1fr;gap:6px}.b4 div{padding:5px 8px}
-  .next{display:block;margin-top:10px;font-size:10pt;break-inside:avoid}
-  .next span{display:inline-block;border-bottom:1px solid var(--mk-ink);min-width:52mm;height:1.4em;margin:0 10mm 0 2mm}
   .mk-footer{margin-top:8px;padding:0;font-size:8pt}
   .mk-footer p.dis{max-width:none;margin-top:3px}
 }
+
+/* ===== 2026-11 第二版：你的情況（可收埋）、未填狀態、預算、客人自選 ===== */
+.fld input[type=text]{width:100%;height:42px;border:1px solid var(--mk-line);border-radius:8px;background:#fff;padding:0 10px;font:600 16px var(--mk-num);color:var(--mk-ink);box-shadow:none;outline:0}
+.fld input::placeholder{color:#A9B4B2;font-weight:500}
+.basic{margin:10px 0 14px}
+.persona{grid-template-columns:minmax(0,1fr)!important}
+.p-sum{display:none;align-items:center;gap:10px;justify-content:space-between}
+.p-sum .tags{margin:0}
+body.pc .p-sum{display:flex}body.pc .p-full{display:none}
+body.pc #persona{padding:10px 16px}
+.btn.sm{min-height:36px;padding:0 14px;font-size:14px;flex:none}
+.tag b{font-weight:700}
+.tag.todo,.note.todo{color:var(--mk-warn);background:var(--mk-warn-soft);border-color:transparent}
+.note.todo{padding:10px 14px;border-radius:10px}
+.note.warnbox{padding:10px 14px;border-radius:10px;background:var(--mk-warn-soft);border-left:4px solid #D99A1C;color:var(--mk-ink)}
+.st.na{background:#F0F2F2;color:var(--mk-cat-7-ink)}
+.mindsw{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+.mindsw>b{font-size:14px;color:var(--mk-muted)}
+.flag{font-weight:500}
+.pick{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--mk-muted);margin-left:auto;cursor:pointer;white-space:nowrap}
+.pick input{width:18px;height:18px;accent-color:var(--mk-brand);margin:0}
+.act.picked h3:after,.later li:has(input:checked) b:after{content:"";}
+.act.picked .pick,.later .pick:has(input:checked){color:var(--mk-brand-ink);font-weight:700}
+.act.picked{background:linear-gradient(var(--mk-brand-soft),var(--mk-brand-soft)) no-repeat;background-size:100% 100%;border-radius:10px;padding-left:10px;padding-right:10px}
+.later li>span:last-child{display:flex;flex:1;gap:8px;align-items:center}
+.b4{grid-template-columns:1fr 1fr!important}
+.combo{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:12px}
+.combo>div{border:1px solid var(--mk-line);border-radius:10px;padding:12px 14px;break-inside:avoid;min-width:0}
+.combo h3{font-size:15.5px;font-weight:700;color:var(--mk-deep);line-height:1.35}
+.combo p{font-size:14px;margin-top:4px}
+.combo ul{margin:6px 0 0;padding-left:1.15em;font-size:14px}
+.combo li{margin:3px 0}
+.care{display:inline-block;border-radius:999px;background:var(--mk-brand-soft);color:var(--mk-brand-ink);font-size:12.5px;font-weight:700;padding:1px 10px;white-space:nowrap}
+.hl{font-weight:700;color:var(--mk-brand-ink)}
+.hl.r,b.gap{color:var(--mk-danger)}
+.note.key .hl,.script .hl{color:var(--mk-deep)}
+body[data-tab="plan"].pc #persona{display:none}
+.lnk{border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--mk-brand-ink);text-decoration:underline;cursor:pointer}
+@media print{
+  .p-sum,.pick:not(:has(input:checked)){display:none!important}
+  .act.picked{padding-left:6px;padding-right:6px}
+  .pick span{font-size:8.5pt}
+  #p-plan .lead,.lnk{display:none}
+  .combo{grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}.combo>div{padding:6px 8px}.combo h3{font-size:10pt}.combo p,.combo ul{font-size:8.5pt}
+  body{font-size:10pt}
+  .card{margin-bottom:6px}
+  .act p.how{margin-top:2px}
+  .mk-footer p.dis{font-size:7pt;line-height:1.3;margin-top:2px}
+  .sum div{padding:3px 8px}
+}
+
+/* ===== 2026-11 第三版：五條問題 ===== */
+body[data-tab="start"],body[data-tab="sum"]{--tab:var(--mk-brand);--tab-ink:var(--mk-brand-ink);--tab-soft:var(--mk-bg)}
+body[data-tab="q1"]{--tab:var(--mk-cat-1);--tab-ink:var(--mk-cat-1-ink);--tab-soft:var(--mk-cat-1-soft)}
+body[data-tab="q2"]{--tab:var(--mk-cat-3);--tab-ink:var(--mk-cat-3-ink);--tab-soft:var(--mk-cat-3-soft)}
+body[data-tab="q3"]{--tab:var(--mk-cat-2);--tab-ink:var(--mk-cat-2-ink);--tab-soft:var(--mk-cat-2-soft)}
+body[data-tab="q4"]{--tab:var(--mk-cat-5);--tab-ink:var(--mk-cat-5-ink);--tab-soft:var(--mk-cat-5-soft)}
+body[data-tab="q5"]{--tab:var(--mk-cat-8);--tab-ink:var(--mk-cat-8-ink);--tab-soft:var(--mk-cat-8-soft)}
+body[data-tab="start"] #p-start,body[data-tab="q1"] #p-q1,body[data-tab="q2"] #p-q2,body[data-tab="q3"] #p-q3,body[data-tab="q4"] #p-q4,body[data-tab="q5"] #p-q5,body[data-tab="sum"] #p-sum{display:block}
+.q{max-width:980px;margin-left:auto;margin-right:auto}
+.q>h2{font-size:clamp(21px,2.6vw,27px)!important;line-height:1.3}
+.q>.lead{font-size:16px}
+.guess{margin-top:12px;align-items:center}
+.guess .pill{font-size:16px;padding:10px 18px;min-height:46px}
+.sub{font-size:16px;font-weight:700;color:var(--mk-deep);margin-top:20px}
+.imp{margin-top:20px;padding:14px 16px;border-radius:12px;background:var(--mk-bg);display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.imp>b{font-size:15.5px;color:var(--mk-deep)}
+.nav{justify-content:space-between;margin-top:18px}
+.nonebtn{font:inherit;color:var(--mk-muted);justify-content:center}
+.nonebtn[aria-pressed="true"]{border-color:var(--mk-brand);background:var(--mk-brand-soft);color:var(--mk-brand-ink);font-weight:700}
+.chk:has(input:checked){border-color:var(--mk-brand);background:var(--mk-brand-soft)}
+.care.lo{background:#F0F2F2;color:var(--mk-cat-7-ink)}
+#areas .act.picked{margin:6px 0}
+.fdet{margin-top:12px}.fdet>p{font-size:15px;margin-top:6px}
+.combo ul{margin:6px 0 0;padding-left:1.15em}
+#p-sum .act h3 .st{margin-left:0}
+@media print{
+  #p-start,#p-q1,#p-q2,#p-q3,#p-q4,#p-q5{display:none!important}
+  #p-sum{display:block!important}
+  .fdet>p{font-size:9.5pt}.combo{grid-template-columns:1fr!important}
+  #fcPills .pill[aria-pressed="false"]{display:none}
+}
 </style>
 </head>
-<body data-tab="mind" data-mind="now" data-fam="single">
-<div class="mk-print-head"><b>MKPA · 理財需求分析 面談摘要</b><span>列印日期：<span class="mk-print-date"></span></span></div>
+<body data-tab="start">
+<div class="mk-print-head"><b>MKPA · 理財需求分析 摘要</b><span>列印日期：<span class="mk-print-date"></span></span></div>
 
 <header class="mk-header">
   <div class="mk-wrap mk-bar">
-    <a class="mk-title" href="./"><img class="mk-logo" src="favicon.svg" alt="" width="34" height="34"><span class="mk-name">理財需求分析<small class="mk-sub">四桶金理財檢查及行動清單</small></span></a>
-    <nav class="mk-tabs" aria-label="分頁">
-      <button type="button" class="mk-tab mk-cat-1" data-tab="mind" aria-pressed="true">啟發思維</button>
-      <button type="button" class="mk-tab mk-cat-2" data-tab="assess" aria-pressed="false">現狀評估</button>
-      <button type="button" class="mk-tab mk-cat-3" data-tab="plan" aria-pressed="false">行動清單</button>
+    <a class="mk-title" href="./"><img class="mk-logo" src="favicon.svg" alt="" width="34" height="34"><span class="mk-name">理財需求分析<small class="mk-sub">五條問題，整理理財優先次序</small></span></a>
+    <nav class="mk-tabs" aria-label="步驟">
+      <button type="button" class="mk-tab" data-tab="start">開始</button>
+      <button type="button" class="mk-tab mk-cat-1" data-tab="q1">醫療</button>
+      <button type="button" class="mk-tab mk-cat-3" data-tab="q2">停工</button>
+      <button type="button" class="mk-tab mk-cat-2" data-tab="q3">家人</button>
+      <button type="button" class="mk-tab mk-cat-5" data-tab="q4">退休</button>
+      <button type="button" class="mk-tab mk-cat-8" data-tab="q5">心願</button>
+      <button type="button" class="mk-tab" data-tab="sum">總結</button>
     </nav>
     <div class="mk-actions">
       <button type="button" class="mk-share-btn" onclick="mkShare()">分享<span class="mk-long">呢個方案</span></button>
@@ -331,218 +423,219 @@ input[type=range]{width:100%;accent-color:var(--mk-brand);height:28px;margin:2px
 
 <main class="mk-wrap">
 
-<!-- ===== 1. 客戶定位 ===== -->
-<section class="card" id="persona">
+<!-- ===== 開始 ===== -->
+<section class="panel card q" id="p-start">
+  <h2>先認識一下</h2>
+  <p class="lead">接下來有五條關於你自己的問題，每條大約兩分鐘。沒有標準答案，按你的想法回答便可以；不想答的可以跳過。</p>
+  <div class="flds" style="grid-template-columns:minmax(0,200px)">
+    <label class="fld"><span>年齡</span><input type="number" data-k="age" min="18" max="80" step="1" inputmode="numeric" placeholder="例如 35"></label>
+  </div>
   <div class="persona">
-    <div class="pgroup"><b>家庭身份</b><div class="pills" data-set="fam">
+    <div class="pgroup"><b>家庭狀況</b><div class="pills" data-set="fam">
       <button type="button" class="pill" data-v="single">單身貴族</button>
       <button type="button" class="pill" data-v="couple">二人世界</button>
-      <button type="button" class="pill" data-v="family">養育家庭</button></div></div>
-    <div class="pgroup"><b>職業屬性</b><div class="pills" data-set="job">
-      <button type="button" class="pill" data-v="office">企業白領<small>有公司醫保</small></button>
-      <button type="button" class="pill" data-v="self">自僱／Slash<small>手停口停</small></button>
-      <button type="button" class="pill" data-v="field">外勤前線<small>勞損意外高</small></button></div></div>
-    <div class="pgroup"><b>心態模式</b><div class="pills" data-set="mind">
-      <button type="button" class="pill" data-v="now">活在當下／到時先算</button>
-      <button type="button" class="pill" data-v="goal">目標導向／長遠規劃</button></div></div>
+      <button type="button" class="pill" data-v="family">養育家庭</button>
+      <button type="button" class="pill" data-v="grown">子女已獨立</button></div></div>
+    <div class="pgroup"><b>收入模式</b><div class="pills" data-set="emp">
+      <button type="button" class="pill" data-v="fixed">受僱・固定月薪</button>
+      <button type="button" class="pill" data-v="var">受僱・佣金或浮動收入</button>
+      <button type="button" class="pill" data-v="self">自僱／Freelance／Slash</button></div></div>
+    <div class="pgroup"><b>工作性質</b><div class="pills" data-set="work">
+      <button type="button" class="pill" data-v="desk">辦公室文職</button>
+      <button type="button" class="pill" data-v="service">服務及銷售<small>長時間站立走動</small></button>
+      <button type="button" class="pill" data-v="manual">技術及體力工作</button>
+      <button type="button" class="pill" data-v="field">外勤及駕駛</button></div></div>
   </div>
-  <p class="script" id="script"></p>
+  <div class="btnrow"><button type="button" class="btn" data-go="q1">開始第一條問題 →</button></div>
 </section>
 
-<!-- ===== 2. 啟發思維 ===== -->
-<section class="panel" id="p-mind">
-  <div class="grid2">
-
-    <!-- A1 輪候對比 -->
-    <div class="card only-now span2">
-      <span class="kicker">尊嚴與選擇</span>
-      <h2>同一個病，兩條時間線</h2>
-      <p class="lead">選一個常見情況，看看由求診到完成治療，公立與私家大約需要多久。</p>
-      <div class="pills" data-set="cond" style="margin-top:12px">
-        <button type="button" class="pill" data-v="tumour">懷疑腫瘤</button>
-        <button type="button" class="pill" data-v="disc">椎間盤突出</button>
-        <button type="button" class="pill" data-v="cataract">白內障</button>
-      </div>
-      <div id="wait"></div>
-      <p class="note key">醫療保險買的不是奢侈，而是生病時<b>有得選擇</b>：可以早一點知道結果、早一點治療、少痛幾個月。</p>
-      <p class="fine">輪候時間為參考情景，因醫院聯網及病情分流而異；如醫生評估為緊急個案，公立醫院會優先處理。</p>
-    </div>
-
-    <!-- A2 Freedom Fund -->
-    <div class="card only-now">
-      <span class="kicker">重新定義儲蓄</span>
-      <h2>「炒老闆魷魚」基金</h2>
-      <p class="lead">儲蓄不一定為了 65 歲退休，也可以為了隨時有底氣休息、轉跑道。</p>
-      <div class="sl"><div class="sl-top"><span>每月基本開支</span><output data-o="exp"></output></div>
-        <input type="range" data-k="exp" min="5000" max="80000" step="1000" aria-label="每月基本開支"></div>
-      <div class="sl"><div class="sl-top"><span>想隨時可以停工多久</span><output data-o="mon"></output></div>
-        <input type="range" data-k="mon" min="1" max="24" step="1" aria-label="停工月數"></div>
-      <div id="freedom"></div>
-    </div>
-
-    <!-- A3 衝擊模擬：單身 -->
-    <div class="card only-now only-single">
-      <span class="kicker">衝擊模擬</span>
-      <h2>如果要停工兩年</h2>
-      <p class="lead">「一人吃飽，全家不餓」？看看自己的儲蓄用完之後，由誰來承擔。</p>
-      <div class="flds">
-        <label class="fld"><span>現有流動儲蓄</span><input type="number" data-k="sav" min="0" step="10000" inputmode="numeric"></label>
-        <label class="fld"><span>每月治療及康復開支</span><input type="number" data-k="med" min="0" step="1000" inputmode="numeric"></label>
-        <label class="fld"><span>父母的退休儲備</span><input type="number" data-k="par" min="0" step="50000" inputmode="numeric"></label>
-      </div>
-      <div class="sl"><div class="sl-top"><span>停工第幾個月</span><output data-o="simM"></output></div>
-        <input type="range" data-k="simM" min="0" max="24" step="1" aria-label="停工月數"></div>
-      <div id="impactS"></div>
-      <div class="btnrow"><button type="button" class="btn ghost" id="playS">▶ 由第 0 個月開始播放</button></div>
-    </div>
-
-    <!-- A3 衝擊模擬：家庭 -->
-    <div class="card only-now only-fam">
-      <span class="kicker">衝擊模擬</span>
-      <h2>如果家庭收入減半</h2>
-      <p class="lead">其中一人因病或意外停工，按揭和生活開支不會跟着減少。</p>
-      <div class="flds">
-        <label class="fld"><span>家庭每月總收入</span><input type="number" data-k="hinc" min="0" step="1000" inputmode="numeric"></label>
-        <label class="fld"><span>每月按揭／租金</span><input type="number" data-k="mort" min="0" step="1000" inputmode="numeric"></label>
-        <label class="fld"><span>每月家庭生活開支</span><input type="number" data-k="hexp" min="0" step="1000" inputmode="numeric"></label>
-        <label class="fld"><span>現有流動儲蓄</span><input type="number" data-k="sav" min="0" step="10000" inputmode="numeric"></label>
-      </div>
-      <div id="impactF"></div>
-      <div class="btnrow"><button type="button" class="btn alert" id="cutBtn"></button></div>
-    </div>
-
-    <!-- B1 里程碑 -->
-    <div class="card only-goal">
-      <span class="kicker">人生時間軸</span>
-      <h2>人生里程碑</h2>
-      <p class="lead">揀選目標，填上金額和還有多少年。儲蓄計劃可以是一個「多功能現金流引擎」：同一筆資金，按不同階段提取使用。</p>
-      <div class="flds" style="grid-template-columns:repeat(2,minmax(0,1fr))">
-        <label class="fld"><span>現時年齡</span><input type="number" data-k="age" min="18" max="70" step="1" inputmode="numeric"></label>
-        <label class="fld"><span>假設每年回報</span><select data-k="gr"><option value="0">0%（只計本金）</option><option value="2">2%</option><option value="3">3%</option><option value="4">4%</option><option value="5">5%</option></select></label>
-      </div>
-      <div id="goals" style="margin-top:8px"></div>
-      <div class="tl" id="tl"></div>
-      <div id="goalSum"></div>
-    </div>
-
-    <!-- B2 夢想小偷 -->
-    <div class="card only-goal">
-      <span class="kicker">骨牌效應</span>
-      <h2>夢想小偷</h2>
-      <p class="lead">一場嚴重疾病，會先動用哪一筆錢？按下按鈕看看各個目標的儲備變化。</p>
-      <div class="sl"><div class="sl-top"><span>治療開支及停工期間的收入損失</span><output data-o="shock"></output></div>
-        <input type="range" data-k="shock" min="200000" max="3000000" step="100000" aria-label="嚴重疾病的財務衝擊"></div>
-      <div id="dream"></div>
-      <div class="btnrow">
-        <button type="button" class="btn alert" id="hitBtn">突發嚴重疾病</button>
-        <button type="button" class="btn" id="safeBtn">加上危疾保障</button>
-        <button type="button" class="btn ghost" id="resetBtn">重設</button>
-      </div>
-    </div>
-
-    <div class="span2 btnrow" style="margin:0 0 16px;justify-content:flex-end"><button type="button" class="btn" data-go="assess">下一步：現狀評估 →</button></div>
+<!-- ===== 問題 1：醫療 ===== -->
+<section class="panel card q" id="p-q1">
+  <span class="kicker">問題 1／5</span>
+  <h2>如果明天病倒，你想有得選擇嗎？</h2>
+  <p class="lead">先估一估：由見專科醫生到做完手術，公立醫院大約要等多久？</p>
+  <div class="pills guess" data-set="gs1">
+    <button type="button" class="pill" data-v="a">約 1 個月</button>
+    <button type="button" class="pill" data-v="b">約 3 個月</button>
+    <button type="button" class="pill" data-v="c">約半年</button>
+    <button type="button" class="pill" data-v="d">一年以上</button>
+    <button type="button" class="lnk" data-skip="gs1">直接看答案</button>
   </div>
+  <div class="reveal" id="rv1">
+    <div class="pills" data-set="cond" style="margin-top:14px">
+      <button type="button" class="pill" data-v="cataract">白內障</button>
+      <button type="button" class="pill" data-v="joint" id="jointPill" hidden>膝關節退化</button>
+      <button type="button" class="pill" data-v="disc" id="discPill">椎間盤突出</button>
+      <button type="button" class="pill" data-v="tumour">癌症</button>
+    </div>
+    <div class="flds" id="cluBox" hidden style="grid-template-columns:minmax(0,280px)">
+      <label class="fld"><span>居住地區所屬的醫院聯網</span><select data-k="clu"><option value="">全港（顯示各聯網範圍）</option><option>港島東</option><option>港島西</option><option>九龍中</option><option>九龍東</option><option>九龍西</option><option>新界東</option><option>新界西</option></select></label>
+    </div>
+    <div id="gcmp1"></div>
+    <div id="wait"></div>
+    <p class="note key">醫療保險買的不是奢侈，而是生病時<b class="hl">有得選擇</b>：可以早一點知道結果、早一點治療、少痛幾個月。</p>
+    <p class="fine" id="waitSrc"></p>
+    <p class="fine no-print"><a href="https://hospitalinfohk.netlify.app/" target="_blank" rel="noopener">香港醫院指南：查看各醫院專科及輪候時間 ↗</a></p>
+    <h3 class="sub">你現時有沒有醫療保障？</h3>
+    <div class="chks">
+      <label class="chk"><input type="checkbox" data-k="cCo">公司醫保</label>
+      <label class="chk"><input type="checkbox" data-k="cVh">自願醫保／個人醫保</label>
+      <button type="button" class="chk nonebtn" data-none="1">兩樣都沒有</button>
+    </div>
+    <div id="f1"></div>
+    <div class="imp"><b>這件事對你有多重要？</b><div class="pills" data-set="i1"><button type="button" class="pill" data-v="3">很重要</button><button type="button" class="pill" data-v="2">一般</button><button type="button" class="pill" data-v="1">暫時不用</button></div></div>
+  </div>
+  <div class="btnrow nav"><button type="button" class="btn ghost" data-go="start">← 上一步</button><button type="button" class="btn" data-go="q2">下一條 →</button></div>
 </section>
 
-<!-- ===== 3. 現狀評估 ===== -->
-<section class="panel" id="p-assess">
-  <div class="grid2 assess">
-    <div>
-      <div class="card">
-        <div class="bk-h"><h3>基本資料</h3></div>
-        <div class="flds">
-          <label class="fld"><span>現時年齡</span><input type="number" data-k="age" min="18" max="70" step="1" inputmode="numeric"></label>
-          <label class="fld"><span>每月收入</span><input type="number" data-k="inc" min="0" step="1000" inputmode="numeric"></label>
-          <label class="fld"><span>每月基本開支</span><input type="number" data-k="exp" min="1000" step="1000" inputmode="numeric"></label>
-        </div>
-      </div>
-      <div class="card">
-        <div class="bk-h"><span class="bk-n">第一桶</span><h3>應急錢</h3><span id="st1"></span></div>
-        <p class="lead">隨時可以動用的現金，建議相等於 3 至 6 個月開支。</p>
-        <div class="flds"><label class="fld"><span>現有流動儲蓄</span><input type="number" data-k="sav" min="0" step="10000" inputmode="numeric"></label></div>
-        <div class="res" id="r1"></div>
-      </div>
-      <div class="card">
-        <div class="bk-h"><span class="bk-n">第二桶</span><h3>保障防禦</h3><span id="st2"></span></div>
-        <p class="lead">金字塔的地基。勾選現時已有的保障。</p>
-        <div class="chks">
-          <label class="chk"><input type="checkbox" data-k="cCo">公司醫保</label>
-          <label class="chk"><input type="checkbox" data-k="cVh">自願醫保／個人醫保</label>
-          <label class="chk"><input type="checkbox" data-k="cCi">危疾</label>
-          <label class="chk"><input type="checkbox" data-k="cLi">人壽</label>
-          <label class="chk"><input type="checkbox" data-k="cAc">個人意外</label>
-        </div>
-        <div class="flds">
-          <label class="fld" id="fCi"><span>現有危疾保額</span><input type="number" data-k="ciAmt" min="0" step="50000" inputmode="numeric"></label>
-          <label class="fld" id="fLi"><span>現有人壽保額</span><input type="number" data-k="liAmt" min="0" step="100000" inputmode="numeric"></label>
-          <label class="fld"><span>未償還負債（按揭等）</span><input type="number" data-k="debt" min="0" step="100000" inputmode="numeric"></label>
-          <label class="fld"><span>每月供養家人金額</span><input type="number" data-k="sup" min="0" step="1000" inputmode="numeric"></label>
-        </div>
-        <ul class="gaps" id="r2"></ul>
-      </div>
-      <div class="card">
-        <div class="bk-h"><span class="bk-n">第三桶</span><h3>退休基石</h3><span id="st3"></span></div>
-        <p class="lead">金字塔的中層。以今日幣值估算退休所需。</p>
-        <div class="flds">
-          <label class="fld"><span>預計退休年齡</span><input type="number" data-k="rAge" min="45" max="75" step="1" inputmode="numeric"></label>
-          <label class="fld"><span>期望每月生活費（今日幣值）</span><input type="number" data-k="rExp" min="0" step="1000" inputmode="numeric"></label>
-          <label class="fld"><span>現有強積金結餘</span><input type="number" data-k="mpf" min="0" step="10000" inputmode="numeric"></label>
-        </div>
-        <div class="res" id="r3"></div>
-      </div>
-      <div class="card">
-        <div class="bk-h"><span class="bk-n">第四桶</span><h3>財富增值</h3><span id="st4"></span></div>
-        <p class="lead">金字塔的頂層。地基穩固之後，才讓閒置資金增值。</p>
-        <div class="flds">
-          <label class="fld"><span>已投資資產（股票、基金等）</span><input type="number" data-k="inv" min="0" step="10000" inputmode="numeric"></label>
-          <label class="fld"><span>風險取向</span><select data-k="risk"><option value="low">保守</option><option value="bal">平衡</option><option value="high">進取</option></select></label>
-        </div>
-        <div class="res" id="r4"></div>
-      </div>
-    </div>
-    <div>
-      <div class="card pyr-card">
-        <h3>理財金字塔</h3>
-        <p class="lead">由下而上建立：先穩地基，再向上發展。</p>
-        <div class="pyr" id="pyr1"></div>
-        <div id="flag1"></div>
-        <div class="legend"><span class="st ok">足夠</span><span class="st warn">留意</span><span class="st bad">不足</span></div>
-        <div class="btnrow"><button type="button" class="btn" data-go="plan">下一步：行動清單 →</button></div>
-      </div>
-    </div>
+<!-- ===== 問題 2：停工 ===== -->
+<section class="panel card q" id="p-q2">
+  <span class="kicker">問題 2／5</span>
+  <h2>如果因病要停工一段時間，錢從哪裡來？</h2>
+  <p class="lead">先估一估：不靠別人幫忙，你現有的儲蓄可以支持多久？</p>
+  <div class="pills guess" data-set="gs2">
+    <button type="button" class="pill" data-v="a">3 個月內</button>
+    <button type="button" class="pill" data-v="b">約半年</button>
+    <button type="button" class="pill" data-v="c">約一年</button>
+    <button type="button" class="pill" data-v="d">兩年以上</button>
+    <button type="button" class="lnk" data-skip="gs2">直接計算</button>
   </div>
+  <div class="reveal" id="rv2">
+    <div class="flds">
+      <label class="fld"><span id="lbInc">每月收入</span><input type="text" data-m data-k="inc" inputmode="numeric" placeholder="例如 40,000"></label>
+      <label class="fld"><span id="lbExp">每月開支（包括租金或供樓）</span><input type="text" data-m data-k="exp" inputmode="numeric" placeholder="例如 25,000"></label>
+      <label class="fld"><span id="lbSav">流動儲蓄（現金、存款）</span><input type="text" data-m data-k="sav" inputmode="numeric" placeholder="例如 100,000"></label>
+      <label class="fld"><span>每月治療及康復開支（假設）</span><input type="text" data-m data-k="med" inputmode="numeric"></label>
+    </div>
+    <div id="f2a"></div>
+    <h3 class="sub">你現時有沒有這些保障？</h3>
+    <div class="chks">
+      <label class="chk"><input type="checkbox" data-k="cCi">危疾</label>
+      <label class="chk"><input type="checkbox" data-k="cAc">個人意外</label>
+      <button type="button" class="chk nonebtn" data-none="2">兩樣都沒有</button>
+    </div>
+    <div class="flds" id="fCi" style="grid-template-columns:minmax(0,240px)"><label class="fld"><span>現有危疾保額</span><input type="text" data-m data-k="ciAmt" inputmode="numeric"></label></div>
+    <div id="f2b"></div>
+    <div class="imp"><b>這件事對你有多重要？</b><div class="pills" data-set="i2"><button type="button" class="pill" data-v="3">很重要</button><button type="button" class="pill" data-v="2">一般</button><button type="button" class="pill" data-v="1">暫時不用</button></div></div>
+  </div>
+  <div class="btnrow nav"><button type="button" class="btn ghost" data-go="q1">← 上一條</button><button type="button" class="btn" data-go="q3">下一條 →</button></div>
 </section>
 
-<!-- ===== 4. 行動清單（亦係列印版）===== -->
-<section class="panel" id="p-plan">
+<!-- ===== 問題 3：家人 ===== -->
+<section class="panel card q" id="p-q3">
+  <span class="kicker">問題 3／5</span>
+  <h2>如果有一天你不在，誰的生活會受影響？</h2>
+  <p class="lead">揀選在經濟上依靠你的人，可以多選。</p>
+  <div class="pills">
+    <label class="pill pill-chk"><input type="checkbox" data-dp="partner">伴侶</label>
+    <label class="pill pill-chk"><input type="checkbox" data-dp="kids">子女</label>
+    <label class="pill pill-chk"><input type="checkbox" data-dp="parents">父母</label>
+    <button type="button" class="pill" id="ndBtn" data-nd>暫時沒有人依靠我</button>
+  </div>
+  <div class="reveal" id="rv3">
+    <div class="flds">
+      <label class="fld"><span>你每月負擔他們的生活費</span><input type="text" data-m data-k="sup" inputmode="numeric" placeholder="例如 15,000"></label>
+      <label class="fld"><span>未償還負債（按揭等）</span><input type="text" data-m data-k="debt" inputmode="numeric" placeholder="沒有可留空"></label>
+    </div>
+    <div id="f3a"></div>
+    <h3 class="sub">你現時有沒有人壽保障？</h3>
+    <div class="chks">
+      <label class="chk"><input type="checkbox" data-k="cLi">有人壽保障</label>
+      <button type="button" class="chk nonebtn" data-none="3">沒有</button>
+    </div>
+    <div class="flds" id="fLi" style="grid-template-columns:minmax(0,240px)"><label class="fld"><span>現有人壽保額</span><input type="text" data-m data-k="liAmt" inputmode="numeric"></label></div>
+    <div id="f3b"></div>
+  </div>
+  <div id="f3n"></div>
+  <div class="imp" id="imp3"><b>這件事對你有多重要？</b><div class="pills" data-set="i3"><button type="button" class="pill" data-v="3">很重要</button><button type="button" class="pill" data-v="2">一般</button><button type="button" class="pill" data-v="1">暫時不用</button></div></div>
+  <div class="btnrow nav"><button type="button" class="btn ghost" data-go="q2">← 上一條</button><button type="button" class="btn" data-go="q4">下一條 →</button></div>
+</section>
+
+<!-- ===== 問題 4：退休 ===== -->
+<section class="panel card q" id="p-q4">
+  <span class="kicker">問題 4／5</span>
+  <h2>你想幾歲開始，可以不用為錢工作？</h2>
+  <p class="lead">先估一估：退休後的生活費，現有的強積金大約可以應付幾成？</p>
+  <div class="pills guess" data-set="gs4">
+    <button type="button" class="pill" data-v="a">兩成左右</button>
+    <button type="button" class="pill" data-v="b">一半</button>
+    <button type="button" class="pill" data-v="c">八成</button>
+    <button type="button" class="pill" data-v="d">足夠有餘</button>
+    <button type="button" class="lnk" data-skip="gs4">直接計算</button>
+  </div>
+  <div class="reveal" id="rv4">
+    <div class="flds">
+      <label class="fld"><span>現時年齡</span><input type="number" data-k="age" min="18" max="80" step="1" inputmode="numeric" placeholder="例如 35"></label>
+      <label class="fld"><span>想幾歲退休</span><input type="number" data-k="rAge" min="45" max="80" step="1" inputmode="numeric"></label>
+      <label class="fld"><span>退休後每月生活費（今日幣值）</span><input type="text" data-m data-k="rExp" inputmode="numeric" placeholder="例如 20,000"></label>
+      <label class="fld"><span>現有強積金結餘</span><input type="text" data-m data-k="mpf" inputmode="numeric" placeholder="大約數目"></label>
+      <label class="fld"><span>其他退休儲備（儲蓄、年金等）</span><input type="text" data-m data-k="rOth" inputmode="numeric" placeholder="沒有可留空"></label>
+    </div>
+    <div id="f4"></div>
+    <div class="imp"><b>這件事對你有多重要？</b><div class="pills" data-set="i4"><button type="button" class="pill" data-v="3">很重要</button><button type="button" class="pill" data-v="2">一般</button><button type="button" class="pill" data-v="1">暫時不用</button></div></div>
+  </div>
+  <div class="btnrow nav"><button type="button" class="btn ghost" data-go="q3">← 上一條</button><button type="button" class="btn" data-go="q5">下一條 →</button></div>
+</section>
+
+<!-- ===== 問題 5：心願 ===== -->
+<section class="panel card q" id="p-q5">
+  <span class="kicker">問題 5／5</span>
+  <h2>有沒有一件很想做的事？</h2>
+  <p class="lead">揀選你想做的事，再填上大約需要多少錢、還有多少年。沒有的話可以跳過。</p>
+  <div id="goals" style="margin-top:8px"></div>
+  <div class="flds" style="grid-template-columns:minmax(0,220px)">
+    <label class="fld"><span>假設每年回報</span><select data-k="gr"><option value="0">0%（只計本金）</option><option value="2">2%</option><option value="3">3%</option><option value="4">4%</option><option value="5">5%</option></select></label>
+  </div>
+  <div class="tl" id="tl"></div>
+  <div id="goalSum"></div>
+  <div id="dreamBox">
+    <h3 class="sub">如果中途遇上一場嚴重疾病？</h3>
+    <p class="lead">假設已經按計劃為各個心願儲起資金，看看會先動用哪一筆。</p>
+    <div class="sl"><div class="sl-top"><span>治療開支及停工期間的收入損失</span><output data-o="shock"></output></div>
+      <input type="range" data-k="shock" min="200000" max="3000000" step="100000" aria-label="嚴重疾病的財務影響"></div>
+    <div id="dream"></div>
+    <div class="btnrow">
+      <button type="button" class="btn alert" id="hitBtn">看看會怎樣</button>
+      <button type="button" class="btn" id="safeBtn">如果有危疾保障</button>
+      <button type="button" class="btn ghost" id="resetBtn">重設</button>
+    </div>
+  </div>
+  <div class="imp"><b>這件事對你有多重要？</b><div class="pills" data-set="i5"><button type="button" class="pill" data-v="3">很重要</button><button type="button" class="pill" data-v="2">一般</button><button type="button" class="pill" data-v="1">暫時不用</button></div></div>
+  <div class="btnrow nav"><button type="button" class="btn ghost" data-go="q4">← 上一條</button><button type="button" class="btn" data-go="sum">看總結 →</button></div>
+</section>
+
+<!-- ===== 總結（亦係 PDF）===== -->
+<section class="panel" id="p-sum">
   <div class="card">
-    <h2>面談摘要</h2>
+    <h2>你的答案</h2>
     <div class="tags" id="tags"></div>
     <div class="sum" id="sum"></div>
+    <div id="budget"></div>
   </div>
   <div class="plan-grid">
     <div class="card">
-      <h2>優先行動</h2>
-      <p class="lead">按現狀評估的缺口排列，先處理影響最大的項目。</p>
-      <div id="acts"></div>
-      <div id="laterBox"></div>
+      <h2>由你說的重要程度排列</h2>
+      <p class="lead">以下是你剛才的回答。排在前面的，是你認為重要、而現時又未準備好的事。</p>
+      <div id="areas"></div>
     </div>
     <div class="card">
       <h2>理財金字塔</h2>
-      <div class="pyr" id="pyr2"></div>
-      <div id="flag2"></div>
+      <div class="pyr" id="pyr"></div>
+      <div class="legend"><span class="st ok">足夠</span><span class="st warn">留意</span><span class="st bad">不足</span><span class="st na">未答</span></div>
     </div>
   </div>
   <div class="card" style="margin-top:16px">
-    <h2>四桶金現狀</h2>
-    <div class="b4" id="b4"></div>
-    <div id="talk"></div>
-    <p class="next">下次跟進日期：<span></span>跟進事項：<span></span></p>
+    <h2>今日最想先了解哪一樣？</h2>
+    <p class="lead">不需要一次過處理所有事情。揀一樣你最想先了解的。</p>
+    <div class="pills" data-set="fc" id="fcPills" style="margin-top:10px"></div>
+    <div id="focus"></div>
   </div>
-  <div class="btnrow no-print" style="margin:0 0 8px">
+  <div class="btnrow no-print" style="margin:0 0 4px">
+    <button type="button" class="btn ghost" data-go="q5">← 上一步</button>
     <button type="button" class="mk-print-btn" onclick="window.print()">列印<span class="mk-long"> / 存 PDF</span></button>
     <button type="button" class="btn ghost" id="resetAll">重設全部資料</button>
   </div>
+  <p class="fine no-print" style="margin:0 0 8px">提示：分享連結會包含以上金額及選項（不含姓名），傳送前請先確認客人同意。</p>
 </section>
 
 <div class="mk-ecard">
@@ -553,8 +646,8 @@ input[type=range]{width:100%;accent-color:var(--mk-brand);height:28px;margin:2px
 
 <footer class="mk-footer">
   <p class="dis">本工具只供面談時作理財教育及初步需求分析之用，所有數字均為按輸入資料作出的簡化估算，並不構成任何保險或投資產品的要約、招攬或專業意見。實際保障需要、產品條款及保費，須經詳細財務需要分析後才能確定。投資涉及風險。</p>
-  <p class="dis">估算假設：危疾保障參考 3 至 5 年年薪；人壽保障為未償還負債加供養家人開支（養育家庭 10 年，其他 5 年）；退休開支計至 90 歲，強積金按每年回報 4%、通脹 2.5% 推算，並假設繼續按月入供款（上限 $30,000 的 10%，自僱 5%）。</p>
-  <p class="dis">資料來源：公立醫院輪候時間參考醫院管理局公布的專科門診新症及白內障手術輪候數字（2025 至 2026 年），以及業界一般參考情況；私家醫療時間為一般情況，視乎醫院及醫生安排。</p>
+  <p class="dis">估算假設：危疾保障參考 3 至 5 年年薪；人壽保障為未償還負債加家人生活費（有子女 10 年，其他 5 年）；退休開支計至 90 歲，強積金及其他退休儲備按每年回報 4%、通脹 2.5% 推算，並假設繼續按月入供款（上限 $30,000 的 10%，自僱 5%）。</p>
+  <p class="dis">資料來源：專科門診新症、白內障及全關節置換手術輪候時間取自醫院管理局開放數據（每季更新）；磁力共振輪候及私家醫療時間為一般參考情況，視乎醫院及醫生安排。私家手術收費、癌症醫療費用及危疾賠償數字取自《個人保險賠償報告》，詳見「理賠數據解讀」。</p>
   <p class="mk-home-link"><a href="https://mkpa.netlify.app/" target="_blank" rel="noopener">MKPA 工具箱：更多實用工具 ↗</a></p>
   <p class="mk-copy">© <span class="mk-year">2026</span> Michael Koo Protection Alliance (MKPA). 版權所有。</p>
 </footer>
@@ -580,235 +673,330 @@ document.querySelectorAll('.mk-print-date').forEach(function(e){e.textContent=d.
 <script>
 (function(){
 'use strict';
-/* ===== 預設值（分享連結只記同預設唔同嘅設定；唔記客人姓名）===== */
-var DEF={tab:'mind',fam:'single',job:'office',mind:'now',cond:'tumour',
-  age:35,inc:40000,exp:15000,mon:6,sav:100000,med:10000,par:1000000,simM:24,
-  hinc:70000,mort:18000,hexp:25000,cut:0,
-  gr:3,g1:1,g1a:1500000,g1y:5,g2:1,g2a:300000,g2y:3,g3:0,g3a:1000000,g3y:15,g4:1,g4a:5000000,g4y:30,shock:1000000,
-  cCo:1,cVh:0,cCi:0,cLi:0,cAc:0,ciAmt:0,liAmt:0,debt:0,sup:8000,
-  rAge:65,rExp:20000,mpf:300000,inv:0,risk:'bal'};
-var STR={tab:1,fam:1,job:1,mind:1,cond:1,risk:1};
-var s={},dream=0; /* dream：0 未發生、1 被抽乾、2 有保障（唔記入連結）*/
+/* ===== 預設值（分享連結只記同預設唔同嘅設定；唔記客人姓名）=====
+   金額 0 = 未填；sav -1 = 未填（0 係「冇儲蓄」）；cv1–3 = 已回答有冇保障；nd = 冇人依靠；i1–i5 = 客人話幾重要（3 很重要、2 一般、1 暫時不用、0 未答）*/
+var DEF={tab:'start',fam:'single',emp:'fixed',work:'desk',age:0,
+  gs1:'',cond:'cataract',clu:'',cv1:0,cCo:0,cVh:0,i1:0,
+  gs2:'',inc:0,exp:0,sav:-1,med:10000,cv2:0,cCi:0,ciAmt:0,cAc:0,i2:0,
+  dp:'',nd:0,sup:0,debt:0,cv3:0,cLi:0,liAmt:0,i3:0,
+  gs4:'',rAge:65,rExp:0,mpf:0,rOth:0,i4:0,
+  gr:3,g1:0,g1a:0,g1y:0,g2:0,g2a:0,g2y:0,g3:0,g3a:0,g3y:0,g4:0,g4a:0,g4y:0,g5:0,g5a:0,g5y:0,g6:0,g6a:0,g6y:0,shock:1000000,i5:0,
+  fc:''};
+var STR={tab:1,fam:1,emp:1,work:1,cond:1,clu:1,gs1:1,gs2:1,gs4:1,dp:1,fc:1};
+var KEEP0={med:1,rAge:1}; /* 其餘數字欄 0 就顯示空白 */
+var s={},dream=0; /* dream：0 未睇、1 動用心願儲備、2 有危疾保障（唔記入連結）*/
 function reset(){for(var k in DEF)s[k]=DEF[k];}
 reset();
 
-/* ===== 輪候參考數字（改數字時要註明來源同日期；w = 星期）=====
-   專科門診、白內障手術：醫管局公布數字（2025–26 年各聯網中位數範圍）
-   磁力共振 12–18 個月、私家時間：顧問提供嘅一般參考，未有官方出處，有新數字要更新 */
+/* ===== 輪候後備數字（讀唔到醫管局即時數據先用；w = 星期）=====
+   專科門診、白內障手術：醫管局 2025–26 年各聯網中位數範圍；磁力共振、私家時間：顧問提供嘅一般參考，冇官方出處 */
 var WAIT={
- tumour:[['專科門診首次診症',8,'半緊急新症目標 8 星期內；穩定新症可達數十星期',0.4,'1 至 3 天內'],
-         ['磁力共振等影像檢查',65,'非緊急個案約 12 至 18 個月',0.15,'最快 24 小時有報告'],
-         ['確診後安排治療',4,'按病情緩急安排',0.5,'數天內開始']],
- disc:[['骨科專科首次診症',34,'穩定新症中位數約 23 至 45 星期',0.4,'數天內'],
+ disc:[['骨科專科首次診症',34,'穩定新症中位數約 23 至 45 星期',0.4,'數天內',{sop:'骨科'}],
        ['磁力共振確定位置',65,'非緊急個案約 12 至 18 個月',0.15,'最快 24 小時有報告'],
        ['安排手術',12,'再排期，期間以止痛及物理治療為主',0.4,'3 天內可做微創手術']],
- cataract:[['眼科專科首次診症',40,'穩定新症中位數約 24 至 70 星期',0.4,'數天內'],
-           ['白內障手術',70,'輪候中位數約 7 至 25 個月',1.5,'約 1 至 2 星期內完成']]
+ cataract:[['眼科專科首次診症',40,'穩定新症中位數約 24 至 70 星期',0.4,'數天內',{sop:'眼科'}],
+           ['白內障手術',70,'輪候中位數約 7 至 25 個月',1.5,'約 1 至 2 星期內完成',{op:'cataract'}]],
+ /* 膝關節退化：只喺讀到醫管局即時數字先顯示（冇後備數字），到時取代椎間盤突出 */
+ joint:[['骨科專科首次診症',34,'',0.4,'數天內',{sop:'骨科'}],
+        ['全關節置換手術',0,'',2,'約 1 至 2 星期內安排',{op:'joint'}]],
+ tumour:null /* 癌症唔比較輪候（公立會優先處理緊急個案），改為講選擇同費用 */
 };
-var GOALS=[[1,'置業首期'],[2,'結婚'],[3,'子女教育'],[4,'退休']];
-var CAT={med:1,life:2,ci:3,acc:4,save:5,inv:7};
-var CATN={1:'醫療',2:'人壽',3:'危疾',4:'意外',5:'儲蓄／退休',7:'投資'};
+
+/* ===== 其他 MKPA 工具嘅數據（讀唔到就用後備數字／唔顯示）===== */
+var HOSP='https://hospitalinfohk.netlify.app/.netlify/functions/aed?src=',CLAIMS_JS='https://claims-report.netlify.app/data.js';
+var CLU=['港島東','港島西','九龍中','九龍東','九龍西','新界東','新界西'];
+var EXT={sop:null,sopPeriod:'',ops:{},opsPeriod:'',claims:null};
+function num(v){var m=/[\d.]+/.exec(String(v==null?'':v));return m?parseFloat(m[0]):NaN;}
+function ckey(c){return String(c||'').replace(/醫院聯網$/,'');}
+function dstr(v){var m=String(v||'').match(/(\d{4})-?(\d{2})-?(\d{2})/);return m?m[1]+' 年 '+(+m[2])+' 月':'';}
+function getJ(src){return fetch(HOSP+src).then(function(r){if(!r.ok)throw 0;return r.json();});}
+function loadExt(){
+  if(!window.fetch)return;
+  getJ('sopc').then(function(arr){var out={},from='',to='';
+    arr.forEach(function(x){var c=ckey(x.cluster);if(CLU.indexOf(c)<0)return;
+      var o=(out[c]=out[c]||{});o=(o[x.specialty]=o[x.specialty]||{});
+      if(x.Category==='穩定新症 - 中位數'){o.st=num(x.Value);from=x.date_id_from;to=x.date_id_to;}
+      else if(x.Category==='穩定新症 - 最長')o.mx=num(x.Value);});
+    var ok=CLU.some(function(c){return out[c]&&out[c]['骨科']&&out[c]['骨科'].st>0;});
+    if(ok){EXT.sop=out;EXT.sopPeriod=dstr(from)+'至 '+dstr(to);render();}
+  }).catch(function(){});
+  [['cataract','cataract'],['joint','totalJointReplacement']].forEach(function(x){
+    getJ(x[0]).then(function(j){var o={},p='';
+      (j[x[1]+'SurgeryPerformed']||[]).forEach(function(y){var c=ckey(y.cluster),m=num(y.medianWT);if(CLU.indexOf(c)<0||!(m>0))return;
+        o[c]={med:m,p90:num(y['90PctlWT'])};p=dstr(y.periodFrom)+'至 '+dstr(y.periodTo);});
+      if(Object.keys(o).length){EXT.ops[x[0]]=o;EXT.opsPeriod=p;render();}
+    }).catch(function(){});});
+  var sc=document.createElement('script');sc.src=CLAIMS_JS;sc.async=true;
+  sc.onload=function(){var C=window.CLAIMS;if(C&&C.meta&&C.critical&&C.critical[C.meta.latest]){EXT.claims=C;render();}};
+  document.head.appendChild(sc);
+}
+function liveStep(x){
+  var L=x[5],src=L&&(L.sop?EXT.sop:EXT.ops[L.op]);if(!src)return null;
+  var get=function(c){var d=src[c];if(!d)return null;d=L.sop?d[L.sop]:d;return d&&((L.sop?d.st:d.med)>0)?d:null;};
+  var unit=L.sop?' 星期':' 個月',k=L.sop?1:4.345,one=s.clu&&get(s.clu);
+  if(one){var v=L.sop?one.st:one.med,mx=L.sop?one.mx:one.p90;
+    return {w:v*k,t:s.clu+'聯網'+(L.sop?'穩定新症':'輪候')+'中位數 '+v+unit+(mx>0?(L.sop?'，最長 '+mx+unit:'；九成病人在 '+mx+unit+'內完成'):'')};}
+  var vs=CLU.map(get).filter(Boolean).map(function(d){return L.sop?d.st:d.med;});if(!vs.length)return null;
+  var lo=Math.min.apply(null,vs),hi=Math.max.apply(null,vs);
+  return {w:vs.reduce(function(a,b){return a+b;},0)/vs.length*k,t:'各聯網'+(L.sop?'穩定新症':'輪候')+'中位數 '+(lo===hi?lo:lo+' 至 '+hi)+unit};
+}
+function costLine(cond){
+  var C=EXT.claims&&EXT.claims.costs;if(!C)return '';
+  function bill(name){var r=(C.fullBill2020||[]).filter(function(x){return x[0].indexOf(name)===0;})[0];return r?r[2]+r[3]:0;}
+  if(cond==='tumour'&&C.cancer2019){var lo=1e12,hi=0;C.cancer2019.forEach(function(x){if(x[5]){lo=Math.min(lo,x[5][0]);hi=Math.max(hi,x[5][1]);}});
+    return hi?'主要癌症估計每年醫療費用約 <b class="num">'+money(lo)+'</b> 至 <b class="num">'+money(hi)+'</b>（2019 年資料）。':'';}
+  var b=cond==='disc'?bill('椎板切除'):cond==='cataract'?bill('白內障'):0;
+  return b?'私家醫院'+(cond==='disc'?'脊椎椎板切除手術':'白內障日間手術')+'全單收費約 <b class="num">'+money(b)+'</b>（醫生費連醫院收費，2020 年資料）。':'';
+}
+function ciFact(){
+  var C=EXT.claims;if(!C)return '';var y=C.meta.latest,d=C.critical[y];if(!d||!d.n||!d.avg)return '';
+  var mid=((d.male||[])[1]||0)+((d.male||[])[2]||0)+((d.female||[])[1]||0)+((d.female||[])[2]||0);
+  return y+' 年個人保險危疾賠償共 '+d.n.toLocaleString('en-US')+' 宗，平均每宗 <b class="num">'+money(d.avg)+'</b>'+(d.avgAge?'，平均年齡 '+d.avgAge+' 歲':'')+(mid?'，約 '+Math.round(mid/d.n*100)+'% 在 21 至 60 歲':'')+'。';
+}
+
+/* 心願：全部由客人自己揀同填，冇預設、唔分年齡 */
+var GOALS=[[1,'置業或換樓'],[2,'子女教育'],[3,'休息、進修或創業'],[4,'醫療費用儲備'],[5,'留給家人'],[6,'其他']];
+var T1='https://hkmedical-insurance.netlify.app/',T2='https://vhis-rate.netlify.app/',T3='https://claims-report.netlify.app/',T4='https://mpf-compass.netlify.app/',T6='https://oalahk.netlify.app/';
+/* 五個範疇：對應五條問題 */
+var AR=[{id:'med',q:'q1',i:'i1',name:'醫療',cat:1},{id:'inc',q:'q2',i:'i2',name:'停工時的收入',cat:3},{id:'fam',q:'q3',i:'i3',name:'家人的生活',cat:2},{id:'ret',q:'q4',i:'i4',name:'退休',cat:5},{id:'goal',q:'q5',i:'i5',name:'心願',cat:8}];
+var IMP={3:'很重要',2:'一般',1:'暫時不用',0:'未回答'};
 
 /* ===== 小工具 ===== */
 function $(id){return document.getElementById(id);}
 function $$(q){return Array.prototype.slice.call(document.querySelectorAll(q));}
 function n(v){v=+v;return isFinite(v)&&v>0?v:0;}
 function money(v){return '$'+Math.round(v).toLocaleString('en-US');}
-function wk(w){ /* 星期 → 易明嘅時間 */
-  if(w<1)return Math.max(1,Math.round(w*7))+' 天';
-  if(w<9)return Math.round(w)+' 星期';
+function wk(w){if(w<1)return Math.max(1,Math.round(w*7))+' 天';if(w<9)return Math.round(w)+' 星期';
   var m=Math.round(w/4.345);return m>=24?(Math.round(m/1.2)/10)+' 年':m+' 個月';}
-function st(c,t){return '<span class="st '+c+'">'+t+'</span>';}
-function chip(cat){return '<span class="mk-chip mk-cat-'+cat+'"><i class="mk-dot"></i>'+CATN[cat]+'</span>';}
-var ST_TXT={ok:'足夠',warn:'留意',bad:'不足'};
+function mon(m){return m>=24?(Math.round(m/1.2)/10)+' 年':(m<1?'不足 1 個月':(Math.round(m*10)/10)+' 個月');}
+var ST_TXT={ok:'足夠',warn:'留意',bad:'不足',na:'未答'};
+function st(c,t){return '<span class="st '+c+'">'+(t||ST_TXT[c])+'</span>';}
+function lk(t,u){return '<a href="'+u+'" target="_blank" rel="noopener">'+t+' ↗</a>';}
+function dpList(){return (s.dp||'').split(',').filter(function(k){return k==='partner'||k==='kids'||k==='parents';});}
 
-/* ===== 計算 ===== */
+/* ===== 計算（未答嘅範疇：狀態 na，唔評級）===== */
 function calc(){
-  var a={},exp=Math.max(1000,n(s.exp)),inc=n(s.inc),sav=n(s.sav),yr=inc*12;
-  /* 第一桶 */
-  a.emM=sav/exp;a.emT=s.job==='self'?6:3; /* 自僱以 6 個月為目標，其他最少 3 個月 */
-  a.emS=a.emM>=a.emT?'ok':a.emM>=3?'warn':'bad';
-  a.emGap=Math.max(0,exp*a.emT-sav);
-  /* 第二桶 */
-  a.medS=s.cVh?'ok':s.cCo?'warn':'bad';
-  a.ciLo=yr*3;a.ciHi=yr*5;a.ciHave=s.cCi?n(s.ciAmt):0;a.ciGap=Math.max(0,a.ciLo-a.ciHave);
-  a.ciS=inc===0?'ok':a.ciHave>=a.ciLo?'ok':a.ciHave>0?'warn':'bad';
-  a.liYrs=s.fam==='family'?10:5;a.liNeed=n(s.debt)+n(s.sup)*12*a.liYrs;a.liHave=s.cLi?n(s.liAmt):0;
-  a.liGap=Math.max(0,a.liNeed-a.liHave);
-  a.liS=a.liGap===0?'ok':(a.liHave>=a.liNeed*0.5?'warn':(s.fam==='single'&&n(s.debt)===0?'warn':'bad'));
-  a.acS=s.cAc?'ok':s.job==='field'?'bad':'warn';
-  var w={med:.35,ci:.3,li:.2,ac:s.job==='field'?.3:.15},sc={ok:1,warn:.5,bad:0};
-  var tot=w.med+w.ci+w.li+w.ac;
-  a.protScore=(sc[a.medS]*w.med+sc[a.ciS]*w.ci+sc[a.liS]*w.li+sc[a.acS]*w.ac)/tot;
-  a.protS=a.protScore>=.75?'ok':a.protScore>=.4?'warn':'bad';
-  if(a.medS==='bad'&&a.protS==='ok')a.protS='warn';
-  /* 第三桶（今日幣值）*/
-  var age=Math.min(70,Math.max(18,n(s.age)||35)),rAge=Math.max(age+1,n(s.rAge)||65),yrs=rAge-age,r=.04,inf=.025;
-  a.yrs=yrs;a.retYears=Math.max(1,90-rAge);a.retNeed=n(s.rExp)*12*a.retYears;
-  var c=Math.min(inc,30000)*(s.job==='self'?.05:.10)*12;
-  var fv=n(s.mpf)*Math.pow(1+r,yrs)+c*(Math.pow(1+r,yrs)-1)/r;
-  a.mpfPV=fv/Math.pow(1+inf,yrs);a.retGap=Math.max(0,a.retNeed-a.mpfPV);
-  a.retCov=a.retNeed>0?Math.min(1,a.mpfPV/a.retNeed):1;
-  a.retS=a.retCov>=.8?'ok':a.retCov>=.4?'warn':'bad';
-  var rm=((1+r)/(1+inf)-1)/12,N=yrs*12;a.retPmt=a.retGap*rm/(Math.pow(1+rm,N)-1);
-  /* 第四桶 */
-  a.inv=n(s.inv);a.idle=Math.max(0,sav-exp*6);a.total=sav+a.inv;
-  a.invRatio=a.total>0?a.inv/a.total:0;a.idleRatio=a.total>0?a.idle/a.total:0;
-  a.topHeavy=a.inv>0&&(a.protS==='bad'||a.emS==='bad');
-  a.weS=a.topHeavy?'bad':(a.idle>exp*12||(a.inv===0&&a.idle>0))?'warn':'ok';
-  /* 啟發思維 */
-  a.free=exp*n(s.mon);a.freeGap=Math.max(0,a.free-sav);
-  a.goals=GOALS.filter(function(g){return s['g'+g[0]];}).map(function(g){
-    var A=n(s['g'+g[0]+'a']),y=Math.max(1,n(s['g'+g[0]+'y'])),gm=n(s.gr)/100/12,M=y*12;
+  var a={},exp=n(s.exp),inc=n(s.inc),savF=s.sav>=0,sav=savF?n(s.sav):0,yr=inc*12,age=n(s.age);
+  a.exp=exp;a.inc=inc;a.sav=sav;a.savF=savF;a.age=age;a.senior=age>=55;
+  a.surplus=inc>0&&exp>0?inc-exp:null;
+  a.unstable=s.emp!=='fixed';a.risky=s.work==='manual'||s.work==='field';
+  /* 醫療 */
+  a.medS=!s.cv1?'na':s.cVh?'ok':s.cCo?'warn':'bad';
+  /* 停工：應急錢（自僱或浮動收入 6 個月，其他 3 個月）＋危疾（3–5 年年薪）＋意外 */
+  a.hasEm=exp>0&&savF;a.emT=a.unstable?6:3;a.emM=exp>0?sav/exp:0;
+  a.emS=!a.hasEm?'na':a.emM>=a.emT?'ok':a.emM>=3?'warn':'bad';a.emGap=Math.max(0,exp*a.emT-sav);
+  a.burn=exp+n(s.med);a.ownM=a.burn>0?sav/a.burn:0;
+  a.hasCi=inc>0&&!!s.cv2;a.ciLo=yr*3;a.ciHi=yr*5;a.ciHave=s.cCi?n(s.ciAmt):0;a.ciGap=Math.max(0,a.ciLo-a.ciHave);
+  a.ciS=!a.hasCi?'na':a.ciHave>=a.ciLo?'ok':(a.ciHave>0||a.senior)?'warn':'bad'; /* 55 歲以上新買危疾又貴又難，唔當「不足」 */
+  a.acS=!s.cv2?'na':s.cAc?'ok':a.risky?'bad':'warn';
+  var rk={bad:3,warn:2,ok:1,na:0};
+  a.incS=[a.emS,a.ciS].sort(function(x,y){return rk[y]-rk[x];})[0];
+  /* 家人：負債 + 每月負擔 ×（有子女 10 年，其他 5 年）*/
+  var dp=dpList();a.dp=dp;a.liYrs=dp.indexOf('kids')>=0?10:5;a.liNeed=n(s.debt)+n(s.sup)*12*a.liYrs;a.liHave=s.cLi?n(s.liAmt):0;a.liGap=Math.max(0,a.liNeed-a.liHave);
+  a.famS=s.nd?'ok':(!dp.length||a.liNeed===0||!s.cv3)?'na':a.liGap===0?'ok':a.liHave>=a.liNeed*.5?'warn':'bad';
+  /* 退休（今日幣值；回報 4%、通脹 2.5%，計至 90 歲）*/
+  a.hasRet=age>0&&n(s.rExp)>0;a.retS='na';a.retCov=0;a.retGap=0;
+  if(a.hasRet){var rAge=Math.max(age+1,n(s.rAge)||65),yrs=rAge-age,r=.04,inf=.025,g=Math.pow(1+r,yrs),d=Math.pow(1+inf,yrs);
+    a.yrs=yrs;a.retYears=Math.max(1,90-rAge);a.retNeed=n(s.rExp)*12*a.retYears;
+    var c=Math.min(inc,30000)*(s.emp==='self'?.05:.10)*12;
+    a.mpfPV=(n(s.mpf)*g+c*(g-1)/r)/d;a.othPV=n(s.rOth)*g/d;a.retHave=a.mpfPV+a.othPV;
+    a.retGap=Math.max(0,a.retNeed-a.retHave);a.retCov=Math.min(1,a.retHave/a.retNeed);
+    a.retS=a.retCov>=.8?'ok':a.retCov>=.4?'warn':'bad';
+    var rm=((1+r)/(1+inf)-1)/12;a.retPmt=a.retGap*rm/(Math.pow(1+rm,yrs*12)-1);
+    a.retHard=a.retGap>0&&(yrs<10||(a.surplus!=null&&a.retPmt>Math.max(0,a.surplus)));}
+  /* 心願 */
+  a.goals=GOALS.filter(function(g){return s['g'+g[0]]&&n(s['g'+g[0]+'a'])>0&&n(s['g'+g[0]+'y'])>0;}).map(function(g){
+    var A=n(s['g'+g[0]+'a']),y=n(s['g'+g[0]+'y']),gm=n(s.gr)/100/12,M=y*12;
     return {id:g[0],name:g[1],amt:A,y:y,pmt:gm>0?A*gm/(Math.pow(1+gm,M)-1):A/M};
   }).sort(function(x,y){return x.y-y.y;});
-  a.goalAmt=a.goals.reduce(function(t,g){return t+g.amt;},0);
-  a.goalPmt=a.goals.reduce(function(t,g){return t+g.pmt;},0);
+  a.goalAmt=a.goals.reduce(function(t,g){return t+g.amt;},0);a.goalPmt=a.goals.reduce(function(t,g){return t+g.pmt;},0);
+  a.goalS=!a.goals.length?'na':(a.surplus!=null&&a.goalPmt>Math.max(0,a.surplus))?'warn':'ok';
+  /* 金字塔地基：已回答嘅醫療／危疾／人壽入面最差嗰個 */
+  a.protS=[a.medS,a.ciS,s.nd?'na':a.famS].sort(function(x,y){return rk[y]-rk[x];})[0];
+  a.S={med:a.medS,inc:a.incS,fam:a.famS,ret:a.retS,goal:a.goalS};
   return a;
 }
 
-/* ===== 行動建議：按缺口嚴重程度排次序，頭 3 項係優先 ===== */
-function recs(a){
-  var L=[],yr=n(s.inc)*12;
-  function add(score,cat,title,why,how){L.push({score:score,cat:cat,title:title,why:why,how:how});}
-  if(a.medS==='bad')add(100,CAT.med,'建立個人醫療保障','現時沒有任何住院醫療保障，一旦需要手術或住院，只能輪候公立醫院或動用儲蓄。','可考慮：自願醫保靈活計劃，保證續保至 100 歲，保費可扣稅。');
-  else if(a.medS==='warn')add(s.job==='office'?70:78,CAT.med,'為公司醫保加上個人保障','公司醫保屬於僱主，保額一般有限，轉工、裁員或退休後便會終止，屆時年紀較大或已有病歷，再投保會較困難。','可考慮：自願醫保高自付額計劃（Top-up），以較低保費補足公司醫保以外的大額開支。');
-  if(a.ciS!=='ok')add(a.ciS==='bad'?90:60,CAT.ci,'補足危疾保障','建議保額為 3 至 5 年年薪（'+money(a.ciLo)+' 至 '+money(a.ciHi)+'），現有 '+money(a.ciHave)+'，最少尚欠 '+money(a.ciGap)+'。這筆錢用來代替停工期間的收入。','可考慮：定期危疾（保費較低）或多功能儲蓄危疾（保障與儲蓄兼備）。');
-  if(a.liGap>0)add(s.fam==='family'?85:s.fam==='couple'?65:45,CAT.life,'補足人壽保障','負債及 '+a.liYrs+' 年供養家人開支合共約 '+money(a.liNeed)+'，現有保額 '+money(a.liHave)+'，尚欠 '+money(a.liGap)+'。','可考慮：定期人壽（以較低保費取得高保額）或終身人壽。');
-  if(a.acS!=='ok')add(s.job==='field'?80:s.job==='self'?50:25,CAT.acc,'加入意外保障',s.job==='field'?'外勤及體力工作受傷和勞損的機會較高，受傷停工會直接影響收入。':s.job==='self'?'自僱人士沒有有薪病假及僱員補償，受傷停工期間沒有收入。':'意外引致的門診、骨折及物理治療開支，一般醫保未必完全涵蓋。','可考慮：意外醫療及住院現金津貼計劃。');
-  if(a.emS!=='ok')add(a.emS==='bad'?75:40,CAT.save,'先建立應急錢','現有儲蓄約可應付 '+a.emM.toFixed(1)+' 個月開支，距離 '+a.emT+' 個月目標尚欠 '+money(a.emGap)+'。','做法：每月自動轉賬到獨立戶口，達標前暫緩高風險投資。');
-  if(a.retS!=='ok')add(a.retS==='bad'?55:35,CAT.save,'加強退休儲備','以今日幣值計，退休至 90 歲約需 '+money(a.retNeed)+'，預計強積金只能應付約 '+Math.round(a.retCov*100)+'%。如由現在開始補足，每月約需額外儲蓄 '+money(a.retPmt)+'。','可考慮：可扣稅自願性供款（TVC）或合資格延期年金，兩者合共每年最高可扣稅 $60,000。');
-  if(s.mind==='now'&&a.freeGap>0)add(32,CAT.save,'儲一筆「底氣金」','想隨時可以停工 '+n(s.mon)+' 個月，需要 '+money(a.free)+'，現時尚欠 '+money(a.freeGap)+'。','可考慮：靈活提取的儲蓄計劃，分 3 至 5 年累積。');
-  if(s.mind==='goal'&&a.goals.length)add(48,CAT.save,'為人生目標設立專項儲蓄','已揀選 '+a.goals.length+' 個目標，合共 '+money(a.goalAmt)+'，按每年 '+n(s.gr)+'% 回報估算，每月約需儲蓄 '+money(a.goalPmt)+'。','可考慮：可分階段提取的儲蓄計劃，配合危疾保障守護目標資金。');
-  if(!a.topHeavy&&a.protS!=='bad'&&a.emS!=='bad'&&a.idle>0)add(a.protS==='ok'?38:22,CAT.inv,'讓閒置資金增值','扣除 6 個月應急錢後，約有 '+money(a.idle)+' 閒置資金，長期存放會被通脹蠶食。','可考慮：按「'+({low:'保守',bal:'平衡',high:'進取'})[s.risk]+'」風險取向配置基金或投資相連計劃，並定期檢視強積金組合。');
-  L.sort(function(x,y){return y.score-x.score;});
-  return L;
+/* ===== 每個範疇一句結果（總結用）===== */
+function finding(id,a){
+  if(id==='med')return {na:'未回答有沒有醫療保障。',ok:'已有個人醫療保障，不受轉工或退休影響。',warn:'只有公司醫保，<b class="hl">轉工、裁員或退休後便會終止</b>。',bad:'沒有住院醫療保障，生病時<b class="hl r">只能輪候公立醫院或動用儲蓄</b>。'}[a.medS];
+  if(id==='inc'){var t=[];
+    if(a.hasEm)t.push('連治療開支計，現有儲蓄可支持<b class="hl'+(a.emS==='ok'?'':' r')+'">約 '+mon(a.ownM)+'</b>。');
+    if(a.hasCi)t.push(a.ciHave>=a.ciLo?'危疾保額已達 3 年收入。':a.senior?'危疾保額 '+money(a.ciHave)+'；這個年紀以醫療保障為先。':'危疾保額距離 3 年收入尚欠 <b class="gap">'+money(a.ciGap)+'</b>。');
+    return t.join('')||'未填寫開支、儲蓄或現有保障。';}
+  if(id==='fam')return s.nd?'暫時沒有人在經濟上依靠你。':a.famS==='na'?'未填寫家人的生活費或現有保障。':a.liGap>0?'家人需要約 '+money(a.liNeed)+'，現有保額 '+money(a.liHave)+'，尚欠 <b class="gap">'+money(a.liGap)+'</b>。':'現有人壽保額足夠應付家人所需。';
+  if(id==='ret')return !a.hasRet?'未填寫年齡或退休後的生活費。':'現有安排預計可應付退休生活費<b class="hl'+(a.retS==='ok'?'':' r')+'">約 '+Math.round(a.retCov*100)+'%</b>'+(a.retGap>0?'，尚欠 <b class="gap">'+money(a.retGap)+'</b>（今日幣值）。':'。');
+  return !a.goals.length?'未揀選心願。':a.goals.map(function(g){return g.name;}).join('、')+'：合共 '+money(a.goalAmt)+'，每月約需儲蓄 <b class="hl">'+money(a.goalPmt)+'</b>。';
+}
+/* ===== 「今日最想先了解」：說明 + 配搭（只講概念，數字去其他工具計）===== */
+function detail(id,a){
+  var P=[],C=[],L=[],yrs=a.age?Math.max(0,(n(s.rAge)||65)-a.age):null;
+  if(id==='med'){
+    P.push(a.medS==='ok'?'你已經有個人醫療保障，重點是確保它可以一直維持下去。':a.medS==='warn'?'公司醫保屬於僱主，保額一般有限。可考慮自願醫保高自付額計劃，<b class="hl">以較低保費補足公司醫保以外的大額開支</b>。':'可考慮自願醫保靈活計劃：保證續保至 100 歲，保費可以扣稅。');
+    C.push(['醫療保障＋保費儲備','保費會隨年齡上升，<b class="hl">退休後沒有收入時最吃力</b>。趁仍有收入，預先儲一筆「保費儲備」，日後專門用來補貼保費，確保保障不會因為負擔不起而中斷。']);
+    L=[lk('醫保對照',T1),lk('自願醫保保費規劃',T2)];}
+  if(id==='inc'){
+    if(a.hasEm&&a.emS!=='ok')P.push('先建立應急錢：目標是 '+a.emT+' 個月開支，尚欠 '+money(a.emGap)+'。');
+    P.push(a.senior?'這個年紀新投保危疾的保費較高，亦未必獲接納，建議<b class="hl">先確保醫療保障足夠</b>，並保留現有保單不要中斷。':'危疾保障的作用是<b class="hl">代替停工期間的收入</b>，一般以 3 至 5 年收入為參考'+(a.inc?'（'+money(a.ciLo)+' 至 '+money(a.ciHi)+'）':'')+'。');
+    if(s.cv2&&!s.cAc)P.push(a.risky?'體力、外勤或駕駛工作受傷機會較高，可加入意外醫療及住院現金保障。':'意外引致的門診及物理治療開支，可用意外保障補足。');
+    if(!a.senior)C.push(['定期保障＋儲蓄','保額大不等於保費高。先以定期危疾，<b class="hl">用較低保費取得足夠保額</b>；餘下預算放入儲蓄計劃，日後保障需要下降時，儲蓄已經成形。']);
+    L=[lk('醫保對照（危疾）',T1),lk('理賠數據解讀',T3)];}
+  if(id==='fam'){
+    P.push(s.nd?'現時沒有人依靠你，這部分可以遲一點再看；日後結婚、生育或要供養父母時再檢視。':'人壽保障的作用，是讓家人<b class="hl">在沒有你的收入時仍可維持生活</b>，並清還負債。');
+    if(!s.nd)C.push(['定期保障＋儲蓄','責任最重的年期（子女未獨立、按揭未還清），以定期人壽<b class="hl">用較低保費取得高保額</b>；責任減輕後保額可以下調。']);
+    L=[lk('理賠數據解讀',T3)];}
+  if(id==='ret'){
+    if(a.hasRet&&a.retGap>0)P.push(a.retHard?'單靠每月儲蓄較難補足缺口，可以一起考慮：延後退休、調整退休生活費，或將現有資產轉為穩定的每月收入。':'如由現在開始補足，每月約需額外儲蓄 <b class="hl">'+money(a.retPmt)+'</b>。愈早開始，每月需要的金額愈少。');
+    var x=[];
+    if(yrs===null||yrs>=3)x.push('<b>延期年金</b>：趁仍在工作時供款，<b class="hl">保費可以扣稅</b>（連同可扣稅自願性供款，每年上限 $60,000），退休後每月領取。');
+    if(a.age>=55)x.push('<b>即期年金</b>：把一部分儲蓄轉為年金，換成<b class="hl">終身每月收入</b>；資產變成每月收入後，申請長者生活津貼時的計算亦會不同，可按個人情況安排。');
+    x.push('<b>強積金</b>：65 歲可以提取，可分期提取作為每月收入。');
+    if(a.age>=55)x.push('<b>長者生活津貼</b>：65 歲起可以申請，設有資產及入息限額。');
+    C.push(['退休收入組合','退休後的收入可以由幾個來源組成，<b class="hl">不必只靠一筆儲蓄</b>。<ul><li>'+x.join('</li><li>')+'</li></ul>']);
+    L=[lk('積金羅盤',T4)];if(a.age>=55)L.push(lk('長者生活津貼全程指南',T6));}
+  if(id==='goal'){
+    P.push(a.goals.length?'為每個心願設立專項儲蓄，按年期分階段提取。'+(a.goalS==='warn'?'現時每月所需超過可動用金額，可以延長年期、調整金額，或者先集中一至兩個心願。':''):'可以回到第 5 條問題，揀選想做的事。');
+    C.push(['心願儲蓄＋危疾保障','為心願儲錢的同時，要有一筆錢專門應付疾病。危疾賠償用來支付治療及停工期間的開支，<b class="hl">心願的資金不必被動用</b>。']);}
+  return '<div class="fdet">'+P.map(function(p){return '<p>'+p+'</p>';}).join('')+
+    '<div class="combo">'+C.map(function(c){return '<div><h3>'+c[0]+'</h3><p>'+c[1]+'</p></div>';}).join('')+'</div>'+
+    (L.length?'<p class="more">'+L.join('')+'</p>':'')+'</div>';
 }
 
 /* ===== 畫面 ===== */
-function script(){
-  var m={now:'不必先談幾十年後的事，先看三件事：生病時有沒有選擇、想休息時有沒有底氣、出事時會不會成為家人的負擔。',
-         goal:'先把人生目標放上時間軸，再看看有甚麼事情會令計劃中斷，以及怎樣守住這些目標。'},
-      f={single:'單身不代表沒有責任：一旦停工，最先受影響的往往是父母。',couple:'二人世界靠兩份收入支撐，其中一份中斷，另一半便要獨力承擔。',family:'子女的生活和教育不能暫停，家庭收入需要有後備。'},
-      j={office:'公司醫保屬於僱主，轉工、裁員或退休後便會終止。',self:'自僱沒有有薪病假，停工一天便少一天收入。',field:'外勤及體力工作較容易受傷和勞損，意外保障應優先處理。'};
-  $('script').innerHTML='<b>切入重點：</b>'+m[s.mind]+f[s.fam]+j[s.job];
-}
+var F_={single:'單身貴族',couple:'二人世界',family:'養育家庭',grown:'子女已獨立'},E_={fixed:'受僱・固定月薪',var:'受僱・浮動收入',self:'自僱／Freelance'},W_={desk:'辦公室文職',service:'服務及銷售',manual:'技術及體力工作',field:'外勤及駕駛'};
 function rWait(){
-  var d=WAIT[s.cond],pub=0,pri=0;d.forEach(function(x){pub+=x[1];pri+=x[3];});
-  var h='<div class="wrow"><div class="wrow-h"><span>公立輪候</span><span class="num" style="color:var(--mk-danger)">約 '+wk(pub)+'</span></div><div class="wbar pub">'+
+  var hasJ=!!(EXT.ops.joint&&EXT.sop),cond=s.cond;
+  if(cond==='joint'&&!hasJ)cond='disc';if(cond==='disc'&&hasJ)cond='joint';
+  $('jointPill').hidden=!hasJ;$('discPill').hidden=hasJ;$('cluBox').hidden=!EXT.sop||cond==='tumour';
+  $$('[data-set="cond"] .pill').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.v===cond));});
+  var c=costLine(cond),live=false;
+  if(cond==='tumour'){
+    $('wait').innerHTML='<ul class="wsteps" style="border-top:0"><li><b>等候時間</b><span class="p1" style="color:var(--mk-ink)">公立：懷疑癌症屬緊急個案，會獲優先安排診症及治療。</span><span class="p2">私家：一般數天內可完成檢查及開始治療</span></li>'+
+      '<li><b>治療選擇</b><span class="p1" style="color:var(--mk-ink)">公立：按醫院藥物名冊及臨床指引；部分標靶及免疫治療藥物需要自費。</span><span class="p2">私家：可與醫生商量藥物、治療方案及時間</span></li></ul>'+
+      (c?'<p class="cost">差別主要在選擇和費用：'+c+'</p>':'<p class="cost">差別主要在選擇和費用：自費藥物及私家治療的開支，可以是一筆很大的數目。</p>');
+    $('waitSrc').textContent='以上為一般情況，實際安排視乎病情及醫生評估。';return;}
+  var d=WAIT[cond].map(function(x){var l=liveStep(x);if(l)live=true;return l?[x[0],l.w,l.t,x[3],x[4]]:x;}),pub=0,pri=0;
+  d.forEach(function(x){pub+=x[1];pri+=x[3];});
+  $('wait').innerHTML='<div class="wrow"><div class="wrow-h"><span>公立輪候</span><span class="num" style="color:var(--mk-danger)">約 '+wk(pub)+'</span></div><div class="wbar pub">'+
     d.map(function(x){return '<i style="width:'+(x[1]/pub*100)+'%" title="'+x[0]+'"></i>';}).join('')+'</div></div>'+
     '<div class="wrow"><div class="wrow-h"><span>私家醫療</span><span class="num" style="color:var(--mk-brand-ink)">約 '+wk(pri)+'</span></div><div class="wbar pri" style="width:'+Math.max(2.5,pri/pub*100)+'%"><i style="width:100%"></i></div></div>'+
-    '<ul class="wsteps">'+d.map(function(x){return '<li><b>'+x[0]+'</b><span class="p1">公立：'+x[2]+'</span><span class="p2">私家：'+x[4]+'</span></li>';}).join('')+'</ul>';
-  $('wait').innerHTML=h;
+    '<ul class="wsteps">'+d.map(function(x){return '<li><b>'+x[0]+'</b><span class="p1">公立：'+x[2]+'</span><span class="p2">私家：'+x[4]+'</span></li>';}).join('')+'</ul>'+
+    (c?'<p class="cost">私家醫療快，但費用不輕：'+c+'</p>':'');
+  $('waitSrc').textContent=(live?'專科門診及手術輪候時間為醫院管理局公布數字（'+(EXT.sopPeriod||EXT.opsPeriod)+'）；其他為一般參考情況。':'輪候時間為參考情景，因醫院聯網及病情分流而異。')+'如醫生評估為緊急個案，公立醫院會優先處理。';
 }
-function rFree(a){
-  var pct=a.free>0?Math.min(100,n(s.sav)/a.free*100):100;
-  $('freedom').innerHTML='<p class="big">'+money(a.free)+'<small>底氣金額</small></p>'+
-    '<div class="mrow"><div class="mrow-h"><span>現有流動儲蓄 '+money(n(s.sav))+'</span><b>'+Math.round(pct)+'%</b></div><div class="meter"><i style="width:'+pct+'%"></i></div></div>'+
-    (a.freeGap>0?'<p class="note">尚欠 <b class="num">'+money(a.freeGap)+'</b>。若分 3 年儲起，每月約 <b class="num">'+money(a.freeGap/36)+'</b>。</p>':'<p class="note">現有儲蓄已足夠。下一步是確保這筆錢不會因疾病或意外而被動用。</p>')+
-    '<p class="note key">有了這筆錢，便可以隨時遞信休息、進修或轉換跑道，不必看人臉色。</p>';
+
+function show(id,on){$(id).hidden=!on;}
+function rQ1(a){
+  show('rv1',!!s.gs1);if(!s.gs1)return;
+  rWait();
+  var G={a:'約 1 個月',b:'約 3 個月',c:'約半年',d:'一年以上'}[s.gs1];
+  $('gcmp1').innerHTML=G&&s.cond!=='tumour'?'<p class="note">你估「'+G+'」。實際情況：</p>':'';
+  $('f1').innerHTML=!s.cv1?'':'<p class="note '+(a.medS==='ok'?'key':a.medS==='bad'?'bad':'warnbox')+'">'+finding('med',a)+'</p>';
 }
-function rImpS(){
-  var burn=n(s.exp)+n(s.med),m=n(s.simM),sav=n(s.sav),par=n(s.par),used=burn*m;
-  var own=Math.max(0,sav-used),draw=Math.max(0,used-sav),pl=Math.max(0,par-draw),ownM=burn>0?sav/burn:99;
-  var h='<div class="mrow"><div class="mrow-h"><span>自己的儲蓄</span><b>'+money(own)+'</b></div><div class="meter"><i class="'+(own===0?'red':'')+'" style="width:'+(sav>0?own/sav*100:0)+'%"></i></div></div>'+
-    '<div class="mrow"><div class="mrow-h"><span>父母的退休儲備</span><b>'+money(pl)+'</b></div><div class="meter"><i class="'+(draw>0?'amber':'')+'" style="width:'+(par>0?pl/par*100:0)+'%"></i></div></div>';
-  if(draw>0)h+='<p class="note bad">自己的儲蓄在第 <b class="num">'+Math.floor(ownM)+'</b> 個月後用完。到第 '+m+' 個月，已動用父母退休儲備 <b class="num">'+money(Math.min(draw,par))+'</b>'+(par>0?'（約 '+Math.min(100,Math.round(draw/par*100))+'%）':'')+'。</p>';
-  else h+='<p class="note">每月開支連治療費用約 <b class="num">'+money(burn)+'</b>，現有儲蓄約可支持 <b class="num">'+ownM.toFixed(1)+'</b> 個月。</p>';
-  $('impactS').innerHTML=h;
+function rQ2(a){
+  show('rv2',!!s.gs2);if(!s.gs2)return;
+  var hh=s.fam!=='single';$('lbInc').textContent=hh?'你的每月收入':'每月收入';$('lbExp').textContent=(hh?'家庭':'')+'每月開支（包括租金或供樓）';$('lbSav').textContent=(hh?'家庭':'')+'流動儲蓄（現金、存款）';
+  var h='';
+  if(a.hasEm){var G={a:3,b:6,c:12,d:24}[s.gs2],GT={a:'3 個月內',b:'約半年',c:'約一年',d:'兩年以上'}[s.gs2],pct=Math.min(100,a.ownM/24*100);
+    h='<p class="big'+(a.ownM<6?' red':'')+'">'+mon(a.ownM)+'<small>現有儲蓄可以支持的時間</small></p>'+
+      '<div class="meter"><i class="'+(a.ownM<6?'red':a.ownM<12?'amber':'')+'" style="width:'+pct+'%"></i></div><p class="fine">橫條全長代表 2 年。每月開支連治療費用約 '+money(a.burn)+'。</p>'+
+      (GT?'<p class="note">你估「'+GT+'」。'+(a.ownM<G*.7?'實際比想像中短。':a.ownM>G*1.5?'實際比你估的長，底子不錯。':'和你估的差不多。')+(a.ownM<24?'儲蓄用完之後，<b class="hl r">便要靠家人，或者動用退休和其他計劃的錢</b>。':'')+'</p>':'');
+  }else h='<p class="note todo">填寫每月開支和流動儲蓄，便可以計算。</p>';
+  $('f2a').innerHTML=h;
+  $('fCi').style.display=s.cCi?'':'none';
+  var t='';
+  if(s.cv2){
+    if(a.hasCi)t+='<p class="note '+(a.ciS==='ok'?'key':a.ciS==='bad'?'bad':'warnbox')+'">危疾保障一般以 <b>3 至 5 年收入</b>為參考（'+money(a.ciLo)+' 至 '+money(a.ciHi)+'），用來<b class="hl">代替停工期間的收入</b>。你現有 '+money(a.ciHave)+(a.ciGap>0?(a.senior?'；這個年紀新投保較貴，建議以醫療保障為先。':'，最少尚欠 <b class="gap">'+money(a.ciGap)+'</b>。'):'，已經足夠。')+'</p>';
+    else t+='<p class="note todo">填寫每月收入，便可以估算危疾保額是否足夠。</p>';
+    if(!s.cAc&&a.risky)t+='<p class="note warnbox">你的工作性質受傷機會較高，<b class="hl">受傷停工會直接影響收入</b>，但未有個人意外保障。</p>';
+    if(ciFact()&&!a.senior)t+='<p class="fine">'+ciFact()+'</p>';}
+  $('f2b').innerHTML=t;
 }
-function rImpF(){
-  var inc=n(s.hinc)*(s.cut?.5:1),out=n(s.mort)+n(s.hexp),bal=inc-out,mx=Math.max(n(s.hinc),out,1);
-  var h='<div class="mrow"><div class="mrow-h"><span>家庭每月收入'+(s.cut?'（減半後）':'')+'</span><b>'+money(inc)+'</b></div><div class="meter"><i style="width:'+inc/mx*100+'%"></i></div></div>'+
-    '<div class="mrow"><div class="mrow-h"><span>按揭／租金及生活開支</span><b>'+money(out)+'</b></div><div class="meter"><i class="'+(bal<0?'red':'amber')+'" style="width:'+out/mx*100+'%"></i></div></div>'+
-    '<p class="big'+(bal<0?' red':'')+'">'+(bal<0?'−':'+')+money(Math.abs(bal))+'<small>每月'+(bal<0?'赤字':'盈餘')+'</small></p>';
-  if(bal<0)h+='<p class="note bad">現有儲蓄約可支撐 <b class="num">'+(n(s.sav)/-bal).toFixed(1)+'</b> 個月，之後便要由另一半獨力承擔，或者動用子女教育及退休的儲備。</p>';
-  else if(s.cut)h+='<p class="note">收入減半後仍有盈餘，但未計治療及康復開支。</p>';
-  $('impactF').innerHTML=h;
-  $('cutBtn').textContent=s.cut?'還原收入':'模擬：收入減半';
-  $('cutBtn').className=s.cut?'btn ghost':'btn alert';
+function rQ3(a){
+  var has=a.dp.length>0;show('rv3',has&&!s.nd);show('imp3',has||!!s.nd);
+  $('ndBtn').setAttribute('aria-pressed',String(!!s.nd));
+  $('f3n').innerHTML=s.nd?'<p class="note key">暫時沒有人在經濟上依靠你，這部分可以遲一點再看。日後結婚、生育或要供養父母時，再回來檢視。</p>':'';
+  if(!has||s.nd)return;
+  $('f3a').innerHTML=a.liNeed>0?'<p class="big">'+money(a.liNeed)+'<small>家人所需（負債加 '+a.liYrs+' 年生活費）</small></p>':'<p class="note todo">填寫你每月負擔的生活費，便可以估算家人需要多少。</p>';
+  $('fLi').style.display=s.cLi?'':'none';
+  $('f3b').innerHTML=!s.cv3||a.liNeed===0?'':'<p class="note '+(a.famS==='ok'?'key':a.famS==='bad'?'bad':'warnbox')+'">'+finding('fam',a)+(a.liGap>0?'這筆錢讓家人<b class="hl">在沒有你的收入時仍可維持生活</b>。':'')+'</p>';
 }
-function rGoals(a){
+function rQ4(a){
+  show('rv4',!!s.gs4);if(!s.gs4)return;
+  if(!a.hasRet){$('f4').innerHTML='<p class="note todo">填寫年齡和退休後每月生活費，便可以計算。</p>';return;}
+  var G={a:20,b:50,c:80,d:100}[s.gs4],GT={a:'兩成左右',b:'一半',c:'八成',d:'足夠有餘'}[s.gs4],cv=Math.round(a.retCov*100);
+  $('f4').innerHTML='<p class="big'+(a.retS==='bad'?' red':'')+'">'+cv+'%<small>現有安排可以應付的退休生活費</small></p>'+
+    '<div class="meter"><i class="'+(a.retS==='bad'?'red':a.retS==='warn'?'amber':'')+'" style="width:'+cv+'%"></i></div>'+
+    (GT?'<p class="note">你估「'+GT+'」。'+(cv<G-15?'實際比想像中少。':cv>G+15?'實際比你估的好。':'和你估的差不多。')+'</p>':'')+
+    '<p class="note">距離退休還有 <b class="num">'+a.yrs+'</b> 年。退休後 '+a.retYears+' 年（至 90 歲）約需 <b class="num">'+money(a.retNeed)+'</b>；強積金屆時約值 <b class="num">'+money(a.mpfPV)+'</b>'+(a.othPV>0?'，其他退休儲備約值 <b class="num">'+money(a.othPV)+'</b>':'')+'（今日幣值）。'+
+    (a.retGap>0?'缺口 <b class="num gap">'+money(a.retGap)+'</b>。'+(a.retHard?'':'由現在開始，每月約需額外儲蓄 <b class="num">'+money(a.retPmt)+'</b>。'):'')+'</p>';
+}
+function rGoals(){
   $('goals').innerHTML=GOALS.map(function(g){var i=g[0];
-    return '<div class="goal'+(s['g'+i]?'':' off')+'"><label class="chk"><input type="checkbox" data-k="g'+i+'"'+(s['g'+i]?' checked':'')+'>'+g[1]+'</label>'+
-    '<div class="goal-in"><label class="fld"><span>目標金額</span><input type="number" data-k="g'+i+'a" min="0" step="50000" inputmode="numeric" value="'+s['g'+i+'a']+'"></label>'+
-    '<label class="fld"><span>還有多少年</span><input type="number" data-k="g'+i+'y" min="1" max="50" step="1" inputmode="numeric" value="'+s['g'+i+'y']+'"></label></div></div>';}).join('');
+    return '<div class="goal"><label class="chk"><input type="checkbox" data-k="g'+i+'">'+g[1]+'</label>'+
+    '<div class="goal-in"><label class="fld"><span>大約需要多少錢</span><input type="text" data-m data-k="g'+i+'a" inputmode="numeric"></label>'+
+    '<label class="fld"><span>還有多少年</span><input type="number" data-k="g'+i+'y" min="1" max="50" step="1" inputmode="numeric"></label></div></div>';}).join('');
 }
-function rGoalOut(a){
-  var age=n(s.age)||35,mx=Math.max.apply(null,a.goals.map(function(g){return g.y;}).concat([10]));
-  $('tl').innerHTML='<div class="tl-p me" style="left:0"><b>現在<span>'+age+' 歲</span></b><i></i></div>'+
-    a.goals.map(function(g,i){return '<div class="tl-p'+(i%2?'':' alt')+'" style="left:'+(8+g.y/mx*92)+'%"><b>'+g.name+'<span>'+(age+g.y)+' 歲</span></b><i></i></div>';}).join('');
-  $('goalSum').innerHTML=a.goals.length?'<p class="big">'+money(a.goalPmt)+'<small>每月儲蓄目標</small></p><p class="note">'+a.goals.length+' 個目標合共 <b class="num">'+money(a.goalAmt)+'</b>。'+a.goals.map(function(g){return g.name+'每月 '+money(g.pmt);}).join('、')+'。</p>':'<p class="note">請先揀選最少一個目標。</p>';
-}
-function rDream(a){
+function rQ5(a){
+  GOALS.forEach(function(g,i){$('goals').children[i].classList.toggle('off',!s['g'+g[0]]);});
+  var any=a.goals.length>0,mx=Math.max.apply(null,a.goals.map(function(g){return g.y;}).concat([10]));
+  show('tl',any);show('dreamBox',any);
+  $('tl').innerHTML='<div class="tl-p me" style="left:0"><b>現在'+(a.age?'<span>'+a.age+' 歲</span>':'')+'</b><i></i></div>'+
+    a.goals.map(function(g,i){return '<div class="tl-p'+(i%2?'':' alt')+'" style="left:'+(8+g.y/mx*92)+'%"><b>'+g.name+'<span>'+(a.age?(a.age+g.y)+' 歲':g.y+' 年後')+'</span></b><i></i></div>';}).join('');
+  var h='';
+  if(any){h='<p class="big">'+money(a.goalPmt)+'<small>每月儲蓄目標</small></p><p class="note">合共 <b class="num">'+money(a.goalAmt)+'</b>。'+a.goals.map(function(g){return g.name+'每月 '+money(g.pmt);}).join('、')+'。</p>';
+    if(a.surplus!=null)h+=a.goalS==='warn'?'<p class="note warnbox">這個數目超過現時每月可動用的 <b class="num">'+money(Math.max(0,a.surplus))+'</b>（收入減開支）。可以延長年期、調整金額，或者先集中一至兩個心願。</p>':'<p class="note">約佔每月可動用金額（'+money(a.surplus)+'）的 <b class="num">'+Math.round(a.goalPmt/a.surplus*100)+'%</b>。</p>';}
+  $('goalSum').innerHTML=h;
   var left=dream===1?n(s.shock):0,cls=dream===1?' hit':dream===2?' safe':'';
-  var h=a.goals.map(function(g){var take=Math.min(g.amt,left);left-=take;var pct=g.amt>0?(g.amt-take)/g.amt*100:0;
-    return '<div class="mrow"><div class="mrow-h"><span>'+g.name+'（'+g.y+' 年後）'+(take>0?' <em>'+(pct<1?'被抽乾':'被抽走 '+money(take))+'</em>':dream===2?' <em>原封不動</em>':'')+'</span><b>'+money(g.amt-take)+'</b></div><div class="meter"><i style="width:'+pct+'%"></i></div></div>';}).join('');
-  if(!a.goals.length)h='<p class="note">請先在「人生里程碑」揀選目標。</p>';
-  else if(dream===1)h+='<p class="note bad">'+money(n(s.shock))+' 的開支，會由最接近的目標開始動用。'+(left>0?'所有目標儲備用盡後，仍欠 <b class="num">'+money(left)+'</b>。':'計劃多年的目標要推遲，甚至放棄。')+'</p>';
-  else if(dream===2)h+='<p class="note key">危疾賠償代為支付 '+money(n(s.shock))+'，各個目標的資金原封不動。保險是「夢想守護者」。</p>';
-  $('dream').className='dream'+cls;$('dream').innerHTML=h;
+  var d=a.goals.map(function(g){var take=Math.min(g.amt,left);left-=take;var pct=g.amt>0?(g.amt-take)/g.amt*100:0;
+    return '<div class="mrow"><div class="mrow-h"><span>'+g.name+'（'+g.y+' 年後）'+(take>0?' <em>'+(pct<1?'全數動用':'動用 '+money(take))+'</em>':dream===2?' <em>原封不動</em>':'')+'</span><b>'+money(g.amt-take)+'</b></div><div class="meter"><i style="width:'+pct+'%"></i></div></div>';}).join('');
+  if(dream===1)d+='<p class="note bad">'+money(n(s.shock))+' 的開支，會由最接近的心願開始動用。'+(left>0?'所有儲備用盡後，仍欠 <b class="num gap">'+money(left)+'</b>。':'<b class="hl r">計劃多年的事要推遲，甚至放棄</b>。')+'</p>';
+  if(dream===2)d+='<p class="note key">危疾賠償代為支付 '+money(n(s.shock))+'，各個心願的資金<b class="hl">原封不動</b>。</p>';
+  $('dream').className='dream'+cls;$('dream').innerHTML=d;
 }
 function pyramid(a){
-  var C={ok:['#E6F6EE','#00A758','#00753E'],warn:['#FFF5DC','#D99A1C','#8A5B00'],bad:['#FDECEC','#C62828','#C62828']};
+  var C={ok:['#E6F6EE','#00A758','#00753E'],warn:['#FFF5DC','#D99A1C','#8A5B00'],bad:['#FDECEC','#C62828','#C62828'],na:['#F5F5F5','#B8BEC2','#6F7377']};
   function hw(y){return (y-16)*156/226;}
   function tier(y1,y2,stt,t1,t2){var c=C[stt],a1=hw(y1),a2=hw(y2),my=(y1+y2)/2;
-    return '<path d="M'+(180-a1)+' '+y1+'H'+(180+a1)+'L'+(180+a2)+' '+y2+'H'+(180-a2)+'Z" fill="'+c[0]+'" stroke="'+c[1]+'" stroke-width="2" stroke-linejoin="round"/>'+
+    return '<path d="M'+(180-a1)+' '+y1+'H'+(180+a1)+'L'+(180+a2)+' '+y2+'H'+(180-a2)+'Z" fill="'+c[0]+'" stroke="'+c[1]+'" stroke-width="2" stroke-linejoin="round"'+(stt==='na'?' stroke-dasharray="5 4"':'')+'/>'+
       '<text x="180" y="'+(my+(y1<30?16:-2))+'" text-anchor="middle" font-size="'+(y1<30?13:15)+'" font-weight="700" fill="'+c[2]+'">'+t1+'</text>'+
       '<text x="180" y="'+(my+(y1<30?31:16))+'" text-anchor="middle" font-size="12" fill="'+c[2]+'">'+t2+'</text>';}
   var e=C[a.emS];
-  return '<svg viewBox="0 0 360 300" role="img" aria-label="理財金字塔：財富增值'+ST_TXT[a.weS]+'、退休基石'+ST_TXT[a.retS]+'、保障防禦'+ST_TXT[a.protS]+'、應急錢'+ST_TXT[a.emS]+'">'+
-    tier(16,96,a.weS,'增值',a.topHeavy?'頭重腳輕':ST_TXT[a.weS])+tier(102,166,a.retS,'退休基石',ST_TXT[a.retS]+'・可應付 '+Math.round(a.retCov*100)+'%')+
-    tier(172,242,a.protS,'保障防禦（地基）',ST_TXT[a.protS]+'・醫療／危疾／人壽／意外')+
-    '<rect x="12" y="250" width="336" height="40" rx="8" fill="'+e[0]+'" stroke="'+e[1]+'" stroke-width="2"/>'+
-    '<text x="180" y="275" text-anchor="middle" font-size="14" font-weight="700" fill="'+e[2]+'">應急錢・'+a.emM.toFixed(1)+' 個月開支（'+ST_TXT[a.emS]+'）</text></svg>';
+  return '<svg viewBox="0 0 360 300" role="img" aria-label="理財金字塔：心願'+ST_TXT[a.goalS]+'、退休'+ST_TXT[a.retS]+'、保障'+ST_TXT[a.protS]+'、應急錢'+ST_TXT[a.emS]+'">'+
+    tier(16,96,a.goalS,'心願',a.goalS==='na'?'未答':a.goalS==='ok'?'預算之內':'超出預算')+tier(102,166,a.retS,'退休',a.hasRet?ST_TXT[a.retS]+'・可應付 '+Math.round(a.retCov*100)+'%':'未答')+
+    tier(172,242,a.protS,'保障（地基）','醫療'+ST_TXT[a.medS]+'・危疾'+ST_TXT[a.ciS]+'・人壽'+ST_TXT[s.nd?'ok':a.famS])+
+    '<rect x="12" y="250" width="336" height="40" rx="8" fill="'+e[0]+'" stroke="'+e[1]+'" stroke-width="2"'+(a.emS==='na'?' stroke-dasharray="5 4"':'')+'/>'+
+    '<text x="180" y="275" text-anchor="middle" font-size="14" font-weight="700" fill="'+e[2]+'">應急錢・'+(a.hasEm?a.emM.toFixed(1)+' 個月開支（'+ST_TXT[a.emS]+'）':'未答')+'</text></svg>';
 }
-function flag(a){
-  if(a.topHeavy)return '<p class="flag">⚠ 頭重腳輕：已有投資，但'+(a.protS==='bad'?'保障地基':'應急錢')+'不足。一旦出事，可能要在低位被迫賣出投資。</p>';
-  if(a.protS==='bad')return '<p class="flag">⚠ 地基薄弱：保障不足，上層的儲蓄和投資都沒有依靠。</p>';
-  return '';
+function rSum(a){
+  var t=[F_[s.fam],E_[s.emp],W_[s.work]];if(a.age)t.push(a.age+' 歲');
+  $('tags').innerHTML=t.map(function(x){return '<span class="tag">'+x+'</span>';}).join('');
+  var S=[];if(a.inc)S.push(['每月收入',money(a.inc)]);if(a.exp)S.push(['每月開支',money(a.exp)]);if(a.savF)S.push(['流動儲蓄',money(a.sav)]);if(n(s.mpf))S.push(['強積金結餘',money(n(s.mpf))]);
+  $('sum').innerHTML=S.map(function(x){return '<div><span>'+x[0]+'</span><b>'+x[1]+'</b></div>';}).join('');
+  $('budget').innerHTML=a.surplus==null?'':a.surplus>0?'<p class="note key">每月可動用金額（收入減開支）：<b class="num">'+money(a.surplus)+'</b>。<b class="hl">需要不會因為預算而消失</b>，可以調整的是先後次序和方案。</p>':'<p class="note warnbox">現時每月開支已相等於或超過收入。以下的需要仍然存在，<b class="hl">可以調整的是先後次序和方案</b>。</p>';
+  var sev={bad:3,warn:2,na:1,ok:0},rows=AR.map(function(r){return {r:r,imp:n(s[r.i]),st:a.S[r.id]};});
+  rows.sort(function(x,y){return (y.imp-x.imp)||(sev[y.st]-sev[x.st]);});
+  $('areas').innerHTML=rows.map(function(x,i){var r=x.r;
+    return '<div class="act mk-cat-'+r.cat+(x.imp===3&&x.st!=='ok'?' picked':'')+'"><div class="act-n">'+(i+1)+'</div><div><h3>'+r.name+' <span class="care'+(x.imp===3?'':' lo')+'">你說：'+IMP[x.imp]+'</span> '+st(x.st)+'</h3><p>'+finding(r.id,a)+'</p>'+
+      (x.imp===0||x.st==='na'?'<p class="more"><button type="button" class="lnk" data-go="'+r.q+'">回到這條問題</button></p>':'')+'</div></div>';}).join('');
+  $('pyr').innerHTML=pyramid(a);
+  var fc=s.fc||'';
+  $('fcPills').innerHTML=AR.map(function(r){return '<button type="button" class="pill" data-v="'+r.id+'" aria-pressed="'+(fc===r.id)+'">'+r.name+'</button>';}).join('');
+  $('focus').innerHTML=fc&&a.S[fc]!==undefined?detail(fc,a):'';
 }
-function rAssess(a){
-  $('st1').innerHTML=st(a.emS,ST_TXT[a.emS]);$('st2').innerHTML=st(a.protS,ST_TXT[a.protS]);
-  $('st3').innerHTML=st(a.retS,ST_TXT[a.retS]);$('st4').innerHTML=st(a.weS,a.topHeavy?'頭重腳輕':ST_TXT[a.weS]);
-  $('r1').innerHTML='現有儲蓄可應付 <b class="num">'+a.emM.toFixed(1)+'</b> 個月開支。建議儲備 <b class="num">'+money(n(s.exp)*3)+'</b> 至 <b class="num">'+money(n(s.exp)*6)+'</b>'+(s.job==='self'?'（自僱收入不穩定，建議以 6 個月為目標）':'')+'。'+(a.emGap>0?'距離 '+a.emT+' 個月目標尚欠 <b class="num">'+money(a.emGap)+'</b>。':'已達 '+a.emT+' 個月目標。');
-  $('fCi').style.display=s.cCi?'':'none';$('fLi').style.display=s.cLi?'':'none';
-  var med={ok:'已有個人醫療保障，不受轉工或退休影響。',warn:'只有公司醫保：離職或退休後保障便會終止，保額亦可能不足以應付私家醫院大額開支。',bad:'沒有任何醫療保障，住院及手術開支要全數自行承擔。'}[a.medS];
-  var acc={ok:'已有個人意外保障。',warn:'未有個人意外保障。',bad:'外勤工作受傷風險較高，但未有個人意外保障。'}[a.acS];
-  $('r2').innerHTML=
-    '<li>'+chip(1)+'<span>'+st(a.medS,ST_TXT[a.medS])+' '+med+'</span></li>'+
-    '<li>'+chip(3)+'<span>'+st(a.ciS,ST_TXT[a.ciS])+' 建議 3 至 5 年年薪：<b class="num">'+money(a.ciLo)+'</b> 至 <b class="num">'+money(a.ciHi)+'</b>；現有 <b class="num">'+money(a.ciHave)+'</b>'+(a.ciGap>0?'，最少尚欠 <b class="num">'+money(a.ciGap)+'</b>。':'。')+'</span></li>'+
-    '<li>'+chip(2)+'<span>'+st(a.liS,ST_TXT[a.liS])+' 負債加 '+a.liYrs+' 年供養家人開支：<b class="num">'+money(a.liNeed)+'</b>；現有 <b class="num">'+money(a.liHave)+'</b>'+(a.liGap>0?'，尚欠 <b class="num">'+money(a.liGap)+'</b>。':'。')+'</span></li>'+
-    '<li>'+chip(4)+'<span>'+st(a.acS,ST_TXT[a.acS])+' '+acc+'</span></li>';
-  $('r3').innerHTML='距離退休還有 <b class="num">'+a.yrs+'</b> 年。退休後 '+a.retYears+' 年（至 90 歲）約需 <b class="num">'+money(a.retNeed)+'</b>；預計強積金屆時約值 <b class="num">'+money(a.mpfPV)+'</b>（今日幣值），可應付約 <b class="num">'+Math.round(a.retCov*100)+'%</b>。'+(a.retGap>0?'缺口 <b class="num">'+money(a.retGap)+'</b>，由現在開始每月約需額外儲蓄 <b class="num">'+money(a.retPmt)+'</b>。':'');
-  $('r4').innerHTML='扣除 6 個月應急錢後，閒置資金約 <b class="num">'+money(a.idle)+'</b>（佔流動資產 '+Math.round(a.idleRatio*100)+'%）；已投資資產佔 <b class="num">'+Math.round(a.invRatio*100)+'%</b>。'+(a.topHeavy?'<br>地基未穩便投資，屬於「頭重腳輕」，建議先補足保障和應急錢。':a.weS==='warn'?'<br>閒置資金長期存放會被通脹蠶食，地基穩固後可按風險取向逐步配置。':'');
-  var p=pyramid(a),f=flag(a);$('pyr1').innerHTML=p;$('pyr2').innerHTML=p;$('flag1').innerHTML=f;$('flag2').innerHTML=f;
-}
-function rPlan(a){
-  var F={single:'單身貴族',couple:'二人世界',family:'養育家庭'},J={office:'企業白領',self:'自僱／Slash',field:'外勤前線'},M={now:'活在當下',goal:'目標導向'};
-  $('tags').innerHTML=[F[s.fam],J[s.job],M[s.mind],(n(s.age)||35)+' 歲'].map(function(t){return '<span class="tag">'+t+'</span>';}).join('');
-  $('sum').innerHTML=[['每月收入',money(n(s.inc))],['每月開支',money(n(s.exp))],['流動儲蓄',money(n(s.sav))],['強積金結餘',money(n(s.mpf))],['已投資資產',money(a.inv)]].map(function(x){return '<div><span>'+x[0]+'</span><b>'+x[1]+'</b></div>';}).join('');
-  var L=recs(a),top=L.slice(0,3),rest=L.slice(3);
-  $('acts').innerHTML=top.length?top.map(function(r,i){return '<div class="act mk-cat-'+r.cat+'"><div class="act-n">'+(i+1)+'</div><div><h3>'+r.title+' '+chip(r.cat)+'</h3><p>'+r.why+'</p><p class="how">'+r.how+'</p></div></div>';}).join(''):'<p class="note key">四桶金均已達標。建議每年檢視一次，並在結婚、置業、生育或轉工時更新。</p>';
-  $('laterBox').innerHTML=rest.length?'<h3 style="font-size:15px;margin-top:10px;color:var(--mk-deep)">其後可跟進</h3><ul class="later">'+rest.map(function(r){return '<li>'+chip(r.cat)+'<span><b>'+r.title+'</b>：'+r.why+'</span></li>';}).join('')+'</ul>':'';
-  $('b4').innerHTML=[
-    ['第一桶 應急錢',a.emS,'可應付 '+a.emM.toFixed(1)+' 個月開支'+(a.emGap>0?'，距 '+a.emT+' 個月目標尚欠 '+money(a.emGap):'')],
-    ['第二桶 保障防禦',a.protS,'醫療'+ST_TXT[a.medS]+'、危疾'+ST_TXT[a.ciS]+(a.ciGap>0?'（欠 '+money(a.ciGap)+'）':'')+'、人壽'+ST_TXT[a.liS]+(a.liGap>0?'（欠 '+money(a.liGap)+'）':'')+'、意外'+ST_TXT[a.acS]],
-    ['第三桶 退休基石',a.retS,'強積金預計可應付退休所需約 '+Math.round(a.retCov*100)+'%'+(a.retGap>0?'，缺口 '+money(a.retGap)+'（今日幣值）':'')],
-    ['第四桶 財富增值',a.weS,a.topHeavy?'頭重腳輕：地基未穩已投資':'閒置資金 '+money(a.idle)+'，已投資佔 '+Math.round(a.invRatio*100)+'%']
-  ].map(function(x){return '<div><b>'+x[0]+' '+st(x[1],ST_TXT[x[1]])+'</b><p>'+x[2]+'</p></div>';}).join('');
-  $('talk').innerHTML='<p class="note">'+(s.mind==='now'
-    ?'<b>面談重點：</b>想隨時可以停工 '+n(s.mon)+' 個月，「底氣金額」為 <b class="num">'+money(a.free)+'</b>'+(a.freeGap>0?'，尚欠 '+money(a.freeGap):'，現有儲蓄已足夠')+'。'
-    :'<b>面談重點：</b>'+(a.goals.length?a.goals.map(function(g){return g.name+' '+money(g.amt)+'（'+g.y+' 年後）';}).join('、')+'；每月儲蓄目標約 <b class="num">'+money(a.goalPmt)+'</b>（假設每年回報 '+n(s.gr)+'%）。':'尚未設定人生目標。'))+'</p>';
-}
-function sync(){ /* 將 state 寫返落所有輸入欄（正在輸入嗰格唔郁）*/
-  $$('[data-k]').forEach(function(e){var k=e.dataset.k;if(e===document.activeElement&&e.type==='number')return;
-    if(e.type==='checkbox')e.checked=!!s[k];else e.value=s[k];});
-  $$('[data-set]').forEach(function(g){$$('[data-set="'+g.dataset.set+'"] .pill').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.v===s[g.dataset.set]));});});
+function fmtIn(e){var k=e.dataset.k,v=s[k];
+  if(e.type==='checkbox'){e.checked=!!v;return;}
+  if(e.dataset.m!=null||e.type==='number'){e.value=(v<0||(!v&&!KEEP0[k]))?'':(e.dataset.m!=null?Number(v).toLocaleString('en-US'):v);return;}
+  e.value=v;}
+function sync(){
+  $$('[data-k]').forEach(function(e){if(e===document.activeElement&&e.tagName==='INPUT'&&e.type!=='checkbox'&&e.type!=='range')return;fmtIn(e);});
+  $$('.pills[data-set]').forEach(function(g){var k=g.dataset.set;if(k==='cond'||k==='fc')return;
+    $$('.pills[data-set="'+k+'"] .pill').forEach(function(b){b.setAttribute('aria-pressed',String(String(s[k])===b.dataset.v));});});
+  var dp=dpList();$$('[data-dp]').forEach(function(e){e.checked=dp.indexOf(e.dataset.dp)>=0;});
+  $$('[data-none]').forEach(function(b){var i=b.dataset.none,none=s['cv'+i]&&(i==='1'?!s.cCo&&!s.cVh:i==='2'?!s.cCi&&!s.cAc:!s.cLi);b.setAttribute('aria-pressed',String(!!none));});
   $$('.mk-tab').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.tab===s.tab));});
-  var o={exp:money(n(s.exp)),mon:n(s.mon)+' 個月',simM:'第 '+n(s.simM)+' 個月',shock:money(n(s.shock))};
-  $$('[data-o]').forEach(function(e){e.textContent=o[e.dataset.o];});
-  document.body.dataset.tab=s.tab;document.body.dataset.mind=s.mind;document.body.dataset.fam=s.fam;
+  $$('[data-o]').forEach(function(e){e.textContent=money(n(s.shock));});
+  document.body.dataset.tab=s.tab;
 }
 function save(){
   var d={},k,has=false;for(k in DEF)if(s[k]!==DEF[k]){d[k]=s[k];has=true;}
@@ -818,44 +1006,50 @@ function save(){
 function load(){
   var m=/[#&]s=([\w-]+)/.exec(location.hash);if(!m)return;
   try{var d=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));
-    for(var k in d)if(k in DEF){ /* 只收預設入面有嘅設定，文字設定要係已知選項 */
-      if(STR[k]){if(typeof d[k]==='string'&&/^[a-z]{2,10}$/.test(d[k]))s[k]=d[k];}
+    for(var k in d)if(k in DEF){ /* 只收預設入面有嘅設定，文字設定要過白名單 */
+      if(k==='clu'){if(CLU.indexOf(d[k])>=0)s.clu=d[k];}
+      else if(STR[k]){if(typeof d[k]==='string'&&/^[a-z0-9,]{0,40}$/.test(d[k]))s[k]=d[k];}
       else if(typeof d[k]==='number'&&isFinite(d[k]))s[k]=d[k];}
   }catch(e){}
-  if(!WAIT[s.cond])s.cond=DEF.cond;
-  ['tab','fam','job','mind','risk'].forEach(function(k){if(!document.querySelector('[data-v="'+s[k]+'"],[data-tab="'+s[k]+'"],option[value="'+s[k]+'"]'))s[k]=DEF[k];});
+  if(!(s.cond in WAIT))s.cond=DEF.cond;
+  if(!F_[s.fam])s.fam=DEF.fam;if(!E_[s.emp])s.emp=DEF.emp;if(!W_[s.work])s.work=DEF.work;
+  if(!document.getElementById('p-'+s.tab))s.tab=DEF.tab;
 }
-var goalsBuilt=false;
-function render(full){
+function render(){
   var a=calc();
-  if(full||!goalsBuilt){rGoals(a);goalsBuilt=true;}
-  else GOALS.forEach(function(g,i){$('goals').children[i].classList.toggle('off',!s['g'+g[0]]);});
-  sync();script();rWait();rFree(a);rImpS();rImpF();rGoalOut(a);rDream(a);rAssess(a);rPlan(a);save();
+  sync();rQ1(a);rQ2(a);rQ3(a);rQ4(a);rQ5(a);rSum(a);save();
 }
 
 /* ===== 事件 ===== */
-document.addEventListener('input',function(e){var t=e.target,k=t.dataset&&t.dataset.k;if(!k)return;
-  if(t.type==='checkbox')s[k]=t.checked?1:0;else if(STR[k])s[k]=t.value;else s[k]=n(t.value);
+document.addEventListener('input',function(e){var t=e.target,D=t.dataset||{},k=D.k;
+  if(D.dp){var p=dpList().filter(function(x){return x!==D.dp;});if(t.checked)p.push(D.dp);s.dp=p.join(',');s.nd=0;render();return;}
+  if(!k)return;
+  if(t.type==='checkbox'){s[k]=t.checked?1:0;if(k==='cCo'||k==='cVh')s.cv1=1;if(k==='cCi'||k==='cAc')s.cv2=1;if(k==='cLi')s.cv3=1;}
+  else if(STR[k])s[k]=t.value;
+  else if(D.m!=null){var raw=t.value.replace(/[^\d]/g,'');s[k]=raw===''?(k==='sav'?-1:0):+raw;}
+  else s[k]=n(t.value);
   if(k==='shock'||/^g\d/.test(k))dream=0;
   render();});
+document.addEventListener('focusout',function(e){if(e.target.dataset&&e.target.dataset.k)fmtIn(e.target);}); /* 離開輸入欄先加千位分隔 */
 document.addEventListener('click',function(e){
-  var p=e.target.closest('.pill');
-  if(p){s[p.parentNode.dataset.set]=p.dataset.v;dream=0;render();return;}
-  var t=e.target.closest('[data-tab],[data-go]');
-  if(t&&t.tagName==='BUTTON'){s.tab=t.dataset.tab||t.dataset.go;render();window.scrollTo(0,0);
+  var T=e.target,x;
+  if((x=T.closest('[data-skip]'))){s[x.dataset.skip]='x';render();return;}
+  if((x=T.closest('[data-none]'))){var i=x.dataset.none;s['cv'+i]=1;if(i==='1'){s.cCo=0;s.cVh=0;}if(i==='2'){s.cCi=0;s.cAc=0;}if(i==='3')s.cLi=0;render();return;}
+  if((x=T.closest('[data-nd]'))){s.nd=s.nd?0:1;if(s.nd)s.dp='';render();return;}
+  if((x=T.closest('.pill'))&&x.dataset.v&&x.parentNode.dataset.set){var set=x.parentNode.dataset.set,v=x.dataset.v;
+    s[set]=STR[set]?(set==='fc'&&s.fc===v?'':v):+v;
+    if(set==='emp'&&s.emp==='self')s.cCo=0; /* 自僱冇公司醫保 */
+    render();return;}
+  if((x=T.closest('button[data-tab],button[data-go]'))){s.tab=x.dataset.tab||x.dataset.go;render();window.scrollTo(0,0);
     var on=document.querySelector('.mk-tab[aria-pressed="true"]');if(on&&on.scrollIntoView)on.scrollIntoView({block:'nearest',inline:'center'});}
 });
-$('cutBtn').onclick=function(){s.cut=s.cut?0:1;render();};
 $('hitBtn').onclick=function(){dream=1;render();};
 $('safeBtn').onclick=function(){dream=2;render();};
 $('resetBtn').onclick=function(){dream=0;render();};
-$('resetAll').onclick=function(){if(confirm('確定清除所有已輸入的資料？')){var t=s.tab;reset();s.tab=t;dream=0;render(true);}};
-var timer=null;
-$('playS').onclick=function(){clearInterval(timer);s.simM=0;render();
-  timer=setInterval(function(){if(s.simM>=24){clearInterval(timer);return;}s.simM++;render();},220);};
-window.addEventListener('hashchange',function(){reset();load();render(true);});
+$('resetAll').onclick=function(){if(confirm('確定清除所有已輸入的資料？')){reset();dream=0;render();window.scrollTo(0,0);}};
+window.addEventListener('hashchange',function(){reset();load();render();});
 
-load();render(true);
+rGoals();load();render();loadExt();
 })();
 </script>
 
