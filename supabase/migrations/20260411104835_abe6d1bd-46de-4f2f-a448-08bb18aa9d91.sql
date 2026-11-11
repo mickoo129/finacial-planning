@@ -1,1 +1,0 @@
-ALTER TABLE public.mpf_funds ADD COLUMN IF NOT EXISTS return_2025 numeric;

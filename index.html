@@ -1,23 +1,892 @@
 <!doctype html>
-<html lang="zh-Hant">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>強積金比較系統 - MPF Compare</title>
-    <meta name="description" content="強積金比較系統，基金排名、基金搜尋、基金比較、類別比較、退休計算機" />
-    <meta name="author" content="Lovable" />
-    <meta property="og:title" content="強積金比較系統 - MPF Compare" />
-    <meta property="og:description" content="強積金比較系統，基金排名、基金搜尋、基金比較、類別比較、退休計算機" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>理財需求分析｜MKPA</title>
+<meta name="description" content="透過互動情景及「四桶金」理財金字塔，檢查應急錢、保障、退休及增值四方面的現狀，並整理優先行動清單。">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0E5E57">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700&family=Noto+Sans+HK:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ===== MKPA 統一標準（由 _standard/mkpa.css 複製，修改請先改呢份再同步到各工具）===== */
+:root{
+  --mk-brand:#00A758; --mk-brand-ink:#00753E; --mk-brand-soft:#E6F6EE; --mk-brand-line:#B4E2C8;
+  --mk-deep:#0E5E57; --mk-ink:#1D2B2A; --mk-muted:#5B6B6A;
+  --mk-bg:#F6F9F8; --mk-surface:#FFFFFF; --mk-line:#E3E9E7;
+  --mk-warn:#8A5B00; --mk-warn-soft:#FFF5DC; --mk-danger:#C62828; --mk-danger-soft:#FDECEC;
+  --mk-sans:"Noto Sans HK","PingFang HK","Microsoft JhengHei",system-ui,sans-serif;
+  --mk-num:"Barlow","Noto Sans HK",system-ui,sans-serif;
+  --mk-max:1320px;                        /* 內容最闊 */
+  --mk-gutter:clamp(16px,3vw,32px);       /* 兩邊留白：手機 16px → 桌面 32px */
+  /* 分類色盤：主色（圓點、色條、圖表）／ -ink 白底寫字 ／ -soft 淺底 */
+  --mk-cat-1:#3072D4; --mk-cat-1-ink:#3072D4; --mk-cat-1-soft:#F1F5FC;   /* 1 醫療／住院 */
+  --mk-cat-2:#D86F35; --mk-cat-2-ink:#B95924; --mk-cat-2-soft:#FCF5F1;   /* 2 人壽／身故 */
+  --mk-cat-3:#953CB3; --mk-cat-3-ink:#953CB3; --mk-cat-3-soft:#F8F1FA;   /* 3 危疾 */
+  --mk-cat-4:#158E92; --mk-cat-4-ink:#138185; --mk-cat-4-soft:#EFF7F7;   /* 4 意外 */
+  --mk-cat-5:#C29323; --mk-cat-5-ink:#926F1B; --mk-cat-5-soft:#FBF7F0;   /* 5 儲蓄／退休／強積金 */
+  --mk-cat-6:#CD486B; --mk-cat-6-ink:#CB4266; --mk-cat-6-soft:#FCF2F5;   /* 6 癌症 */
+  --mk-cat-7:#6F7377; --mk-cat-7-ink:#6F7377; --mk-cat-7-soft:#F5F5F5;   /* 7 中性／其他 */
+  --mk-cat-8:#845C4A; --mk-cat-8-ink:#845C4A; --mk-cat-8-soft:#F6F4F2;   /* 8 後備 */
+}
+/* 分類 class：加喺元素上就用 var(--c) var(--c-ink) var(--c-soft) */
+.mk-cat-1{--c:var(--mk-cat-1);--c-ink:var(--mk-cat-1-ink);--c-soft:var(--mk-cat-1-soft)}
+.mk-cat-2{--c:var(--mk-cat-2);--c-ink:var(--mk-cat-2-ink);--c-soft:var(--mk-cat-2-soft)}
+.mk-cat-3{--c:var(--mk-cat-3);--c-ink:var(--mk-cat-3-ink);--c-soft:var(--mk-cat-3-soft)}
+.mk-cat-4{--c:var(--mk-cat-4);--c-ink:var(--mk-cat-4-ink);--c-soft:var(--mk-cat-4-soft)}
+.mk-cat-5{--c:var(--mk-cat-5);--c-ink:var(--mk-cat-5-ink);--c-soft:var(--mk-cat-5-soft)}
+.mk-cat-6{--c:var(--mk-cat-6);--c-ink:var(--mk-cat-6-ink);--c-soft:var(--mk-cat-6-soft)}
+.mk-cat-7{--c:var(--mk-cat-7);--c-ink:var(--mk-cat-7-ink);--c-soft:var(--mk-cat-7-soft)}
+.mk-cat-8{--c:var(--mk-cat-8);--c-ink:var(--mk-cat-8-ink);--c-soft:var(--mk-cat-8-soft)}
+.mk-chip{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;background:var(--c-soft);color:var(--c-ink);font-size:13px;font-weight:700}
+.mk-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c)}
+/* 版面外框：工具可以用自己嘅 class，但數值要一樣 */
+.mk-wrap{width:100%;max-width:calc(var(--mk-max) + 2 * var(--mk-gutter));margin:0 auto;padding-left:var(--mk-gutter);padding-right:var(--mk-gutter);box-sizing:border-box}
+/* 標題旁 icon */
+.mk-logo{width:32px;height:32px;flex:none;display:block}
+.mk-ecard{display:flex;align-items:center;gap:16px 24px;flex-wrap:wrap;margin:28px 0 0;padding:20px 22px;border-radius:14px;border:1px solid var(--mk-brand-line);background:var(--mk-brand-soft);font-family:var(--mk-sans);color:var(--mk-ink);text-align:left}
+.mk-ecard-txt{flex:1;min-width:200px}
+.mk-ecard-txt b{display:block;font-size:17px;font-weight:700;margin-bottom:2px;color:var(--mk-ink)}
+.mk-ecard-txt span{color:var(--mk-muted);font-size:14.5px;line-height:1.55}
+.mk-ecard-btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 22px;border-radius:999px;background:var(--mk-brand);color:#fff!important;font-weight:700;font-size:16px;text-decoration:none!important;white-space:nowrap}
+.mk-ecard-btn:hover{background:var(--mk-brand-ink)}
+.mk-ecard-qr{display:none}
+.mk-copy{margin:14px 0 0;font-size:13px;color:var(--mk-muted);font-family:var(--mk-sans)}
+.mk-print-btn{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--mk-brand);background:var(--mk-surface);color:var(--mk-brand-ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.mk-print-btn:hover{background:var(--mk-brand-soft)}
+.mk-print-head{display:none}
+/* MKPA 工具箱連結（頁尾，電子名片同版權行之間；開新分頁；列印唔印） */
+.mk-home-link{margin:16px 0 0;font-family:var(--mk-sans);font-size:14px;line-height:1.5}
+.mk-home-link a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.mk-home-link a:hover{text-decoration-thickness:2px}
+/* 列印保護提示（iPhone 主畫面 app 模式、app 內置瀏覽器唔支援列印時顯示） */
+.mk-printhelp{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:1000;width:min(440px,calc(100vw - 32px));background:#fff;color:var(--mk-ink);border:1px solid var(--mk-line);border-radius:14px;box-shadow:0 12px 32px -8px rgba(14,94,87,.35);padding:14px 16px;font-family:var(--mk-sans);font-size:14px;line-height:1.55}
+.mk-printhelp p{margin:0 0 10px}.mk-printhelp b{display:block;margin-bottom:2px;color:var(--mk-deep);font-size:15px}
+.mk-printhelp div{display:flex;gap:8px;justify-content:flex-end}
+.mk-printhelp button{font:inherit;font-weight:700;border-radius:999px;padding:7px 14px;cursor:pointer;border:1px solid var(--mk-brand);background:#fff;color:var(--mk-brand-ink)}
+.mk-printhelp .mk-printhelp-copy{background:var(--mk-brand);color:#fff}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .mk-no-print,.mk-print-btn,.mk-share-btn,.mk-toast,.mk-ecard-btn,.mk-home-link,.mk-printhelp{display:none!important}
+  .mk-header{position:static}
+  .mk-ecard{break-inside:avoid;padding:10px 14px;margin-top:14px}
+  .mk-ecard-qr{display:block}
+  .mk-ecard-qr svg{width:22mm;height:22mm;display:block}
+  .mk-ecard-txt span:after{content:"（掃描右方二維碼）"}
+  .mk-print-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:2px solid var(--mk-brand);padding:0 0 5px;margin:0 0 10px;font-family:var(--mk-sans);color:var(--mk-muted);font-size:9pt}
+  .mk-print-head b{color:var(--mk-deep);font-size:11pt}
+}
+/* 頁頭：統一鎖住喺頂；第一行 icon + 工具名 + 按鈕 */
+/* 頁頭：深青綠底、白字（分頁掣擺法跟 claimsreport）；第一行 icon＋工具名 → 分頁掣（名右邊）→ 右邊按鈕；平板同手機分頁掣落第二行、左右捲 */
+.mk-header{position:sticky;top:0;z-index:50;background:var(--mk-deep);color:#fff;border-bottom:0}
+.mk-bar{display:flex;align-items:center;gap:16px;min-height:60px}
+.mk-title{display:flex;align-items:center;gap:10px;min-width:0;font-family:var(--mk-sans);font-weight:900;font-size:17px;white-space:nowrap;color:var(--mk-deep);text-decoration:none}
+.mk-title span{overflow:hidden;text-overflow:ellipsis}
+/* 工具名 + 細字簡介（兩行都擠喺 56px 頁頭入面） */
+.mk-name{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1.2}
+.mk-sub{display:block;margin-top:2px;color:inherit;font-size:12px;font-weight:500;letter-spacing:0;opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mk-header .mk-title,.mk-header .mk-name{color:#fff}
+.mk-header .mk-sub{color:#C9DDD8;opacity:1}
+/* 分頁掣／導覽：每粒加 .mk-tab 同 .mk-cat-N（或者自己設 --c、--c-ink）；選中用 .on／.active／aria-selected／aria-pressed／aria-current */
+.mk-tabs{--c:var(--mk-brand);--c-ink:var(--mk-brand-ink);display:flex;align-items:center;gap:4px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.mk-tabs::-webkit-scrollbar{display:none}
+.mk-tab{display:inline-flex;align-items:center;gap:6px;flex:none;padding:6px 10px;border:0;border-radius:999px;background:none;color:#D7E7E3;font-family:var(--mk-sans);font-size:14px;font-weight:500;line-height:1.4;white-space:nowrap;text-decoration:none;cursor:pointer;box-shadow:none}
+.mk-tab::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c);flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.35);margin:0}
+.mk-tab:hover{background:rgba(255,255,255,.1);color:#fff;text-decoration:none}
+/* 選中：白色膠囊、字用該分類文字色，色點保留分類色 */
+.mk-tab.on,.mk-tab.active,.mk-tab[aria-selected="true"],.mk-tab[aria-pressed="true"],.mk-tab[aria-current="page"]{background:#fff;color:var(--c-ink);font-weight:700}
+.mk-tab.on::before,.mk-tab.active::before,.mk-tab[aria-selected="true"]::before,.mk-tab[aria-pressed="true"]::before,.mk-tab[aria-current="page"]::before{box-shadow:none}
+/* 平板同手機（≤1023px）：分頁掣落第二行，一行過左右捲 */
+@media (max-width:1023px){.mk-header .mk-bar,.mk-header.mk-bar{flex-wrap:wrap;height:auto;min-height:0;align-content:flex-start;row-gap:8px;column-gap:10px;padding-top:10px;padding-bottom:8px}.mk-bar>.mk-title{flex:1}.mk-header .mk-bar>.mk-tabs,.mk-header.mk-bar>.mk-tabs{order:3;flex:none;width:100%;margin:0}}
+.mk-actions{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none}
+/* 分享呢個方案（同列印按鈕一樣樣式） */
+.mk-share-btn{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--mk-brand);background:var(--mk-surface);color:var(--mk-brand-ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.mk-share-btn:hover{background:var(--mk-brand-soft)}
+.mk-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:999;background:var(--mk-ink);color:#fff;font:600 14px/1.4 var(--mk-sans);padding:10px 16px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.18);max-width:calc(100vw - 32px)}
+/* 頁頭入面嘅掣：透明底、白字白框 */
+.mk-header .mk-share-btn,.mk-header .mk-print-btn{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
+.mk-header .mk-share-btn:hover,.mk-header .mk-print-btn:hover{background:rgba(255,255,255,.12)}
+.mk-share-btn>.mk-long{margin-left:-6px} /* 抵銷 gap，令「分享呢個方案」連埋 */
+.mk-print-btn>.mk-long{margin-left:-2px} /* 「列印 / 存 PDF」保留一個空格 */
+/* 手機：按鈕字縮短（「分享」「列印」） */
+@media (max-width:480px){.mk-long{display:none}.mk-print-btn,.mk-share-btn{padding:0 10px}}
+/* ===== MKPA 統一標準 完 ===== */
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+/* ===== 理財需求分析：工具自己嘅樣式 ===== */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--mk-sans);color:var(--mk-ink);background:var(--tab-soft,var(--mk-bg));font-size:16px;line-height:1.6;overflow-x:hidden}
+body[data-tab="mind"]{--tab:var(--mk-cat-1);--tab-ink:var(--mk-cat-1-ink);--tab-soft:var(--mk-cat-1-soft)}
+body[data-tab="assess"]{--tab:var(--mk-cat-2);--tab-ink:var(--mk-cat-2-ink);--tab-soft:var(--mk-cat-2-soft)}
+body[data-tab="plan"]{--tab:var(--mk-cat-3);--tab-ink:var(--mk-cat-3-ink);--tab-soft:var(--mk-cat-3-soft)}
+.band{height:4px;background:var(--tab)}
+button{font-family:inherit}
+h1,h2,h3,p{margin:0}
+.num{font-family:var(--mk-num);font-weight:700;font-variant-numeric:tabular-nums}
+main{padding-top:16px;padding-bottom:8px}
+.card{background:var(--mk-surface);border:1px solid var(--mk-line);border-radius:14px;padding:18px 20px;margin:0 0 16px}
+.card>h2,.card>h3{font-size:18px;font-weight:700;color:var(--mk-deep);line-height:1.35}
+.card>h2+.lead,.card>h3+.lead{margin-top:4px}
+.lead{color:var(--mk-muted);font-size:14.5px}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;color:var(--tab-ink);background:var(--tab-soft);border-radius:999px;padding:1px 10px;margin-bottom:6px}
+.grid2{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.grid2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.grid2>.span2{grid-column:1/-1}.assess{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)!important}}
+.grid2>.card{margin:0}
+.panel{display:none}
+body[data-tab="mind"] #p-mind,body[data-tab="assess"] #p-assess,body[data-tab="plan"] #p-plan{display:block}
+body[data-mind="now"] .only-goal,body[data-mind="goal"] .only-now{display:none!important}
+body[data-fam="single"] .only-fam,body:not([data-fam="single"]) .only-single{display:none!important}
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+/* 客戶定位 */
+.persona{display:grid;gap:10px 24px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.persona{grid-template-columns:repeat(3,minmax(0,auto));justify-content:start}}
+.pgroup{min-width:0}
+.pgroup>b{display:block;font-size:12.5px;color:var(--mk-muted);font-weight:700;margin-bottom:4px}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--mk-line);background:#fff;color:var(--mk-ink);border-radius:999px;padding:7px 14px;font-size:14.5px;font-weight:500;cursor:pointer;line-height:1.3;min-height:38px}
+.pill small{color:var(--mk-muted);font-size:12px;margin-left:2px}
+.pill[aria-pressed="true"]{background:var(--mk-brand-ink);border-color:var(--mk-brand-ink);color:#fff;font-weight:700}
+.pill[aria-pressed="true"] small{color:#D9F2E5}
+.script{margin-top:12px;padding:10px 14px;border-left:4px solid var(--mk-brand);background:var(--mk-brand-soft);border-radius:0 10px 10px 0;font-size:15px}
+.script b{color:var(--mk-brand-ink)}
+
+/* 輸入 */
+.flds{display:grid;gap:10px 14px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:12px}
+.fld{display:block;min-width:0}
+.fld>span{display:block;font-size:13px;color:var(--mk-muted);margin-bottom:3px}
+.fld input[type=number],.fld select{width:100%;height:42px;border:1px solid var(--mk-line);border-radius:8px;background:#fff;padding:0 10px;font:600 16px var(--mk-num);color:var(--mk-ink);box-shadow:none;outline:0;appearance:auto}
+.fld select{font-family:var(--mk-sans);font-weight:500}
+.fld input:focus,.fld select:focus{border-color:var(--mk-brand)}
+.sl{margin-top:14px}
+.sl-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14.5px}
+.sl-top output{font:700 20px var(--mk-num);color:var(--mk-deep)}
+input[type=range]{width:100%;accent-color:var(--mk-brand);height:28px;margin:2px 0 0}
+.chk{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--mk-line);border-radius:10px;background:#fff;font-size:14.5px;cursor:pointer;min-height:42px}
+.chk input{width:18px;height:18px;accent-color:var(--mk-brand);flex:none}
+.chks{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 20px;border-radius:999px;border:0;background:var(--mk-brand);color:#fff;font-weight:700;font-size:15.5px;cursor:pointer}
+.btn:hover{background:var(--mk-brand-ink)}
+.btn.ghost{background:#fff;color:var(--mk-brand-ink);border:1px solid var(--mk-brand)}
+.btn.ghost:hover{background:var(--mk-brand-soft)}
+.btn.alert{background:var(--mk-danger)}
+.btn.alert:hover{background:#A31F1F}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+
+/* 結果 */
+.big{font:700 clamp(30px,5vw,44px)/1.1 var(--mk-num);color:var(--mk-deep);margin-top:10px;overflow-wrap:anywhere}
+.big.red{color:var(--mk-danger)}
+.big small{font:500 15px var(--mk-sans);color:var(--mk-muted);margin-left:6px}
+.note{margin-top:10px;font-size:14.5px;color:var(--mk-ink)}
+.note.key{padding:10px 14px;border-radius:10px;background:var(--mk-brand-soft);border-left:4px solid var(--mk-brand)}
+.note.bad{padding:10px 14px;border-radius:10px;background:var(--mk-danger-soft);border-left:4px solid var(--mk-danger)}
+.fine{font-size:12.5px;color:var(--mk-muted);margin-top:8px}
+.st{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:1px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.st.ok{background:var(--mk-brand-soft);color:var(--mk-brand-ink)}
+.st.warn{background:var(--mk-warn-soft);color:var(--mk-warn)}
+.st.bad{background:var(--mk-danger-soft);color:var(--mk-danger)}
+
+/* 輪候對比 */
+.wrow{margin-top:14px}
+.wrow-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14.5px;font-weight:700}
+.wrow-h .num{font-size:20px}
+.wbar{display:flex;height:30px;border-radius:8px;overflow:hidden;background:var(--mk-bg);margin-top:4px;transition:width .7s ease}
+.wbar i{display:block;height:100%;min-width:3px;border-right:2px solid #fff}
+.wbar i:last-child{border-right:0}
+.wbar.pub i{background:var(--mk-danger)}.wbar.pub i:nth-child(2){background:#D85C5C}.wbar.pub i:nth-child(3){background:#E79393}
+.wbar.pri i{background:var(--mk-brand)}
+.wsteps{margin:12px 0 0;padding:0;list-style:none;font-size:14px;border-top:1px solid var(--mk-line)}
+.wsteps li{display:grid;grid-template-columns:minmax(0,1fr);gap:2px 12px;padding:8px 0;border-bottom:1px solid var(--mk-line)}
+.wsteps b{font-weight:700}
+.wsteps span{display:block}
+.wsteps .p1{color:var(--mk-danger)}.wsteps .p2{color:var(--mk-brand-ink)}
+@media (min-width:600px){.wsteps li{grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) minmax(0,1.2fr)}}
+
+/* 橫條 */
+.meter{height:18px;border-radius:999px;background:var(--mk-bg);overflow:hidden;margin-top:4px;border:1px solid var(--mk-line)}
+.meter i{display:block;height:100%;border-radius:999px;background:var(--mk-brand);transition:width .5s ease}
+.meter i.red{background:var(--mk-danger)}.meter i.amber{background:#D99A1C}
+.mrow{margin-top:12px}
+.mrow-h{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.mrow-h b{font:700 16px var(--mk-num)}
+
+/* 里程碑 */
+.goal{display:grid;grid-template-columns:minmax(0,1fr);gap:6px 10px;padding:10px 0;border-bottom:1px solid var(--mk-line);align-items:end}
+.goal:last-of-type{border-bottom:0}
+.goal .chk{border:0;padding:0;min-height:0;font-weight:700}
+.goal .fld>span{font-size:12px}
+.goal.off .fld{opacity:.4;pointer-events:none}
+.goal-in{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:8px}
+@media (min-width:600px){.goal{grid-template-columns:150px minmax(0,1fr)}}
+.tl{position:relative;height:84px;margin:18px 30px 4px}
+.tl:before{content:"";position:absolute;left:0;right:0;top:36px;height:4px;border-radius:2px;background:var(--mk-line)}
+.tl-p{position:absolute;top:0;transform:translateX(-50%);text-align:center;font-size:12px;line-height:1.25;white-space:nowrap;height:84px}
+.tl-p i{position:absolute;left:50%;top:30px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:var(--mk-cat-5);border:3px solid #fff;box-shadow:0 0 0 1px var(--mk-cat-5)}
+.tl-p.me i{background:var(--mk-deep);box-shadow:0 0 0 1px var(--mk-deep)}
+.tl-p b{position:absolute;left:50%;transform:translateX(-50%);top:-2px;font-weight:700;color:var(--mk-cat-5-ink)}
+.tl-p.me b{color:var(--mk-deep)}
+.tl-p b span{display:block;color:var(--mk-muted);font-family:var(--mk-num);font-weight:600}
+.tl-p.alt b{top:50px}
+.dream{margin-top:12px}
+.dream .meter i{background:var(--mk-cat-5);transition:width 1.1s ease}
+.dream.hit .meter i{background:var(--mk-danger)}
+.dream.safe .meter i{background:var(--mk-brand)}
+.dream .mrow-h em{font-style:normal;font-size:13px;color:var(--mk-danger);font-weight:700}
+.dream.safe .mrow-h em{color:var(--mk-brand-ink)}
+
+/* 四桶金 */
+.bk-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bk-h h3{font-size:17px;font-weight:700;color:var(--mk-deep);margin-right:auto}
+.bk-n{font:700 13px var(--mk-num);color:#fff;background:var(--mk-deep);border-radius:6px;padding:1px 8px}
+.res{margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--mk-bg);font-size:14.5px}
+.res b.num{font-size:17px}
+.gaps{margin:10px 0 0;padding:0;list-style:none;font-size:14.5px}
+.gaps li{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--mk-line)}
+.gaps li>span:first-child{flex:none;margin-top:2px}
+.gaps .mk-chip{font-size:12.5px}
+.mk-chip{white-space:nowrap;flex:none}
+.pyr-card{position:sticky;top:76px}
+.pyr svg{display:block;width:100%;max-width:440px;height:auto;margin:8px auto 0}
+.pyr text{font-family:var(--mk-sans)}
+.flag{margin-top:10px;padding:10px 14px;border-radius:10px;background:var(--mk-danger-soft);border:1px solid #F1B9B9;color:var(--mk-danger);font-weight:700;font-size:15px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:10px;font-size:12.5px}
+
+/* 行動清單 */
+.sum{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin-top:12px}
+.sum div{border:1px solid var(--mk-line);border-radius:10px;padding:8px 12px;background:#fff;min-width:0}
+.sum span{display:block;font-size:12.5px;color:var(--mk-muted)}
+.sum b{font:700 18px var(--mk-num);color:var(--mk-deep);overflow-wrap:anywhere}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{border-radius:999px;background:var(--mk-bg);border:1px solid var(--mk-line);padding:1px 10px;font-size:13px;font-weight:500}
+.act{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:14px 0;border-top:1px solid var(--mk-line);break-inside:avoid}
+.act:first-of-type{border-top:0}
+.act-n{width:44px;height:44px;border-radius:12px;background:var(--c-soft);color:var(--c-ink);font:700 22px/44px var(--mk-num);text-align:center;border-top:3px solid var(--c)}
+.act h3{font-size:17px;font-weight:700;line-height:1.35;display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.act p{font-size:14.5px;margin-top:4px}
+.act p.how{color:var(--mk-muted)}
+.later{margin:8px 0 0;padding:0;list-style:none;font-size:14.5px}
+.later li{display:flex;gap:8px;padding:7px 0;border-top:1px solid var(--mk-line);align-items:flex-start}
+.b4{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:12px}
+.b4 div{border:1px solid var(--mk-line);border-radius:10px;padding:10px 12px;min-width:0;break-inside:avoid}
+.b4 b{display:block;font-size:14.5px}
+.b4 p{font-size:13.5px;color:var(--mk-muted);margin-top:2px}
+.plan-grid{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.plan-grid{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}}
+.plan-grid>.card{margin:0}
+.next{display:none}
+
+/* 頁尾 */
+.mk-footer{margin-top:24px;padding:22px 0 28px;font-size:13.5px;color:var(--mk-muted)}
+.mk-footer p.dis{margin-top:6px;max-width:980px}
+.mk-footer a{color:var(--mk-brand-ink)}
+
+@media (max-width:600px){.card{padding:16px}.pill{padding:6px 12px;font-size:14px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+@page{size:A4 portrait;margin:12mm}
+@media print{
+  body{background:#fff!important;font-size:10.5pt;line-height:1.45}
+  .mk-header,.band,#persona,#p-mind,#p-assess,.btnrow,.no-print{display:none!important}
+  #p-plan{display:block!important}
+  main{padding:0}.mk-wrap{padding:0;max-width:none}
+  .card{border:0;padding:0;margin:0 0 10px;border-radius:0}
+  .card>h2{font-size:12.5pt;border-bottom:1px solid var(--mk-line);padding-bottom:3px}
+  .plan-grid{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px}
+  .pyr svg{max-width:240px}
+  .pyr-card{position:static}
+  .sum b{font-size:12pt}.sum div{padding:4px 8px}
+  .act{padding:7px 0;grid-template-columns:32px minmax(0,1fr);gap:8px}
+  .act-n{width:32px;height:32px;font-size:15px;line-height:30px;border-radius:8px}
+  .act h3{font-size:11pt}.act p,.later,.b4 p,.b4 b{font-size:9.5pt}
+  .b4{grid-template-columns:1fr 1fr;gap:6px}.b4 div{padding:5px 8px}
+  .next{display:block;margin-top:10px;font-size:10pt;break-inside:avoid}
+  .next span{display:inline-block;border-bottom:1px solid var(--mk-ink);min-width:52mm;height:1.4em;margin:0 10mm 0 2mm}
+  .mk-footer{margin-top:8px;padding:0;font-size:8pt}
+  .mk-footer p.dis{max-width:none;margin-top:3px}
+}
+</style>
+</head>
+<body data-tab="mind" data-mind="now" data-fam="single">
+<div class="mk-print-head"><b>MKPA · 理財需求分析 面談摘要</b><span>列印日期：<span class="mk-print-date"></span></span></div>
+
+<header class="mk-header">
+  <div class="mk-wrap mk-bar">
+    <a class="mk-title" href="./"><img class="mk-logo" src="favicon.svg" alt="" width="34" height="34"><span class="mk-name">理財需求分析<small class="mk-sub">四桶金理財檢查及行動清單</small></span></a>
+    <nav class="mk-tabs" aria-label="分頁">
+      <button type="button" class="mk-tab mk-cat-1" data-tab="mind" aria-pressed="true">啟發思維</button>
+      <button type="button" class="mk-tab mk-cat-2" data-tab="assess" aria-pressed="false">現狀評估</button>
+      <button type="button" class="mk-tab mk-cat-3" data-tab="plan" aria-pressed="false">行動清單</button>
+    </nav>
+    <div class="mk-actions">
+      <button type="button" class="mk-share-btn" onclick="mkShare()">分享<span class="mk-long">呢個方案</span></button>
+      <button type="button" class="mk-print-btn" onclick="window.print()">列印<span class="mk-long"> / 存 PDF</span></button>
+    </div>
+  </div>
+</header>
+<div class="band"></div>
+
+<main class="mk-wrap">
+
+<!-- ===== 1. 客戶定位 ===== -->
+<section class="card" id="persona">
+  <div class="persona">
+    <div class="pgroup"><b>家庭身份</b><div class="pills" data-set="fam">
+      <button type="button" class="pill" data-v="single">單身貴族</button>
+      <button type="button" class="pill" data-v="couple">二人世界</button>
+      <button type="button" class="pill" data-v="family">養育家庭</button></div></div>
+    <div class="pgroup"><b>職業屬性</b><div class="pills" data-set="job">
+      <button type="button" class="pill" data-v="office">企業白領<small>有公司醫保</small></button>
+      <button type="button" class="pill" data-v="self">自僱／Slash<small>手停口停</small></button>
+      <button type="button" class="pill" data-v="field">外勤前線<small>勞損意外高</small></button></div></div>
+    <div class="pgroup"><b>心態模式</b><div class="pills" data-set="mind">
+      <button type="button" class="pill" data-v="now">活在當下／到時先算</button>
+      <button type="button" class="pill" data-v="goal">目標導向／長遠規劃</button></div></div>
+  </div>
+  <p class="script" id="script"></p>
+</section>
+
+<!-- ===== 2. 啟發思維 ===== -->
+<section class="panel" id="p-mind">
+  <div class="grid2">
+
+    <!-- A1 輪候對比 -->
+    <div class="card only-now span2">
+      <span class="kicker">尊嚴與選擇</span>
+      <h2>同一個病，兩條時間線</h2>
+      <p class="lead">選一個常見情況，看看由求診到完成治療，公立與私家大約需要多久。</p>
+      <div class="pills" data-set="cond" style="margin-top:12px">
+        <button type="button" class="pill" data-v="tumour">懷疑腫瘤</button>
+        <button type="button" class="pill" data-v="disc">椎間盤突出</button>
+        <button type="button" class="pill" data-v="cataract">白內障</button>
+      </div>
+      <div id="wait"></div>
+      <p class="note key">醫療保險買的不是奢侈，而是生病時<b>有得選擇</b>：可以早一點知道結果、早一點治療、少痛幾個月。</p>
+      <p class="fine">輪候時間為參考情景，因醫院聯網及病情分流而異；如醫生評估為緊急個案，公立醫院會優先處理。</p>
+    </div>
+
+    <!-- A2 Freedom Fund -->
+    <div class="card only-now">
+      <span class="kicker">重新定義儲蓄</span>
+      <h2>「炒老闆魷魚」基金</h2>
+      <p class="lead">儲蓄不一定為了 65 歲退休，也可以為了隨時有底氣休息、轉跑道。</p>
+      <div class="sl"><div class="sl-top"><span>每月基本開支</span><output data-o="exp"></output></div>
+        <input type="range" data-k="exp" min="5000" max="80000" step="1000" aria-label="每月基本開支"></div>
+      <div class="sl"><div class="sl-top"><span>想隨時可以停工多久</span><output data-o="mon"></output></div>
+        <input type="range" data-k="mon" min="1" max="24" step="1" aria-label="停工月數"></div>
+      <div id="freedom"></div>
+    </div>
+
+    <!-- A3 衝擊模擬：單身 -->
+    <div class="card only-now only-single">
+      <span class="kicker">衝擊模擬</span>
+      <h2>如果要停工兩年</h2>
+      <p class="lead">「一人吃飽，全家不餓」？看看自己的儲蓄用完之後，由誰來承擔。</p>
+      <div class="flds">
+        <label class="fld"><span>現有流動儲蓄</span><input type="number" data-k="sav" min="0" step="10000" inputmode="numeric"></label>
+        <label class="fld"><span>每月治療及康復開支</span><input type="number" data-k="med" min="0" step="1000" inputmode="numeric"></label>
+        <label class="fld"><span>父母的退休儲備</span><input type="number" data-k="par" min="0" step="50000" inputmode="numeric"></label>
+      </div>
+      <div class="sl"><div class="sl-top"><span>停工第幾個月</span><output data-o="simM"></output></div>
+        <input type="range" data-k="simM" min="0" max="24" step="1" aria-label="停工月數"></div>
+      <div id="impactS"></div>
+      <div class="btnrow"><button type="button" class="btn ghost" id="playS">▶ 由第 0 個月開始播放</button></div>
+    </div>
+
+    <!-- A3 衝擊模擬：家庭 -->
+    <div class="card only-now only-fam">
+      <span class="kicker">衝擊模擬</span>
+      <h2>如果家庭收入減半</h2>
+      <p class="lead">其中一人因病或意外停工，按揭和生活開支不會跟着減少。</p>
+      <div class="flds">
+        <label class="fld"><span>家庭每月總收入</span><input type="number" data-k="hinc" min="0" step="1000" inputmode="numeric"></label>
+        <label class="fld"><span>每月按揭／租金</span><input type="number" data-k="mort" min="0" step="1000" inputmode="numeric"></label>
+        <label class="fld"><span>每月家庭生活開支</span><input type="number" data-k="hexp" min="0" step="1000" inputmode="numeric"></label>
+        <label class="fld"><span>現有流動儲蓄</span><input type="number" data-k="sav" min="0" step="10000" inputmode="numeric"></label>
+      </div>
+      <div id="impactF"></div>
+      <div class="btnrow"><button type="button" class="btn alert" id="cutBtn"></button></div>
+    </div>
+
+    <!-- B1 里程碑 -->
+    <div class="card only-goal">
+      <span class="kicker">人生時間軸</span>
+      <h2>人生里程碑</h2>
+      <p class="lead">揀選目標，填上金額和還有多少年。儲蓄計劃可以是一個「多功能現金流引擎」：同一筆資金，按不同階段提取使用。</p>
+      <div class="flds" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        <label class="fld"><span>現時年齡</span><input type="number" data-k="age" min="18" max="70" step="1" inputmode="numeric"></label>
+        <label class="fld"><span>假設每年回報</span><select data-k="gr"><option value="0">0%（只計本金）</option><option value="2">2%</option><option value="3">3%</option><option value="4">4%</option><option value="5">5%</option></select></label>
+      </div>
+      <div id="goals" style="margin-top:8px"></div>
+      <div class="tl" id="tl"></div>
+      <div id="goalSum"></div>
+    </div>
+
+    <!-- B2 夢想小偷 -->
+    <div class="card only-goal">
+      <span class="kicker">骨牌效應</span>
+      <h2>夢想小偷</h2>
+      <p class="lead">一場嚴重疾病，會先動用哪一筆錢？按下按鈕看看各個目標的儲備變化。</p>
+      <div class="sl"><div class="sl-top"><span>治療開支及停工期間的收入損失</span><output data-o="shock"></output></div>
+        <input type="range" data-k="shock" min="200000" max="3000000" step="100000" aria-label="嚴重疾病的財務衝擊"></div>
+      <div id="dream"></div>
+      <div class="btnrow">
+        <button type="button" class="btn alert" id="hitBtn">突發嚴重疾病</button>
+        <button type="button" class="btn" id="safeBtn">加上危疾保障</button>
+        <button type="button" class="btn ghost" id="resetBtn">重設</button>
+      </div>
+    </div>
+
+    <div class="span2 btnrow" style="margin:0 0 16px;justify-content:flex-end"><button type="button" class="btn" data-go="assess">下一步：現狀評估 →</button></div>
+  </div>
+</section>
+
+<!-- ===== 3. 現狀評估 ===== -->
+<section class="panel" id="p-assess">
+  <div class="grid2 assess">
+    <div>
+      <div class="card">
+        <div class="bk-h"><h3>基本資料</h3></div>
+        <div class="flds">
+          <label class="fld"><span>現時年齡</span><input type="number" data-k="age" min="18" max="70" step="1" inputmode="numeric"></label>
+          <label class="fld"><span>每月收入</span><input type="number" data-k="inc" min="0" step="1000" inputmode="numeric"></label>
+          <label class="fld"><span>每月基本開支</span><input type="number" data-k="exp" min="1000" step="1000" inputmode="numeric"></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="bk-h"><span class="bk-n">第一桶</span><h3>應急錢</h3><span id="st1"></span></div>
+        <p class="lead">隨時可以動用的現金，建議相等於 3 至 6 個月開支。</p>
+        <div class="flds"><label class="fld"><span>現有流動儲蓄</span><input type="number" data-k="sav" min="0" step="10000" inputmode="numeric"></label></div>
+        <div class="res" id="r1"></div>
+      </div>
+      <div class="card">
+        <div class="bk-h"><span class="bk-n">第二桶</span><h3>保障防禦</h3><span id="st2"></span></div>
+        <p class="lead">金字塔的地基。勾選現時已有的保障。</p>
+        <div class="chks">
+          <label class="chk"><input type="checkbox" data-k="cCo">公司醫保</label>
+          <label class="chk"><input type="checkbox" data-k="cVh">自願醫保／個人醫保</label>
+          <label class="chk"><input type="checkbox" data-k="cCi">危疾</label>
+          <label class="chk"><input type="checkbox" data-k="cLi">人壽</label>
+          <label class="chk"><input type="checkbox" data-k="cAc">個人意外</label>
+        </div>
+        <div class="flds">
+          <label class="fld" id="fCi"><span>現有危疾保額</span><input type="number" data-k="ciAmt" min="0" step="50000" inputmode="numeric"></label>
+          <label class="fld" id="fLi"><span>現有人壽保額</span><input type="number" data-k="liAmt" min="0" step="100000" inputmode="numeric"></label>
+          <label class="fld"><span>未償還負債（按揭等）</span><input type="number" data-k="debt" min="0" step="100000" inputmode="numeric"></label>
+          <label class="fld"><span>每月供養家人金額</span><input type="number" data-k="sup" min="0" step="1000" inputmode="numeric"></label>
+        </div>
+        <ul class="gaps" id="r2"></ul>
+      </div>
+      <div class="card">
+        <div class="bk-h"><span class="bk-n">第三桶</span><h3>退休基石</h3><span id="st3"></span></div>
+        <p class="lead">金字塔的中層。以今日幣值估算退休所需。</p>
+        <div class="flds">
+          <label class="fld"><span>預計退休年齡</span><input type="number" data-k="rAge" min="45" max="75" step="1" inputmode="numeric"></label>
+          <label class="fld"><span>期望每月生活費（今日幣值）</span><input type="number" data-k="rExp" min="0" step="1000" inputmode="numeric"></label>
+          <label class="fld"><span>現有強積金結餘</span><input type="number" data-k="mpf" min="0" step="10000" inputmode="numeric"></label>
+        </div>
+        <div class="res" id="r3"></div>
+      </div>
+      <div class="card">
+        <div class="bk-h"><span class="bk-n">第四桶</span><h3>財富增值</h3><span id="st4"></span></div>
+        <p class="lead">金字塔的頂層。地基穩固之後，才讓閒置資金增值。</p>
+        <div class="flds">
+          <label class="fld"><span>已投資資產（股票、基金等）</span><input type="number" data-k="inv" min="0" step="10000" inputmode="numeric"></label>
+          <label class="fld"><span>風險取向</span><select data-k="risk"><option value="low">保守</option><option value="bal">平衡</option><option value="high">進取</option></select></label>
+        </div>
+        <div class="res" id="r4"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card pyr-card">
+        <h3>理財金字塔</h3>
+        <p class="lead">由下而上建立：先穩地基，再向上發展。</p>
+        <div class="pyr" id="pyr1"></div>
+        <div id="flag1"></div>
+        <div class="legend"><span class="st ok">足夠</span><span class="st warn">留意</span><span class="st bad">不足</span></div>
+        <div class="btnrow"><button type="button" class="btn" data-go="plan">下一步：行動清單 →</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4. 行動清單（亦係列印版）===== -->
+<section class="panel" id="p-plan">
+  <div class="card">
+    <h2>面談摘要</h2>
+    <div class="tags" id="tags"></div>
+    <div class="sum" id="sum"></div>
+  </div>
+  <div class="plan-grid">
+    <div class="card">
+      <h2>優先行動</h2>
+      <p class="lead">按現狀評估的缺口排列，先處理影響最大的項目。</p>
+      <div id="acts"></div>
+      <div id="laterBox"></div>
+    </div>
+    <div class="card">
+      <h2>理財金字塔</h2>
+      <div class="pyr" id="pyr2"></div>
+      <div id="flag2"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>四桶金現狀</h2>
+    <div class="b4" id="b4"></div>
+    <div id="talk"></div>
+    <p class="next">下次跟進日期：<span></span>跟進事項：<span></span></p>
+  </div>
+  <div class="btnrow no-print" style="margin:0 0 8px">
+    <button type="button" class="mk-print-btn" onclick="window.print()">列印<span class="mk-long"> / 存 PDF</span></button>
+    <button type="button" class="btn ghost" id="resetAll">重設全部資料</button>
+  </div>
+</section>
+
+<div class="mk-ecard">
+  <div class="mk-ecard-txt"><b>想進一步了解或有疑問？</b><span>歡迎查看我的電子名片，可直接 WhatsApp、加 IG 或儲存聯絡資料。</span></div>
+  <a class="mk-ecard-btn" href="https://api.portfoplus.com/api/v1/adviser/5e41564ab3b1bc00153394db?m=link&amp;r=adviser" target="_blank" rel="noopener">查看電子名片 <span aria-hidden="true">→</span></a>
+  <div class="mk-ecard-qr"><svg viewBox="0 0 41 41" width="90" height="90" shape-rendering="crispEdges" aria-label="電子名片二維碼"><rect width="41" height="41" fill="#fff"/><path d="M2,2h1v1h-1zM3,2h1v1h-1zM4,2h1v1h-1zM5,2h1v1h-1zM6,2h1v1h-1zM7,2h1v1h-1zM8,2h1v1h-1zM11,2h1v1h-1zM16,2h1v1h-1zM19,2h1v1h-1zM20,2h1v1h-1zM21,2h1v1h-1zM22,2h1v1h-1zM25,2h1v1h-1zM28,2h1v1h-1zM32,2h1v1h-1zM33,2h1v1h-1zM34,2h1v1h-1zM35,2h1v1h-1zM36,2h1v1h-1zM37,2h1v1h-1zM38,2h1v1h-1zM2,3h1v1h-1zM8,3h1v1h-1zM11,3h1v1h-1zM15,3h1v1h-1zM16,3h1v1h-1zM18,3h1v1h-1zM19,3h1v1h-1zM22,3h1v1h-1zM24,3h1v1h-1zM28,3h1v1h-1zM29,3h1v1h-1zM32,3h1v1h-1zM38,3h1v1h-1zM2,4h1v1h-1zM4,4h1v1h-1zM5,4h1v1h-1zM6,4h1v1h-1zM8,4h1v1h-1zM10,4h1v1h-1zM14,4h1v1h-1zM22,4h1v1h-1zM23,4h1v1h-1zM24,4h1v1h-1zM25,4h1v1h-1zM29,4h1v1h-1zM32,4h1v1h-1zM34,4h1v1h-1zM35,4h1v1h-1zM36,4h1v1h-1zM38,4h1v1h-1zM2,5h1v1h-1zM4,5h1v1h-1zM5,5h1v1h-1zM6,5h1v1h-1zM8,5h1v1h-1zM10,5h1v1h-1zM11,5h1v1h-1zM14,5h1v1h-1zM18,5h1v1h-1zM19,5h1v1h-1zM21,5h1v1h-1zM24,5h1v1h-1zM25,5h1v1h-1zM26,5h1v1h-1zM27,5h1v1h-1zM28,5h1v1h-1zM29,5h1v1h-1zM30,5h1v1h-1zM32,5h1v1h-1zM34,5h1v1h-1zM35,5h1v1h-1zM36,5h1v1h-1zM38,5h1v1h-1zM2,6h1v1h-1zM4,6h1v1h-1zM5,6h1v1h-1zM6,6h1v1h-1zM8,6h1v1h-1zM10,6h1v1h-1zM11,6h1v1h-1zM16,6h1v1h-1zM17,6h1v1h-1zM20,6h1v1h-1zM21,6h1v1h-1zM25,6h1v1h-1zM30,6h1v1h-1zM32,6h1v1h-1zM34,6h1v1h-1zM35,6h1v1h-1zM36,6h1v1h-1zM38,6h1v1h-1zM2,7h1v1h-1zM8,7h1v1h-1zM10,7h1v1h-1zM12,7h1v1h-1zM14,7h1v1h-1zM20,7h1v1h-1zM22,7h1v1h-1zM23,7h1v1h-1zM24,7h1v1h-1zM29,7h1v1h-1zM32,7h1v1h-1zM38,7h1v1h-1zM2,8h1v1h-1zM3,8h1v1h-1zM4,8h1v1h-1zM5,8h1v1h-1zM6,8h1v1h-1zM7,8h1v1h-1zM8,8h1v1h-1zM10,8h1v1h-1zM12,8h1v1h-1zM14,8h1v1h-1zM16,8h1v1h-1zM18,8h1v1h-1zM20,8h1v1h-1zM22,8h1v1h-1zM24,8h1v1h-1zM26,8h1v1h-1zM28,8h1v1h-1zM30,8h1v1h-1zM32,8h1v1h-1zM33,8h1v1h-1zM34,8h1v1h-1zM35,8h1v1h-1zM36,8h1v1h-1zM37,8h1v1h-1zM38,8h1v1h-1zM10,9h1v1h-1zM11,9h1v1h-1zM12,9h1v1h-1zM13,9h1v1h-1zM15,9h1v1h-1zM16,9h1v1h-1zM17,9h1v1h-1zM23,9h1v1h-1zM24,9h1v1h-1zM25,9h1v1h-1zM26,9h1v1h-1zM28,9h1v1h-1zM2,10h1v1h-1zM4,10h1v1h-1zM5,10h1v1h-1zM6,10h1v1h-1zM7,10h1v1h-1zM8,10h1v1h-1zM15,10h1v1h-1zM16,10h1v1h-1zM17,10h1v1h-1zM19,10h1v1h-1zM22,10h1v1h-1zM27,10h1v1h-1zM29,10h1v1h-1zM30,10h1v1h-1zM32,10h1v1h-1zM33,10h1v1h-1zM34,10h1v1h-1zM35,10h1v1h-1zM36,10h1v1h-1zM2,11h1v1h-1zM3,11h1v1h-1zM4,11h1v1h-1zM7,11h1v1h-1zM9,11h1v1h-1zM11,11h1v1h-1zM13,11h1v1h-1zM16,11h1v1h-1zM17,11h1v1h-1zM18,11h1v1h-1zM20,11h1v1h-1zM21,11h1v1h-1zM24,11h1v1h-1zM25,11h1v1h-1zM26,11h1v1h-1zM28,11h1v1h-1zM31,11h1v1h-1zM37,11h1v1h-1zM3,12h1v1h-1zM4,12h1v1h-1zM5,12h1v1h-1zM8,12h1v1h-1zM11,12h1v1h-1zM15,12h1v1h-1zM16,12h1v1h-1zM20,12h1v1h-1zM23,12h1v1h-1zM24,12h1v1h-1zM26,12h1v1h-1zM27,12h1v1h-1zM28,12h1v1h-1zM29,12h1v1h-1zM32,12h1v1h-1zM34,12h1v1h-1zM35,12h1v1h-1zM37,12h1v1h-1zM38,12h1v1h-1zM2,13h1v1h-1zM4,13h1v1h-1zM5,13h1v1h-1zM7,13h1v1h-1zM11,13h1v1h-1zM14,13h1v1h-1zM16,13h1v1h-1zM18,13h1v1h-1zM21,13h1v1h-1zM23,13h1v1h-1zM24,13h1v1h-1zM25,13h1v1h-1zM26,13h1v1h-1zM29,13h1v1h-1zM31,13h1v1h-1zM32,13h1v1h-1zM35,13h1v1h-1zM38,13h1v1h-1zM4,14h1v1h-1zM5,14h1v1h-1zM8,14h1v1h-1zM11,14h1v1h-1zM13,14h1v1h-1zM14,14h1v1h-1zM15,14h1v1h-1zM19,14h1v1h-1zM22,14h1v1h-1zM26,14h1v1h-1zM27,14h1v1h-1zM28,14h1v1h-1zM29,14h1v1h-1zM30,14h1v1h-1zM31,14h1v1h-1zM32,14h1v1h-1zM34,14h1v1h-1zM36,14h1v1h-1zM37,14h1v1h-1zM38,14h1v1h-1zM3,15h1v1h-1zM5,15h1v1h-1zM6,15h1v1h-1zM7,15h1v1h-1zM9,15h1v1h-1zM10,15h1v1h-1zM13,15h1v1h-1zM14,15h1v1h-1zM15,15h1v1h-1zM20,15h1v1h-1zM21,15h1v1h-1zM25,15h1v1h-1zM30,15h1v1h-1zM31,15h1v1h-1zM33,15h1v1h-1zM37,15h1v1h-1zM2,16h1v1h-1zM3,16h1v1h-1zM6,16h1v1h-1zM8,16h1v1h-1zM10,16h1v1h-1zM15,16h1v1h-1zM17,16h1v1h-1zM23,16h1v1h-1zM24,16h1v1h-1zM26,16h1v1h-1zM28,16h1v1h-1zM29,16h1v1h-1zM30,16h1v1h-1zM32,16h1v1h-1zM33,16h1v1h-1zM34,16h1v1h-1zM35,16h1v1h-1zM38,16h1v1h-1zM2,17h1v1h-1zM5,17h1v1h-1zM6,17h1v1h-1zM7,17h1v1h-1zM10,17h1v1h-1zM12,17h1v1h-1zM13,17h1v1h-1zM14,17h1v1h-1zM16,17h1v1h-1zM20,17h1v1h-1zM21,17h1v1h-1zM22,17h1v1h-1zM23,17h1v1h-1zM24,17h1v1h-1zM25,17h1v1h-1zM28,17h1v1h-1zM30,17h1v1h-1zM31,17h1v1h-1zM33,17h1v1h-1zM34,17h1v1h-1zM37,17h1v1h-1zM38,17h1v1h-1zM5,18h1v1h-1zM6,18h1v1h-1zM7,18h1v1h-1zM8,18h1v1h-1zM9,18h1v1h-1zM10,18h1v1h-1zM12,18h1v1h-1zM14,18h1v1h-1zM16,18h1v1h-1zM17,18h1v1h-1zM19,18h1v1h-1zM22,18h1v1h-1zM24,18h1v1h-1zM25,18h1v1h-1zM26,18h1v1h-1zM27,18h1v1h-1zM30,18h1v1h-1zM31,18h1v1h-1zM32,18h1v1h-1zM34,18h1v1h-1zM36,18h1v1h-1zM37,18h1v1h-1zM38,18h1v1h-1zM2,19h1v1h-1zM3,19h1v1h-1zM5,19h1v1h-1zM9,19h1v1h-1zM13,19h1v1h-1zM14,19h1v1h-1zM16,19h1v1h-1zM17,19h1v1h-1zM21,19h1v1h-1zM22,19h1v1h-1zM25,19h1v1h-1zM27,19h1v1h-1zM28,19h1v1h-1zM33,19h1v1h-1zM35,19h1v1h-1zM37,19h1v1h-1zM3,20h1v1h-1zM4,20h1v1h-1zM5,20h1v1h-1zM6,20h1v1h-1zM8,20h1v1h-1zM10,20h1v1h-1zM11,20h1v1h-1zM12,20h1v1h-1zM13,20h1v1h-1zM14,20h1v1h-1zM15,20h1v1h-1zM17,20h1v1h-1zM24,20h1v1h-1zM26,20h1v1h-1zM27,20h1v1h-1zM28,20h1v1h-1zM29,20h1v1h-1zM30,20h1v1h-1zM32,20h1v1h-1zM33,20h1v1h-1zM37,20h1v1h-1zM38,20h1v1h-1zM4,21h1v1h-1zM6,21h1v1h-1zM7,21h1v1h-1zM15,21h1v1h-1zM20,21h1v1h-1zM21,21h1v1h-1zM22,21h1v1h-1zM23,21h1v1h-1zM24,21h1v1h-1zM28,21h1v1h-1zM32,21h1v1h-1zM35,21h1v1h-1zM38,21h1v1h-1zM2,22h1v1h-1zM3,22h1v1h-1zM4,22h1v1h-1zM5,22h1v1h-1zM6,22h1v1h-1zM8,22h1v1h-1zM11,22h1v1h-1zM12,22h1v1h-1zM14,22h1v1h-1zM16,22h1v1h-1zM17,22h1v1h-1zM18,22h1v1h-1zM19,22h1v1h-1zM22,22h1v1h-1zM24,22h1v1h-1zM26,22h1v1h-1zM27,22h1v1h-1zM28,22h1v1h-1zM29,22h1v1h-1zM31,22h1v1h-1zM32,22h1v1h-1zM34,22h1v1h-1zM36,22h1v1h-1zM3,23h1v1h-1zM4,23h1v1h-1zM9,23h1v1h-1zM10,23h1v1h-1zM11,23h1v1h-1zM12,23h1v1h-1zM16,23h1v1h-1zM18,23h1v1h-1zM21,23h1v1h-1zM22,23h1v1h-1zM25,23h1v1h-1zM26,23h1v1h-1zM28,23h1v1h-1zM30,23h1v1h-1zM35,23h1v1h-1zM3,24h1v1h-1zM5,24h1v1h-1zM8,24h1v1h-1zM10,24h1v1h-1zM11,24h1v1h-1zM13,24h1v1h-1zM14,24h1v1h-1zM15,24h1v1h-1zM16,24h1v1h-1zM17,24h1v1h-1zM18,24h1v1h-1zM19,24h1v1h-1zM22,24h1v1h-1zM23,24h1v1h-1zM24,24h1v1h-1zM27,24h1v1h-1zM29,24h1v1h-1zM32,24h1v1h-1zM33,24h1v1h-1zM34,24h1v1h-1zM35,24h1v1h-1zM37,24h1v1h-1zM38,24h1v1h-1zM3,25h1v1h-1zM5,25h1v1h-1zM7,25h1v1h-1zM9,25h1v1h-1zM12,25h1v1h-1zM14,25h1v1h-1zM17,25h1v1h-1zM18,25h1v1h-1zM20,25h1v1h-1zM21,25h1v1h-1zM22,25h1v1h-1zM23,25h1v1h-1zM25,25h1v1h-1zM26,25h1v1h-1zM28,25h1v1h-1zM29,25h1v1h-1zM33,25h1v1h-1zM34,25h1v1h-1zM37,25h1v1h-1zM38,25h1v1h-1zM3,26h1v1h-1zM8,26h1v1h-1zM9,26h1v1h-1zM12,26h1v1h-1zM14,26h1v1h-1zM16,26h1v1h-1zM17,26h1v1h-1zM18,26h1v1h-1zM19,26h1v1h-1zM21,26h1v1h-1zM24,26h1v1h-1zM26,26h1v1h-1zM27,26h1v1h-1zM29,26h1v1h-1zM32,26h1v1h-1zM34,26h1v1h-1zM36,26h1v1h-1zM37,26h1v1h-1zM38,26h1v1h-1zM2,27h1v1h-1zM3,27h1v1h-1zM6,27h1v1h-1zM7,27h1v1h-1zM10,27h1v1h-1zM11,27h1v1h-1zM13,27h1v1h-1zM18,27h1v1h-1zM20,27h1v1h-1zM21,27h1v1h-1zM23,27h1v1h-1zM25,27h1v1h-1zM28,27h1v1h-1zM30,27h1v1h-1zM31,27h1v1h-1zM33,27h1v1h-1zM2,28h1v1h-1zM4,28h1v1h-1zM6,28h1v1h-1zM8,28h1v1h-1zM12,28h1v1h-1zM14,28h1v1h-1zM15,28h1v1h-1zM17,28h1v1h-1zM18,28h1v1h-1zM19,28h1v1h-1zM22,28h1v1h-1zM23,28h1v1h-1zM26,28h1v1h-1zM29,28h1v1h-1zM37,28h1v1h-1zM38,28h1v1h-1zM2,29h1v1h-1zM7,29h1v1h-1zM9,29h1v1h-1zM12,29h1v1h-1zM14,29h1v1h-1zM15,29h1v1h-1zM16,29h1v1h-1zM17,29h1v1h-1zM18,29h1v1h-1zM20,29h1v1h-1zM21,29h1v1h-1zM23,29h1v1h-1zM24,29h1v1h-1zM31,29h1v1h-1zM32,29h1v1h-1zM33,29h1v1h-1zM35,29h1v1h-1zM37,29h1v1h-1zM2,30h1v1h-1zM4,30h1v1h-1zM5,30h1v1h-1zM6,30h1v1h-1zM7,30h1v1h-1zM8,30h1v1h-1zM9,30h1v1h-1zM13,30h1v1h-1zM14,30h1v1h-1zM15,30h1v1h-1zM16,30h1v1h-1zM17,30h1v1h-1zM19,30h1v1h-1zM21,30h1v1h-1zM24,30h1v1h-1zM27,30h1v1h-1zM28,30h1v1h-1zM29,30h1v1h-1zM30,30h1v1h-1zM31,30h1v1h-1zM32,30h1v1h-1zM33,30h1v1h-1zM34,30h1v1h-1zM36,30h1v1h-1zM38,30h1v1h-1zM10,31h1v1h-1zM12,31h1v1h-1zM14,31h1v1h-1zM18,31h1v1h-1zM19,31h1v1h-1zM20,31h1v1h-1zM21,31h1v1h-1zM24,31h1v1h-1zM25,31h1v1h-1zM30,31h1v1h-1zM34,31h1v1h-1zM35,31h1v1h-1zM37,31h1v1h-1zM2,32h1v1h-1zM3,32h1v1h-1zM4,32h1v1h-1zM5,32h1v1h-1zM6,32h1v1h-1zM7,32h1v1h-1zM8,32h1v1h-1zM17,32h1v1h-1zM18,32h1v1h-1zM20,32h1v1h-1zM22,32h1v1h-1zM23,32h1v1h-1zM27,32h1v1h-1zM30,32h1v1h-1zM32,32h1v1h-1zM34,32h1v1h-1zM36,32h1v1h-1zM38,32h1v1h-1zM2,33h1v1h-1zM8,33h1v1h-1zM10,33h1v1h-1zM11,33h1v1h-1zM14,33h1v1h-1zM15,33h1v1h-1zM23,33h1v1h-1zM24,33h1v1h-1zM28,33h1v1h-1zM30,33h1v1h-1zM34,33h1v1h-1zM35,33h1v1h-1zM37,33h1v1h-1zM2,34h1v1h-1zM4,34h1v1h-1zM5,34h1v1h-1zM6,34h1v1h-1zM8,34h1v1h-1zM10,34h1v1h-1zM12,34h1v1h-1zM14,34h1v1h-1zM16,34h1v1h-1zM17,34h1v1h-1zM19,34h1v1h-1zM21,34h1v1h-1zM24,34h1v1h-1zM27,34h1v1h-1zM29,34h1v1h-1zM30,34h1v1h-1zM31,34h1v1h-1zM32,34h1v1h-1zM33,34h1v1h-1zM34,34h1v1h-1zM36,34h1v1h-1zM37,34h1v1h-1zM2,35h1v1h-1zM4,35h1v1h-1zM5,35h1v1h-1zM6,35h1v1h-1zM8,35h1v1h-1zM10,35h1v1h-1zM11,35h1v1h-1zM12,35h1v1h-1zM15,35h1v1h-1zM16,35h1v1h-1zM18,35h1v1h-1zM19,35h1v1h-1zM21,35h1v1h-1zM22,35h1v1h-1zM23,35h1v1h-1zM25,35h1v1h-1zM26,35h1v1h-1zM27,35h1v1h-1zM28,35h1v1h-1zM29,35h1v1h-1zM30,35h1v1h-1zM32,35h1v1h-1zM34,35h1v1h-1zM37,35h1v1h-1zM38,35h1v1h-1zM2,36h1v1h-1zM4,36h1v1h-1zM5,36h1v1h-1zM6,36h1v1h-1zM8,36h1v1h-1zM10,36h1v1h-1zM12,36h1v1h-1zM16,36h1v1h-1zM17,36h1v1h-1zM18,36h1v1h-1zM20,36h1v1h-1zM23,36h1v1h-1zM28,36h1v1h-1zM30,36h1v1h-1zM35,36h1v1h-1zM36,36h1v1h-1zM37,36h1v1h-1zM38,36h1v1h-1zM2,37h1v1h-1zM8,37h1v1h-1zM11,37h1v1h-1zM14,37h1v1h-1zM15,37h1v1h-1zM21,37h1v1h-1zM22,37h1v1h-1zM23,37h1v1h-1zM26,37h1v1h-1zM29,37h1v1h-1zM30,37h1v1h-1zM32,37h1v1h-1zM34,37h1v1h-1zM35,37h1v1h-1zM38,37h1v1h-1zM2,38h1v1h-1zM3,38h1v1h-1zM4,38h1v1h-1zM5,38h1v1h-1zM6,38h1v1h-1zM7,38h1v1h-1zM8,38h1v1h-1zM10,38h1v1h-1zM12,38h1v1h-1zM13,38h1v1h-1zM15,38h1v1h-1zM17,38h1v1h-1zM18,38h1v1h-1zM19,38h1v1h-1zM21,38h1v1h-1zM24,38h1v1h-1zM25,38h1v1h-1zM27,38h1v1h-1zM28,38h1v1h-1zM31,38h1v1h-1zM32,38h1v1h-1zM34,38h1v1h-1zM36,38h1v1h-1zM37,38h1v1h-1zM38,38h1v1h-1z" fill="#000"/></svg></div>
+</div>
+
+<footer class="mk-footer">
+  <p class="dis">本工具只供面談時作理財教育及初步需求分析之用，所有數字均為按輸入資料作出的簡化估算，並不構成任何保險或投資產品的要約、招攬或專業意見。實際保障需要、產品條款及保費，須經詳細財務需要分析後才能確定。投資涉及風險。</p>
+  <p class="dis">估算假設：危疾保障參考 3 至 5 年年薪；人壽保障為未償還負債加供養家人開支（養育家庭 10 年，其他 5 年）；退休開支計至 90 歲，強積金按每年回報 4%、通脹 2.5% 推算，並假設繼續按月入供款（上限 $30,000 的 10%，自僱 5%）。</p>
+  <p class="dis">資料來源：公立醫院輪候時間參考醫院管理局公布的專科門診新症及白內障手術輪候數字（2025 至 2026 年），以及業界一般參考情況；私家醫療時間為一般情況，視乎醫院及醫生安排。</p>
+  <p class="mk-home-link"><a href="https://mkpa.netlify.app/" target="_blank" rel="noopener">MKPA 工具箱：更多實用工具 ↗</a></p>
+  <p class="mk-copy">© <span class="mk-year">2026</span> Michael Koo Protection Alliance (MKPA). 版權所有。</p>
+</footer>
+</main>
+
+<script>
+/* 分享呢個方案（標準 mkShare） */
+function mkShare(url){
+  url=url||location.href;
+  if(navigator.share&&matchMedia('(pointer:coarse)').matches){navigator.share({title:document.title,url:url}).catch(function(){});return;}
+  (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(
+    function(){mkToast('已複製連結，客人撳開會見到同一個方案');},
+    function(){window.prompt('複製呢條連結：',url);});
+}
+function mkToast(msg){var t=document.createElement('div');t.className='mk-toast';t.setAttribute('role','status');t.textContent=msg;(document.querySelector('dialog[open]')||document.body).appendChild(t);setTimeout(function(){t.remove();},2400);}
+</script>
+<script>
+(function(){var d=new Date();
+document.querySelectorAll('.mk-year').forEach(function(e){e.textContent=d.getFullYear();});
+document.querySelectorAll('.mk-print-date').forEach(function(e){e.textContent=d.getFullYear()+' 年 '+(d.getMonth()+1)+' 月 '+d.getDate()+' 日';});})();
+</script>
+
+<script>
+(function(){
+'use strict';
+/* ===== 預設值（分享連結只記同預設唔同嘅設定；唔記客人姓名）===== */
+var DEF={tab:'mind',fam:'single',job:'office',mind:'now',cond:'tumour',
+  age:35,inc:40000,exp:15000,mon:6,sav:100000,med:10000,par:1000000,simM:24,
+  hinc:70000,mort:18000,hexp:25000,cut:0,
+  gr:3,g1:1,g1a:1500000,g1y:5,g2:1,g2a:300000,g2y:3,g3:0,g3a:1000000,g3y:15,g4:1,g4a:5000000,g4y:30,shock:1000000,
+  cCo:1,cVh:0,cCi:0,cLi:0,cAc:0,ciAmt:0,liAmt:0,debt:0,sup:8000,
+  rAge:65,rExp:20000,mpf:300000,inv:0,risk:'bal'};
+var STR={tab:1,fam:1,job:1,mind:1,cond:1,risk:1};
+var s={},dream=0; /* dream：0 未發生、1 被抽乾、2 有保障（唔記入連結）*/
+function reset(){for(var k in DEF)s[k]=DEF[k];}
+reset();
+
+/* ===== 輪候參考數字（改數字時要註明來源同日期；w = 星期）=====
+   專科門診、白內障手術：醫管局公布數字（2025–26 年各聯網中位數範圍）
+   磁力共振 12–18 個月、私家時間：顧問提供嘅一般參考，未有官方出處，有新數字要更新 */
+var WAIT={
+ tumour:[['專科門診首次診症',8,'半緊急新症目標 8 星期內；穩定新症可達數十星期',0.4,'1 至 3 天內'],
+         ['磁力共振等影像檢查',65,'非緊急個案約 12 至 18 個月',0.15,'最快 24 小時有報告'],
+         ['確診後安排治療',4,'按病情緩急安排',0.5,'數天內開始']],
+ disc:[['骨科專科首次診症',34,'穩定新症中位數約 23 至 45 星期',0.4,'數天內'],
+       ['磁力共振確定位置',65,'非緊急個案約 12 至 18 個月',0.15,'最快 24 小時有報告'],
+       ['安排手術',12,'再排期，期間以止痛及物理治療為主',0.4,'3 天內可做微創手術']],
+ cataract:[['眼科專科首次診症',40,'穩定新症中位數約 24 至 70 星期',0.4,'數天內'],
+           ['白內障手術',70,'輪候中位數約 7 至 25 個月',1.5,'約 1 至 2 星期內完成']]
+};
+var GOALS=[[1,'置業首期'],[2,'結婚'],[3,'子女教育'],[4,'退休']];
+var CAT={med:1,life:2,ci:3,acc:4,save:5,inv:7};
+var CATN={1:'醫療',2:'人壽',3:'危疾',4:'意外',5:'儲蓄／退休',7:'投資'};
+
+/* ===== 小工具 ===== */
+function $(id){return document.getElementById(id);}
+function $$(q){return Array.prototype.slice.call(document.querySelectorAll(q));}
+function n(v){v=+v;return isFinite(v)&&v>0?v:0;}
+function money(v){return '$'+Math.round(v).toLocaleString('en-US');}
+function wk(w){ /* 星期 → 易明嘅時間 */
+  if(w<1)return Math.max(1,Math.round(w*7))+' 天';
+  if(w<9)return Math.round(w)+' 星期';
+  var m=Math.round(w/4.345);return m>=24?(Math.round(m/1.2)/10)+' 年':m+' 個月';}
+function st(c,t){return '<span class="st '+c+'">'+t+'</span>';}
+function chip(cat){return '<span class="mk-chip mk-cat-'+cat+'"><i class="mk-dot"></i>'+CATN[cat]+'</span>';}
+var ST_TXT={ok:'足夠',warn:'留意',bad:'不足'};
+
+/* ===== 計算 ===== */
+function calc(){
+  var a={},exp=Math.max(1000,n(s.exp)),inc=n(s.inc),sav=n(s.sav),yr=inc*12;
+  /* 第一桶 */
+  a.emM=sav/exp;a.emT=s.job==='self'?6:3; /* 自僱以 6 個月為目標，其他最少 3 個月 */
+  a.emS=a.emM>=a.emT?'ok':a.emM>=3?'warn':'bad';
+  a.emGap=Math.max(0,exp*a.emT-sav);
+  /* 第二桶 */
+  a.medS=s.cVh?'ok':s.cCo?'warn':'bad';
+  a.ciLo=yr*3;a.ciHi=yr*5;a.ciHave=s.cCi?n(s.ciAmt):0;a.ciGap=Math.max(0,a.ciLo-a.ciHave);
+  a.ciS=inc===0?'ok':a.ciHave>=a.ciLo?'ok':a.ciHave>0?'warn':'bad';
+  a.liYrs=s.fam==='family'?10:5;a.liNeed=n(s.debt)+n(s.sup)*12*a.liYrs;a.liHave=s.cLi?n(s.liAmt):0;
+  a.liGap=Math.max(0,a.liNeed-a.liHave);
+  a.liS=a.liGap===0?'ok':(a.liHave>=a.liNeed*0.5?'warn':(s.fam==='single'&&n(s.debt)===0?'warn':'bad'));
+  a.acS=s.cAc?'ok':s.job==='field'?'bad':'warn';
+  var w={med:.35,ci:.3,li:.2,ac:s.job==='field'?.3:.15},sc={ok:1,warn:.5,bad:0};
+  var tot=w.med+w.ci+w.li+w.ac;
+  a.protScore=(sc[a.medS]*w.med+sc[a.ciS]*w.ci+sc[a.liS]*w.li+sc[a.acS]*w.ac)/tot;
+  a.protS=a.protScore>=.75?'ok':a.protScore>=.4?'warn':'bad';
+  if(a.medS==='bad'&&a.protS==='ok')a.protS='warn';
+  /* 第三桶（今日幣值）*/
+  var age=Math.min(70,Math.max(18,n(s.age)||35)),rAge=Math.max(age+1,n(s.rAge)||65),yrs=rAge-age,r=.04,inf=.025;
+  a.yrs=yrs;a.retYears=Math.max(1,90-rAge);a.retNeed=n(s.rExp)*12*a.retYears;
+  var c=Math.min(inc,30000)*(s.job==='self'?.05:.10)*12;
+  var fv=n(s.mpf)*Math.pow(1+r,yrs)+c*(Math.pow(1+r,yrs)-1)/r;
+  a.mpfPV=fv/Math.pow(1+inf,yrs);a.retGap=Math.max(0,a.retNeed-a.mpfPV);
+  a.retCov=a.retNeed>0?Math.min(1,a.mpfPV/a.retNeed):1;
+  a.retS=a.retCov>=.8?'ok':a.retCov>=.4?'warn':'bad';
+  var rm=((1+r)/(1+inf)-1)/12,N=yrs*12;a.retPmt=a.retGap*rm/(Math.pow(1+rm,N)-1);
+  /* 第四桶 */
+  a.inv=n(s.inv);a.idle=Math.max(0,sav-exp*6);a.total=sav+a.inv;
+  a.invRatio=a.total>0?a.inv/a.total:0;a.idleRatio=a.total>0?a.idle/a.total:0;
+  a.topHeavy=a.inv>0&&(a.protS==='bad'||a.emS==='bad');
+  a.weS=a.topHeavy?'bad':(a.idle>exp*12||(a.inv===0&&a.idle>0))?'warn':'ok';
+  /* 啟發思維 */
+  a.free=exp*n(s.mon);a.freeGap=Math.max(0,a.free-sav);
+  a.goals=GOALS.filter(function(g){return s['g'+g[0]];}).map(function(g){
+    var A=n(s['g'+g[0]+'a']),y=Math.max(1,n(s['g'+g[0]+'y'])),gm=n(s.gr)/100/12,M=y*12;
+    return {id:g[0],name:g[1],amt:A,y:y,pmt:gm>0?A*gm/(Math.pow(1+gm,M)-1):A/M};
+  }).sort(function(x,y){return x.y-y.y;});
+  a.goalAmt=a.goals.reduce(function(t,g){return t+g.amt;},0);
+  a.goalPmt=a.goals.reduce(function(t,g){return t+g.pmt;},0);
+  return a;
+}
+
+/* ===== 行動建議：按缺口嚴重程度排次序，頭 3 項係優先 ===== */
+function recs(a){
+  var L=[],yr=n(s.inc)*12;
+  function add(score,cat,title,why,how){L.push({score:score,cat:cat,title:title,why:why,how:how});}
+  if(a.medS==='bad')add(100,CAT.med,'建立個人醫療保障','現時沒有任何住院醫療保障，一旦需要手術或住院，只能輪候公立醫院或動用儲蓄。','可考慮：自願醫保靈活計劃，保證續保至 100 歲，保費可扣稅。');
+  else if(a.medS==='warn')add(s.job==='office'?70:78,CAT.med,'為公司醫保加上個人保障','公司醫保屬於僱主，保額一般有限，轉工、裁員或退休後便會終止，屆時年紀較大或已有病歷，再投保會較困難。','可考慮：自願醫保高自付額計劃（Top-up），以較低保費補足公司醫保以外的大額開支。');
+  if(a.ciS!=='ok')add(a.ciS==='bad'?90:60,CAT.ci,'補足危疾保障','建議保額為 3 至 5 年年薪（'+money(a.ciLo)+' 至 '+money(a.ciHi)+'），現有 '+money(a.ciHave)+'，最少尚欠 '+money(a.ciGap)+'。這筆錢用來代替停工期間的收入。','可考慮：定期危疾（保費較低）或多功能儲蓄危疾（保障與儲蓄兼備）。');
+  if(a.liGap>0)add(s.fam==='family'?85:s.fam==='couple'?65:45,CAT.life,'補足人壽保障','負債及 '+a.liYrs+' 年供養家人開支合共約 '+money(a.liNeed)+'，現有保額 '+money(a.liHave)+'，尚欠 '+money(a.liGap)+'。','可考慮：定期人壽（以較低保費取得高保額）或終身人壽。');
+  if(a.acS!=='ok')add(s.job==='field'?80:s.job==='self'?50:25,CAT.acc,'加入意外保障',s.job==='field'?'外勤及體力工作受傷和勞損的機會較高，受傷停工會直接影響收入。':s.job==='self'?'自僱人士沒有有薪病假及僱員補償，受傷停工期間沒有收入。':'意外引致的門診、骨折及物理治療開支，一般醫保未必完全涵蓋。','可考慮：意外醫療及住院現金津貼計劃。');
+  if(a.emS!=='ok')add(a.emS==='bad'?75:40,CAT.save,'先建立應急錢','現有儲蓄約可應付 '+a.emM.toFixed(1)+' 個月開支，距離 '+a.emT+' 個月目標尚欠 '+money(a.emGap)+'。','做法：每月自動轉賬到獨立戶口，達標前暫緩高風險投資。');
+  if(a.retS!=='ok')add(a.retS==='bad'?55:35,CAT.save,'加強退休儲備','以今日幣值計，退休至 90 歲約需 '+money(a.retNeed)+'，預計強積金只能應付約 '+Math.round(a.retCov*100)+'%。如由現在開始補足，每月約需額外儲蓄 '+money(a.retPmt)+'。','可考慮：可扣稅自願性供款（TVC）或合資格延期年金，兩者合共每年最高可扣稅 $60,000。');
+  if(s.mind==='now'&&a.freeGap>0)add(32,CAT.save,'儲一筆「底氣金」','想隨時可以停工 '+n(s.mon)+' 個月，需要 '+money(a.free)+'，現時尚欠 '+money(a.freeGap)+'。','可考慮：靈活提取的儲蓄計劃，分 3 至 5 年累積。');
+  if(s.mind==='goal'&&a.goals.length)add(48,CAT.save,'為人生目標設立專項儲蓄','已揀選 '+a.goals.length+' 個目標，合共 '+money(a.goalAmt)+'，按每年 '+n(s.gr)+'% 回報估算，每月約需儲蓄 '+money(a.goalPmt)+'。','可考慮：可分階段提取的儲蓄計劃，配合危疾保障守護目標資金。');
+  if(!a.topHeavy&&a.protS!=='bad'&&a.emS!=='bad'&&a.idle>0)add(a.protS==='ok'?38:22,CAT.inv,'讓閒置資金增值','扣除 6 個月應急錢後，約有 '+money(a.idle)+' 閒置資金，長期存放會被通脹蠶食。','可考慮：按「'+({low:'保守',bal:'平衡',high:'進取'})[s.risk]+'」風險取向配置基金或投資相連計劃，並定期檢視強積金組合。');
+  L.sort(function(x,y){return y.score-x.score;});
+  return L;
+}
+
+/* ===== 畫面 ===== */
+function script(){
+  var m={now:'不必先談幾十年後的事，先看三件事：生病時有沒有選擇、想休息時有沒有底氣、出事時會不會成為家人的負擔。',
+         goal:'先把人生目標放上時間軸，再看看有甚麼事情會令計劃中斷，以及怎樣守住這些目標。'},
+      f={single:'單身不代表沒有責任：一旦停工，最先受影響的往往是父母。',couple:'二人世界靠兩份收入支撐，其中一份中斷，另一半便要獨力承擔。',family:'子女的生活和教育不能暫停，家庭收入需要有後備。'},
+      j={office:'公司醫保屬於僱主，轉工、裁員或退休後便會終止。',self:'自僱沒有有薪病假，停工一天便少一天收入。',field:'外勤及體力工作較容易受傷和勞損，意外保障應優先處理。'};
+  $('script').innerHTML='<b>切入重點：</b>'+m[s.mind]+f[s.fam]+j[s.job];
+}
+function rWait(){
+  var d=WAIT[s.cond],pub=0,pri=0;d.forEach(function(x){pub+=x[1];pri+=x[3];});
+  var h='<div class="wrow"><div class="wrow-h"><span>公立輪候</span><span class="num" style="color:var(--mk-danger)">約 '+wk(pub)+'</span></div><div class="wbar pub">'+
+    d.map(function(x){return '<i style="width:'+(x[1]/pub*100)+'%" title="'+x[0]+'"></i>';}).join('')+'</div></div>'+
+    '<div class="wrow"><div class="wrow-h"><span>私家醫療</span><span class="num" style="color:var(--mk-brand-ink)">約 '+wk(pri)+'</span></div><div class="wbar pri" style="width:'+Math.max(2.5,pri/pub*100)+'%"><i style="width:100%"></i></div></div>'+
+    '<ul class="wsteps">'+d.map(function(x){return '<li><b>'+x[0]+'</b><span class="p1">公立：'+x[2]+'</span><span class="p2">私家：'+x[4]+'</span></li>';}).join('')+'</ul>';
+  $('wait').innerHTML=h;
+}
+function rFree(a){
+  var pct=a.free>0?Math.min(100,n(s.sav)/a.free*100):100;
+  $('freedom').innerHTML='<p class="big">'+money(a.free)+'<small>底氣金額</small></p>'+
+    '<div class="mrow"><div class="mrow-h"><span>現有流動儲蓄 '+money(n(s.sav))+'</span><b>'+Math.round(pct)+'%</b></div><div class="meter"><i style="width:'+pct+'%"></i></div></div>'+
+    (a.freeGap>0?'<p class="note">尚欠 <b class="num">'+money(a.freeGap)+'</b>。若分 3 年儲起，每月約 <b class="num">'+money(a.freeGap/36)+'</b>。</p>':'<p class="note">現有儲蓄已足夠。下一步是確保這筆錢不會因疾病或意外而被動用。</p>')+
+    '<p class="note key">有了這筆錢，便可以隨時遞信休息、進修或轉換跑道，不必看人臉色。</p>';
+}
+function rImpS(){
+  var burn=n(s.exp)+n(s.med),m=n(s.simM),sav=n(s.sav),par=n(s.par),used=burn*m;
+  var own=Math.max(0,sav-used),draw=Math.max(0,used-sav),pl=Math.max(0,par-draw),ownM=burn>0?sav/burn:99;
+  var h='<div class="mrow"><div class="mrow-h"><span>自己的儲蓄</span><b>'+money(own)+'</b></div><div class="meter"><i class="'+(own===0?'red':'')+'" style="width:'+(sav>0?own/sav*100:0)+'%"></i></div></div>'+
+    '<div class="mrow"><div class="mrow-h"><span>父母的退休儲備</span><b>'+money(pl)+'</b></div><div class="meter"><i class="'+(draw>0?'amber':'')+'" style="width:'+(par>0?pl/par*100:0)+'%"></i></div></div>';
+  if(draw>0)h+='<p class="note bad">自己的儲蓄在第 <b class="num">'+Math.floor(ownM)+'</b> 個月後用完。到第 '+m+' 個月，已動用父母退休儲備 <b class="num">'+money(Math.min(draw,par))+'</b>'+(par>0?'（約 '+Math.min(100,Math.round(draw/par*100))+'%）':'')+'。</p>';
+  else h+='<p class="note">每月開支連治療費用約 <b class="num">'+money(burn)+'</b>，現有儲蓄約可支持 <b class="num">'+ownM.toFixed(1)+'</b> 個月。</p>';
+  $('impactS').innerHTML=h;
+}
+function rImpF(){
+  var inc=n(s.hinc)*(s.cut?.5:1),out=n(s.mort)+n(s.hexp),bal=inc-out,mx=Math.max(n(s.hinc),out,1);
+  var h='<div class="mrow"><div class="mrow-h"><span>家庭每月收入'+(s.cut?'（減半後）':'')+'</span><b>'+money(inc)+'</b></div><div class="meter"><i style="width:'+inc/mx*100+'%"></i></div></div>'+
+    '<div class="mrow"><div class="mrow-h"><span>按揭／租金及生活開支</span><b>'+money(out)+'</b></div><div class="meter"><i class="'+(bal<0?'red':'amber')+'" style="width:'+out/mx*100+'%"></i></div></div>'+
+    '<p class="big'+(bal<0?' red':'')+'">'+(bal<0?'−':'+')+money(Math.abs(bal))+'<small>每月'+(bal<0?'赤字':'盈餘')+'</small></p>';
+  if(bal<0)h+='<p class="note bad">現有儲蓄約可支撐 <b class="num">'+(n(s.sav)/-bal).toFixed(1)+'</b> 個月，之後便要由另一半獨力承擔，或者動用子女教育及退休的儲備。</p>';
+  else if(s.cut)h+='<p class="note">收入減半後仍有盈餘，但未計治療及康復開支。</p>';
+  $('impactF').innerHTML=h;
+  $('cutBtn').textContent=s.cut?'還原收入':'模擬：收入減半';
+  $('cutBtn').className=s.cut?'btn ghost':'btn alert';
+}
+function rGoals(a){
+  $('goals').innerHTML=GOALS.map(function(g){var i=g[0];
+    return '<div class="goal'+(s['g'+i]?'':' off')+'"><label class="chk"><input type="checkbox" data-k="g'+i+'"'+(s['g'+i]?' checked':'')+'>'+g[1]+'</label>'+
+    '<div class="goal-in"><label class="fld"><span>目標金額</span><input type="number" data-k="g'+i+'a" min="0" step="50000" inputmode="numeric" value="'+s['g'+i+'a']+'"></label>'+
+    '<label class="fld"><span>還有多少年</span><input type="number" data-k="g'+i+'y" min="1" max="50" step="1" inputmode="numeric" value="'+s['g'+i+'y']+'"></label></div></div>';}).join('');
+}
+function rGoalOut(a){
+  var age=n(s.age)||35,mx=Math.max.apply(null,a.goals.map(function(g){return g.y;}).concat([10]));
+  $('tl').innerHTML='<div class="tl-p me" style="left:0"><b>現在<span>'+age+' 歲</span></b><i></i></div>'+
+    a.goals.map(function(g,i){return '<div class="tl-p'+(i%2?'':' alt')+'" style="left:'+(8+g.y/mx*92)+'%"><b>'+g.name+'<span>'+(age+g.y)+' 歲</span></b><i></i></div>';}).join('');
+  $('goalSum').innerHTML=a.goals.length?'<p class="big">'+money(a.goalPmt)+'<small>每月儲蓄目標</small></p><p class="note">'+a.goals.length+' 個目標合共 <b class="num">'+money(a.goalAmt)+'</b>。'+a.goals.map(function(g){return g.name+'每月 '+money(g.pmt);}).join('、')+'。</p>':'<p class="note">請先揀選最少一個目標。</p>';
+}
+function rDream(a){
+  var left=dream===1?n(s.shock):0,cls=dream===1?' hit':dream===2?' safe':'';
+  var h=a.goals.map(function(g){var take=Math.min(g.amt,left);left-=take;var pct=g.amt>0?(g.amt-take)/g.amt*100:0;
+    return '<div class="mrow"><div class="mrow-h"><span>'+g.name+'（'+g.y+' 年後）'+(take>0?' <em>'+(pct<1?'被抽乾':'被抽走 '+money(take))+'</em>':dream===2?' <em>原封不動</em>':'')+'</span><b>'+money(g.amt-take)+'</b></div><div class="meter"><i style="width:'+pct+'%"></i></div></div>';}).join('');
+  if(!a.goals.length)h='<p class="note">請先在「人生里程碑」揀選目標。</p>';
+  else if(dream===1)h+='<p class="note bad">'+money(n(s.shock))+' 的開支，會由最接近的目標開始動用。'+(left>0?'所有目標儲備用盡後，仍欠 <b class="num">'+money(left)+'</b>。':'計劃多年的目標要推遲，甚至放棄。')+'</p>';
+  else if(dream===2)h+='<p class="note key">危疾賠償代為支付 '+money(n(s.shock))+'，各個目標的資金原封不動。保險是「夢想守護者」。</p>';
+  $('dream').className='dream'+cls;$('dream').innerHTML=h;
+}
+function pyramid(a){
+  var C={ok:['#E6F6EE','#00A758','#00753E'],warn:['#FFF5DC','#D99A1C','#8A5B00'],bad:['#FDECEC','#C62828','#C62828']};
+  function hw(y){return (y-16)*156/226;}
+  function tier(y1,y2,stt,t1,t2){var c=C[stt],a1=hw(y1),a2=hw(y2),my=(y1+y2)/2;
+    return '<path d="M'+(180-a1)+' '+y1+'H'+(180+a1)+'L'+(180+a2)+' '+y2+'H'+(180-a2)+'Z" fill="'+c[0]+'" stroke="'+c[1]+'" stroke-width="2" stroke-linejoin="round"/>'+
+      '<text x="180" y="'+(my+(y1<30?16:-2))+'" text-anchor="middle" font-size="'+(y1<30?13:15)+'" font-weight="700" fill="'+c[2]+'">'+t1+'</text>'+
+      '<text x="180" y="'+(my+(y1<30?31:16))+'" text-anchor="middle" font-size="12" fill="'+c[2]+'">'+t2+'</text>';}
+  var e=C[a.emS];
+  return '<svg viewBox="0 0 360 300" role="img" aria-label="理財金字塔：財富增值'+ST_TXT[a.weS]+'、退休基石'+ST_TXT[a.retS]+'、保障防禦'+ST_TXT[a.protS]+'、應急錢'+ST_TXT[a.emS]+'">'+
+    tier(16,96,a.weS,'增值',a.topHeavy?'頭重腳輕':ST_TXT[a.weS])+tier(102,166,a.retS,'退休基石',ST_TXT[a.retS]+'・可應付 '+Math.round(a.retCov*100)+'%')+
+    tier(172,242,a.protS,'保障防禦（地基）',ST_TXT[a.protS]+'・醫療／危疾／人壽／意外')+
+    '<rect x="12" y="250" width="336" height="40" rx="8" fill="'+e[0]+'" stroke="'+e[1]+'" stroke-width="2"/>'+
+    '<text x="180" y="275" text-anchor="middle" font-size="14" font-weight="700" fill="'+e[2]+'">應急錢・'+a.emM.toFixed(1)+' 個月開支（'+ST_TXT[a.emS]+'）</text></svg>';
+}
+function flag(a){
+  if(a.topHeavy)return '<p class="flag">⚠ 頭重腳輕：已有投資，但'+(a.protS==='bad'?'保障地基':'應急錢')+'不足。一旦出事，可能要在低位被迫賣出投資。</p>';
+  if(a.protS==='bad')return '<p class="flag">⚠ 地基薄弱：保障不足，上層的儲蓄和投資都沒有依靠。</p>';
+  return '';
+}
+function rAssess(a){
+  $('st1').innerHTML=st(a.emS,ST_TXT[a.emS]);$('st2').innerHTML=st(a.protS,ST_TXT[a.protS]);
+  $('st3').innerHTML=st(a.retS,ST_TXT[a.retS]);$('st4').innerHTML=st(a.weS,a.topHeavy?'頭重腳輕':ST_TXT[a.weS]);
+  $('r1').innerHTML='現有儲蓄可應付 <b class="num">'+a.emM.toFixed(1)+'</b> 個月開支。建議儲備 <b class="num">'+money(n(s.exp)*3)+'</b> 至 <b class="num">'+money(n(s.exp)*6)+'</b>'+(s.job==='self'?'（自僱收入不穩定，建議以 6 個月為目標）':'')+'。'+(a.emGap>0?'距離 '+a.emT+' 個月目標尚欠 <b class="num">'+money(a.emGap)+'</b>。':'已達 '+a.emT+' 個月目標。');
+  $('fCi').style.display=s.cCi?'':'none';$('fLi').style.display=s.cLi?'':'none';
+  var med={ok:'已有個人醫療保障，不受轉工或退休影響。',warn:'只有公司醫保：離職或退休後保障便會終止，保額亦可能不足以應付私家醫院大額開支。',bad:'沒有任何醫療保障，住院及手術開支要全數自行承擔。'}[a.medS];
+  var acc={ok:'已有個人意外保障。',warn:'未有個人意外保障。',bad:'外勤工作受傷風險較高，但未有個人意外保障。'}[a.acS];
+  $('r2').innerHTML=
+    '<li>'+chip(1)+'<span>'+st(a.medS,ST_TXT[a.medS])+' '+med+'</span></li>'+
+    '<li>'+chip(3)+'<span>'+st(a.ciS,ST_TXT[a.ciS])+' 建議 3 至 5 年年薪：<b class="num">'+money(a.ciLo)+'</b> 至 <b class="num">'+money(a.ciHi)+'</b>；現有 <b class="num">'+money(a.ciHave)+'</b>'+(a.ciGap>0?'，最少尚欠 <b class="num">'+money(a.ciGap)+'</b>。':'。')+'</span></li>'+
+    '<li>'+chip(2)+'<span>'+st(a.liS,ST_TXT[a.liS])+' 負債加 '+a.liYrs+' 年供養家人開支：<b class="num">'+money(a.liNeed)+'</b>；現有 <b class="num">'+money(a.liHave)+'</b>'+(a.liGap>0?'，尚欠 <b class="num">'+money(a.liGap)+'</b>。':'。')+'</span></li>'+
+    '<li>'+chip(4)+'<span>'+st(a.acS,ST_TXT[a.acS])+' '+acc+'</span></li>';
+  $('r3').innerHTML='距離退休還有 <b class="num">'+a.yrs+'</b> 年。退休後 '+a.retYears+' 年（至 90 歲）約需 <b class="num">'+money(a.retNeed)+'</b>；預計強積金屆時約值 <b class="num">'+money(a.mpfPV)+'</b>（今日幣值），可應付約 <b class="num">'+Math.round(a.retCov*100)+'%</b>。'+(a.retGap>0?'缺口 <b class="num">'+money(a.retGap)+'</b>，由現在開始每月約需額外儲蓄 <b class="num">'+money(a.retPmt)+'</b>。':'');
+  $('r4').innerHTML='扣除 6 個月應急錢後，閒置資金約 <b class="num">'+money(a.idle)+'</b>（佔流動資產 '+Math.round(a.idleRatio*100)+'%）；已投資資產佔 <b class="num">'+Math.round(a.invRatio*100)+'%</b>。'+(a.topHeavy?'<br>地基未穩便投資，屬於「頭重腳輕」，建議先補足保障和應急錢。':a.weS==='warn'?'<br>閒置資金長期存放會被通脹蠶食，地基穩固後可按風險取向逐步配置。':'');
+  var p=pyramid(a),f=flag(a);$('pyr1').innerHTML=p;$('pyr2').innerHTML=p;$('flag1').innerHTML=f;$('flag2').innerHTML=f;
+}
+function rPlan(a){
+  var F={single:'單身貴族',couple:'二人世界',family:'養育家庭'},J={office:'企業白領',self:'自僱／Slash',field:'外勤前線'},M={now:'活在當下',goal:'目標導向'};
+  $('tags').innerHTML=[F[s.fam],J[s.job],M[s.mind],(n(s.age)||35)+' 歲'].map(function(t){return '<span class="tag">'+t+'</span>';}).join('');
+  $('sum').innerHTML=[['每月收入',money(n(s.inc))],['每月開支',money(n(s.exp))],['流動儲蓄',money(n(s.sav))],['強積金結餘',money(n(s.mpf))],['已投資資產',money(a.inv)]].map(function(x){return '<div><span>'+x[0]+'</span><b>'+x[1]+'</b></div>';}).join('');
+  var L=recs(a),top=L.slice(0,3),rest=L.slice(3);
+  $('acts').innerHTML=top.length?top.map(function(r,i){return '<div class="act mk-cat-'+r.cat+'"><div class="act-n">'+(i+1)+'</div><div><h3>'+r.title+' '+chip(r.cat)+'</h3><p>'+r.why+'</p><p class="how">'+r.how+'</p></div></div>';}).join(''):'<p class="note key">四桶金均已達標。建議每年檢視一次，並在結婚、置業、生育或轉工時更新。</p>';
+  $('laterBox').innerHTML=rest.length?'<h3 style="font-size:15px;margin-top:10px;color:var(--mk-deep)">其後可跟進</h3><ul class="later">'+rest.map(function(r){return '<li>'+chip(r.cat)+'<span><b>'+r.title+'</b>：'+r.why+'</span></li>';}).join('')+'</ul>':'';
+  $('b4').innerHTML=[
+    ['第一桶 應急錢',a.emS,'可應付 '+a.emM.toFixed(1)+' 個月開支'+(a.emGap>0?'，距 '+a.emT+' 個月目標尚欠 '+money(a.emGap):'')],
+    ['第二桶 保障防禦',a.protS,'醫療'+ST_TXT[a.medS]+'、危疾'+ST_TXT[a.ciS]+(a.ciGap>0?'（欠 '+money(a.ciGap)+'）':'')+'、人壽'+ST_TXT[a.liS]+(a.liGap>0?'（欠 '+money(a.liGap)+'）':'')+'、意外'+ST_TXT[a.acS]],
+    ['第三桶 退休基石',a.retS,'強積金預計可應付退休所需約 '+Math.round(a.retCov*100)+'%'+(a.retGap>0?'，缺口 '+money(a.retGap)+'（今日幣值）':'')],
+    ['第四桶 財富增值',a.weS,a.topHeavy?'頭重腳輕：地基未穩已投資':'閒置資金 '+money(a.idle)+'，已投資佔 '+Math.round(a.invRatio*100)+'%']
+  ].map(function(x){return '<div><b>'+x[0]+' '+st(x[1],ST_TXT[x[1]])+'</b><p>'+x[2]+'</p></div>';}).join('');
+  $('talk').innerHTML='<p class="note">'+(s.mind==='now'
+    ?'<b>面談重點：</b>想隨時可以停工 '+n(s.mon)+' 個月，「底氣金額」為 <b class="num">'+money(a.free)+'</b>'+(a.freeGap>0?'，尚欠 '+money(a.freeGap):'，現有儲蓄已足夠')+'。'
+    :'<b>面談重點：</b>'+(a.goals.length?a.goals.map(function(g){return g.name+' '+money(g.amt)+'（'+g.y+' 年後）';}).join('、')+'；每月儲蓄目標約 <b class="num">'+money(a.goalPmt)+'</b>（假設每年回報 '+n(s.gr)+'%）。':'尚未設定人生目標。'))+'</p>';
+}
+function sync(){ /* 將 state 寫返落所有輸入欄（正在輸入嗰格唔郁）*/
+  $$('[data-k]').forEach(function(e){var k=e.dataset.k;if(e===document.activeElement&&e.type==='number')return;
+    if(e.type==='checkbox')e.checked=!!s[k];else e.value=s[k];});
+  $$('[data-set]').forEach(function(g){$$('[data-set="'+g.dataset.set+'"] .pill').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.v===s[g.dataset.set]));});});
+  $$('.mk-tab').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.tab===s.tab));});
+  var o={exp:money(n(s.exp)),mon:n(s.mon)+' 個月',simM:'第 '+n(s.simM)+' 個月',shock:money(n(s.shock))};
+  $$('[data-o]').forEach(function(e){e.textContent=o[e.dataset.o];});
+  document.body.dataset.tab=s.tab;document.body.dataset.mind=s.mind;document.body.dataset.fam=s.fam;
+}
+function save(){
+  var d={},k,has=false;for(k in DEF)if(s[k]!==DEF[k]){d[k]=s[k];has=true;}
+  var h=has?'#s='+btoa(unescape(encodeURIComponent(JSON.stringify(d)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''):'';
+  try{history.replaceState(null,'',location.pathname+location.search+h);}catch(e){}
+}
+function load(){
+  var m=/[#&]s=([\w-]+)/.exec(location.hash);if(!m)return;
+  try{var d=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));
+    for(var k in d)if(k in DEF){ /* 只收預設入面有嘅設定，文字設定要係已知選項 */
+      if(STR[k]){if(typeof d[k]==='string'&&/^[a-z]{2,10}$/.test(d[k]))s[k]=d[k];}
+      else if(typeof d[k]==='number'&&isFinite(d[k]))s[k]=d[k];}
+  }catch(e){}
+  if(!WAIT[s.cond])s.cond=DEF.cond;
+  ['tab','fam','job','mind','risk'].forEach(function(k){if(!document.querySelector('[data-v="'+s[k]+'"],[data-tab="'+s[k]+'"],option[value="'+s[k]+'"]'))s[k]=DEF[k];});
+}
+var goalsBuilt=false;
+function render(full){
+  var a=calc();
+  if(full||!goalsBuilt){rGoals(a);goalsBuilt=true;}
+  else GOALS.forEach(function(g,i){$('goals').children[i].classList.toggle('off',!s['g'+g[0]]);});
+  sync();script();rWait();rFree(a);rImpS();rImpF();rGoalOut(a);rDream(a);rAssess(a);rPlan(a);save();
+}
+
+/* ===== 事件 ===== */
+document.addEventListener('input',function(e){var t=e.target,k=t.dataset&&t.dataset.k;if(!k)return;
+  if(t.type==='checkbox')s[k]=t.checked?1:0;else if(STR[k])s[k]=t.value;else s[k]=n(t.value);
+  if(k==='shock'||/^g\d/.test(k))dream=0;
+  render();});
+document.addEventListener('click',function(e){
+  var p=e.target.closest('.pill');
+  if(p){s[p.parentNode.dataset.set]=p.dataset.v;dream=0;render();return;}
+  var t=e.target.closest('[data-tab],[data-go]');
+  if(t&&t.tagName==='BUTTON'){s.tab=t.dataset.tab||t.dataset.go;render();window.scrollTo(0,0);
+    var on=document.querySelector('.mk-tab[aria-pressed="true"]');if(on&&on.scrollIntoView)on.scrollIntoView({block:'nearest',inline:'center'});}
+});
+$('cutBtn').onclick=function(){s.cut=s.cut?0:1;render();};
+$('hitBtn').onclick=function(){dream=1;render();};
+$('safeBtn').onclick=function(){dream=2;render();};
+$('resetBtn').onclick=function(){dream=0;render();};
+$('resetAll').onclick=function(){if(confirm('確定清除所有已輸入的資料？')){var t=s.tab;reset();s.tab=t;dream=0;render(true);}};
+var timer=null;
+$('playS').onclick=function(){clearInterval(timer);s.simM=0;render();
+  timer=setInterval(function(){if(s.simM>=24){clearInterval(timer);return;}s.simM++;render();},220);};
+window.addEventListener('hashchange',function(){reset();load();render(true);});
+
+load();render(true);
+})();
+</script>
+
+<!-- MKPA 列印保護（由 _standard/snippets.html 複製）：iPhone 主畫面 app 模式、WhatsApp／IG／Facebook／微信等 app 內置瀏覽器唔支援列印，撳「列印」時改為提示用 Safari／Chrome 開 -->
+<script>
+(function(){
+  var ua=navigator.userAgent||"";
+  function blocked(){
+    var inApp=/FBAN|FBAV|FB_IAB|Instagram|Line\/|WhatsApp|MicroMessenger|WeChat|Messenger|Threads|Snapchat|TikTok|BytedanceWebview/i.test(ua);
+    var standalone=window.navigator.standalone===true||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches&&/iPhone|iPad|iPod/i.test(ua));
+    return inApp||standalone;
+  }
+  function help(){
+    var old=document.querySelector(".mk-printhelp"); if(old) old.remove();
+    var d=document.createElement("div"); d.className="mk-printhelp"; d.setAttribute("role","dialog"); d.setAttribute("aria-label","列印提示");
+    d.innerHTML='<p><b>此畫面不支援列印</b>從主畫面圖示或 WhatsApp、IG 等應用程式開啟時，手機無法列印。請按「複製連結」，貼到 Safari 或 Chrome 開啟，再按「列印 / 存 PDF」。</p><div><button type="button" class="mk-printhelp-copy">複製連結</button><button type="button" class="mk-printhelp-close">知道了</button></div>';
+    document.body.appendChild(d);
+    d.querySelector(".mk-printhelp-close").onclick=function(){d.remove();};
+    d.querySelector(".mk-printhelp-copy").onclick=function(){
+      var b=this,u=location.href,ok=function(){b.textContent="已複製";};
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(ok,function(){prompt("請複製這條連結：",u);});}else{prompt("請複製這條連結：",u);}
+    };
+  }
+  window.mkPrintBlocked=blocked; window.mkPrintHelp=help;
+  document.addEventListener("click",function(e){
+    var t=e.target&&e.target.closest&&e.target.closest(".mk-print-btn");
+    if(!t||!blocked()) return;
+    e.preventDefault(); e.stopImmediatePropagation(); help();
+  },true);
+})();
+</script>
+<!-- /MKPA 列印保護 -->
+</body>
 </html>

@@ -1,1 +1,0 @@
-UPDATE public.mpf_funds SET return_3y = NULL WHERE etnet_fund_id LIKE 'MPFA_%' AND return_3y IS NOT NULL;
