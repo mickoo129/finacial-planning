@@ -340,6 +340,9 @@ body.pc #persona{padding:10px 16px}
 .act.picked{background:linear-gradient(var(--mk-brand-soft),var(--mk-brand-soft)) no-repeat;background-size:100% 100%;border-radius:10px;padding-left:10px;padding-right:10px}
 .later li>span:last-child{display:flex;flex:1;gap:8px;align-items:center}
 .b4{grid-template-columns:1fr 1fr!important}
+.hl{font-weight:700;color:var(--mk-brand-ink)}
+.hl.r,b.gap{color:var(--mk-danger)}
+.note.key .hl,.script .hl{color:var(--mk-deep)}
 .pname{display:none}
 body[data-tab="plan"].pc #persona{display:none}
 .lnk{border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--mk-brand-ink);text-decoration:underline;cursor:pointer}
@@ -434,17 +437,17 @@ body[data-tab="plan"].pc #persona{display:none}
         <label class="fld"><span>居住地區所屬的醫院聯網</span><select data-k="clu"><option value="">全港（顯示各聯網範圍）</option><option>港島東</option><option>港島西</option><option>九龍中</option><option>九龍東</option><option>九龍西</option><option>新界東</option><option>新界西</option></select></label>
       </div>
       <div id="wait"></div>
-      <p class="note key">醫療保險買的不是奢侈，而是生病時<b>有得選擇</b>：可以早一點知道結果、早一點治療、少痛幾個月。</p>
+      <p class="note key">醫療保險買的不是奢侈，而是生病時<b class="hl">有得選擇</b>：可以早一點知道結果、早一點治療、少痛幾個月。</p>
       <p class="fine" id="waitSrc"></p>
       <p class="fine no-print"><a href="https://hospitalinfohk.netlify.app/" target="_blank" rel="noopener">香港醫院指南：查看各醫院專科及輪候時間 ↗</a></p>
     </div>
 
     <!-- A2 底氣金 -->
     <div class="card only-now">
-      <span class="kicker">重新定義儲蓄</span>
-      <h2>「炒老闆魷魚」基金</h2>
-      <p class="lead">儲蓄不一定為了 65 歲退休，也可以為了隨時有底氣休息、轉跑道。</p>
-      <div class="sl"><div class="sl-top"><span>想隨時可以停工多久</span><output data-o="mon"></output></div>
+      <span class="kicker" id="frK">重新定義儲蓄</span>
+      <h2 id="frT">「炒老闆魷魚」基金</h2>
+      <p class="lead" id="frL">儲蓄不一定為了 65 歲退休，也可以為了隨時有底氣休息、轉跑道。</p>
+      <div class="sl"><div class="sl-top"><span id="frS">想隨時可以停工多久</span><output data-o="mon"></output></div>
         <input type="range" data-k="mon" min="1" max="24" step="1" aria-label="停工月數"></div>
       <div id="freedom"></div>
     </div>
@@ -640,7 +643,7 @@ document.querySelectorAll('.mk-print-date').forEach(function(e){e.textContent=d.
    年齡、收入、開支、退休生活費 0 = 未填；sav -1 = 未填（0 係「冇儲蓄」）；cv = 已核對現有保障 */
 var DEF={tab:'mind',fam:'single',sp:0,emp:'fixed',work:'desk',mind:'now',cond:'cataract',clu:'',pk:'',
   age:0,inc:0,exp:0,sav:-1,mon:6,med:10000,par:1000000,simM:24,sinc:0,cut:0,
-  gr:3,g1:1,g1a:1500000,g1y:5,g2:1,g2a:300000,g2y:3,g3:0,g3a:1000000,g3y:15,g4:0,g4a:500000,g4y:5,shock:1000000,
+  gr:3,g1:0,g1a:1500000,g1y:5,g2:0,g2a:300000,g2y:3,g3:0,g3a:1000000,g3y:15,g4:0,g4a:500000,g4y:5,shock:1000000,
   cv:0,cCo:0,cVh:0,cCi:0,cLi:0,cAc:0,ciAmt:0,liAmt:0,debt:0,sup:0,
   rAge:65,rExp:0,mpf:0,rOth:0,inv:0};
 var STR={tab:1,fam:1,emp:1,work:1,mind:1,cond:1,clu:1,pk:1};
@@ -649,7 +652,7 @@ var s={},dream=0,pc=true; /* dream：0 未發生、1 動用目標儲備、2 有�
 function reset(){for(var k in DEF)s[k]=DEF[k];}
 reset();
 /* 跟家庭狀況轉嘅預設（用家自己改過就唔郁）*/
-function goalDef(f){return ({single:[1,1,0,0],couple:[1,0,0,0],family:[1,0,1,0],grown:[0,0,0,1]})[f];}
+function goalDef(f){return [0,0,0,0];} /* 目標唔預先剔：由客人自己揀 */
 
 /* ===== 輪候後備數字（讀唔到醫管局即時數據先用；w = 星期）=====
    專科門診、白內障手術：醫管局 2025–26 年各聯網中位數範圍；磁力共振、私家時間：顧問提供嘅一般參考，冇官方出處 */
@@ -738,6 +741,8 @@ function calc(){
   a.exp=exp;a.inc=inc;a.sav=sav;a.savF=savF;a.age=age;
   a.has1=exp>0&&savF;a.has2=inc>0&&!!s.cv;a.has3=age>0&&n(s.rExp)>0;a.has4=a.has1;
   a.surplus=inc>0&&exp>0?inc-exp:null;
+  a.senior=age>=55;a.deficit=a.surplus!=null&&a.surplus<=0;a.tight=a.deficit||(a.surplus!=null&&a.surplus<inc*.2);
+  a.calm=a.senior||a.deficit; /* 臨近退休或入不敷支：唔講「炒老闆」，改講安心儲備 */
   a.unstable=s.emp!=='fixed';a.risky=s.work==='manual'||s.work==='field';
   /* 第一桶：自僱或收入浮動以 6 個月為目標，其他最少 3 個月 */
   a.emT=a.unstable?6:3;a.emM=exp>0?sav/exp:0;
@@ -745,7 +750,7 @@ function calc(){
   /* 第二桶 */
   a.medS=s.cVh?'ok':s.cCo?'warn':'bad';
   a.ciLo=yr*3;a.ciHi=yr*5;a.ciHave=s.cCi?n(s.ciAmt):0;a.ciGap=Math.max(0,a.ciLo-a.ciHave);
-  a.ciS=a.ciHave>=a.ciLo?'ok':a.ciHave>0?'warn':'bad';
+  a.ciS=a.ciHave>=a.ciLo?'ok':(a.ciHave>0||a.senior)?'warn':'bad'; /* 55 歲以上新買危疾又貴又難，唔當「不足」 */
   a.liYrs=s.fam==='family'?10:5;a.liNeed=n(s.debt)+n(s.sup)*12*a.liYrs;a.liHave=s.cLi?n(s.liAmt):0;
   a.liGap=Math.max(0,a.liNeed-a.liHave);
   a.liNa=a.liNeed===0&&(s.fam==='couple'||s.fam==='family'||!!s.sp); /* 有家人但未填供養金額同負債：唔評級 */
@@ -786,17 +791,19 @@ function recs(a){
   var L=[];
   function add(id,score,cat,title,why,how,mo){L.push({id:id,score:score,cat:cat,title:title,why:why,how:how,mo:mo||0,links:LINKS[id]||[]});}
   if(a.has2){
-    if(a.medS==='bad')add('med',100,1,'建立個人醫療保障','現時沒有任何住院醫療保障，一旦需要手術或住院，只能輪候公立醫院或動用儲蓄。','可考慮：自願醫保靈活計劃，保證續保至 100 歲，保費可扣稅。');
-    else if(a.medS==='warn')add('med',70,1,'為公司醫保加上個人保障','公司醫保屬於僱主，保額一般有限，轉工、裁員或退休後便會終止，屆時年紀較大或已有病歷，再投保會較困難。','可考慮：自願醫保高自付額計劃（Top-up），以較低保費補足公司醫保以外的大額開支。');
-    if(a.ciS!=='ok')add('ci',a.ciS==='bad'?90:60,3,'補足危疾保障','建議保額為 3 至 5 年年薪（'+money(a.ciLo)+' 至 '+money(a.ciHi)+'），現有 '+money(a.ciHave)+'，最少尚欠 '+money(a.ciGap)+'。這筆錢用來代替停工期間的收入。','可考慮：定期危疾（保費較低）或多功能儲蓄危疾（保障與儲蓄兼備）。');
-    if(a.liGap>0)add('life',s.fam==='family'?85:s.fam==='couple'?65:s.fam==='grown'?50:45,2,'補足人壽保障','負債及 '+a.liYrs+' 年供養家人開支合共約 '+money(a.liNeed)+'，現有保額 '+money(a.liHave)+'，尚欠 '+money(a.liGap)+'。','可考慮：定期人壽（以較低保費取得高保額）或終身人壽。');
-    if(a.acS!=='ok')add('acc',a.risky?80:s.emp==='self'?50:s.work==='service'?40:25,4,'加入意外保障',a.risky?'體力、外勤或駕駛工作受傷和勞損的機會較高，受傷停工會直接影響收入。':s.emp==='self'?'自僱人士沒有有薪病假及僱員補償，受傷停工期間沒有收入。':'意外引致的門診、骨折及物理治療開支，一般醫保未必完全涵蓋。','可考慮：意外醫療及住院現金津貼計劃。');
+    if(a.medS==='bad')add('med',100,1,'建立個人醫療保障','現時沒有任何住院醫療保障，一旦需要手術或住院，<b class="hl r">只能輪候公立醫院或動用儲蓄</b>。','可考慮：自願醫保靈活計劃，保證續保至 100 歲，保費可扣稅。');
+    else if(a.medS==='warn')add('med',70,1,'為公司醫保加上個人保障','公司醫保屬於僱主，保額一般有限，<b class="hl">轉工、裁員或退休後便會終止</b>，屆時年紀較大或已有病歷，再投保會較困難。','可考慮：自願醫保高自付額計劃（Top-up），以較低保費補足公司醫保以外的大額開支。');
+    if(a.ciS!=='ok'){
+      if(a.senior)add('ci',42,3,'檢視危疾保障','現有危疾保額 '+money(a.ciHave)+'。這個年紀新投保危疾的保費較高，亦未必獲接納，<b class="hl">建議先確保醫療保障足夠</b>，再按預算考慮。','可考慮：保留現有保單不要中斷；有預算可加癌症或特定疾病保障。');
+      else add('ci',a.ciS==='bad'?90:60,3,'補足危疾保障','建議保額為 3 至 5 年年薪（'+money(a.ciLo)+' 至 '+money(a.ciHi)+'），現有 '+money(a.ciHave)+'，最少尚欠 <b class="gap">'+money(a.ciGap)+'</b>。這筆錢用來<b class="hl">代替停工期間的收入</b>。','可考慮：定期危疾（保費較低）或多功能儲蓄危疾（保障與儲蓄兼備）。');}
+    if(a.liGap>0)add('life',s.fam==='family'?85:s.fam==='couple'?65:s.fam==='grown'?50:45,2,'補足人壽保障','負債及 '+a.liYrs+' 年供養家人開支合共約 '+money(a.liNeed)+'，現有保額 '+money(a.liHave)+'，尚欠 <b class="gap">'+money(a.liGap)+'</b>。這筆錢讓家人<b class="hl">在沒有你的收入時仍可維持生活</b>。','可考慮：定期人壽（以較低保費取得高保額）或終身人壽。');
+    if(a.acS!=='ok')add('acc',a.risky?80:s.emp==='self'?50:s.work==='service'?40:25,4,'加入意外保障',a.risky?'體力、外勤或駕駛工作受傷和勞損的機會較高，<b class="hl">受傷停工會直接影響收入</b>。':s.emp==='self'?'自僱人士沒有有薪病假及僱員補償，受傷停工期間沒有收入。':'意外引致的門診、骨折及物理治療開支，一般醫保未必完全涵蓋。','可考慮：意外醫療及住院現金津貼計劃。');
   }
-  if(a.has1&&a.emS!=='ok')add('em',a.emS==='bad'?75:40,5,'先建立應急錢','現有儲蓄約可應付 '+a.emM.toFixed(1)+' 個月開支，距離 '+a.emT+' 個月目標尚欠 '+money(a.emGap)+'。','做法：每月自動轉賬到獨立戶口，達標前暫緩高風險投資。若分 12 個月儲起，每月約 '+money(a.emGap/12)+'。',a.emGap/12);
-  if(a.has3&&a.retS!=='ok')add('ret',a.retS==='bad'?55:35,5,'加強退休儲備','以今日幣值計，退休至 90 歲約需 '+money(a.retNeed)+'，現有安排預計可應付約 '+Math.round(a.retCov*100)+'%。'+(a.retHard?'單靠每月儲蓄較難補足缺口，可以考慮延後退休、調整退休生活費，或將現有資產轉為穩定的每月收入。':'如由現在開始補足，每月約需額外儲蓄 '+money(a.retPmt)+'。'),a.retHard?'可考慮：以年金把現有儲蓄轉為每月收入，並了解長者生活津貼等公共福利。':'可考慮：可扣稅自願性供款（TVC）或合資格延期年金，兩者合共每年最高可扣稅 $60,000。',a.retHard?0:a.retPmt);
-  if(s.mind==='now'&&a.has1&&a.freeGap>0)add('free',32,5,'儲一筆「底氣金」','想隨時可以停工 '+n(s.mon)+' 個月，需要 '+money(a.free)+'，現時尚欠 '+money(a.freeGap)+'。若分 3 年儲起，每月約 '+money(a.freeGap/36)+'。','可考慮：靈活提取的儲蓄計劃，分 3 至 5 年累積。',a.freeGap/36);
+  if(a.has1&&a.emS!=='ok')add('em',a.emS==='bad'?75:40,5,'先建立應急錢','現有儲蓄約可應付 <b class="hl">'+a.emM.toFixed(1)+' 個月</b>開支，距離 '+a.emT+' 個月目標尚欠 <b class="gap">'+money(a.emGap)+'</b>。','做法：每月自動轉賬到獨立戶口，達標前暫緩高風險投資。若分 12 個月儲起，每月約 '+money(a.emGap/12)+'。',a.emGap/12);
+  if(a.has3&&a.retS!=='ok')add('ret',a.retS==='bad'?55:35,5,'加強退休儲備','以今日幣值計，退休至 90 歲約需 '+money(a.retNeed)+'，現有安排預計<b class="hl">只可應付約 '+Math.round(a.retCov*100)+'%</b>。'+(a.retHard?'單靠每月儲蓄較難補足缺口，可以考慮延後退休、調整退休生活費，或將現有資產轉為穩定的每月收入。':'如由現在開始補足，每月約需額外儲蓄 '+money(a.retPmt)+'。'),a.retHard?'可考慮：以年金把現有儲蓄轉為每月收入，並了解長者生活津貼等公共福利。':'可考慮：可扣稅自願性供款（TVC）或合資格延期年金，兩者合共每年最高可扣稅 $60,000。',a.retHard?0:a.retPmt);
+  if(s.mind==='now'&&a.has1&&a.freeGap>0&&!a.calm)add('free',32,5,'儲一筆「底氣金」','想隨時可以停工 '+n(s.mon)+' 個月，需要 '+money(a.free)+'，現時尚欠 '+money(a.freeGap)+'。若分 3 年儲起，每月約 '+money(a.freeGap/36)+'。','可考慮：靈活提取的儲蓄計劃，分 3 至 5 年累積。',a.freeGap/36);
   if(s.mind==='goal'&&a.goals.length)add('goal',48,5,'為人生目標設立專項儲蓄','已揀選 '+a.goals.length+' 個目標，合共 '+money(a.goalAmt)+'，按每年 '+n(s.gr)+'% 回報估算，每月約需儲蓄 '+money(a.goalPmt)+'。','可考慮：可分階段提取的儲蓄計劃，配合危疾保障守護目標資金。',a.goalPmt);
-  if(a.has4&&a.weS==='warn')add('inv',a.protS==='ok'?38:22,7,'讓閒置資金增值','扣除 6 個月應急錢後，約有 '+money(a.idle)+' 閒置資金，長期存放會被通脹蠶食。','可考慮：按個人風險承受能力配置基金或投資相連計劃，並定期檢視強積金組合。');
+  if(a.has4&&a.weS==='warn')add('inv',a.protS==='ok'?38:22,7,'讓閒置資金增值','扣除 6 個月應急錢後，約有 '+money(a.idle)+' 閒置資金，長期存放會被通脹蠶食。',a.senior?'可考慮：以保本及穩定收入為主，例如年金或定期存款，避免高風險投資。':'可考慮：按個人風險承受能力配置基金或投資相連計劃，並定期檢視強積金組合。');
   var pk=(s.pk||'').split(',');
   L.forEach(function(r){r.pick=pk.indexOf(r.id)>=0;});
   L.sort(function(x,y){return (y.pick-x.pick)||(y.score-x.score);});
@@ -807,11 +814,12 @@ function recs(a){
 var F_={single:'單身貴族',couple:'二人世界',family:'養育家庭',grown:'子女已獨立'},E_={fixed:'受僱・固定月薪',var:'受僱・浮動收入',self:'自僱／Freelance'},W_={desk:'辦公室文職',service:'服務及銷售',manual:'技術及體力工作',field:'外勤及駕駛'};
 function script(){ /* 最多 3 點：家庭一點、收入一點、工作或醫保一點 */
   var L=[];
-  L.push(s.sp?'你正在供養父母，你的收入也是他們生活的一部分。':{single:'單身的話，一旦要停工，最有可能伸手幫忙的是父母。',couple:'兩個人一起生活，其中一份收入中斷，另一半的壓力會很大。',family:'子女的生活和教育開支不能暫停，家庭收入需要有後備。',grown:'子女已經獨立，接下來的重點是自己的醫療和退休生活。'}[s.fam]);
-  if(s.emp==='self')L.push('自僱沒有有薪病假和公司福利，停工期間便沒有收入。');
-  else if(s.emp==='var')L.push('收入每月不同，應急錢需要預備多一點。');
+  L.push(s.sp?'你正在供養父母，<b class="hl">你的收入也是他們生活的一部分</b>。':{single:'單身的話，一旦要停工，<b class="hl">最有可能伸手幫忙的是父母</b>。',couple:'兩個人一起生活，其中一份收入中斷，<b class="hl">另一半的壓力會很大</b>。',family:'子女的生活和教育開支不能暫停，<b class="hl">家庭收入需要有後備</b>。',grown:'子女已經獨立，接下來的重點是<b class="hl">自己的醫療和退休生活</b>。'}[s.fam]);
+  if(s.emp==='self')L.push('自僱沒有有薪病假和公司福利，<b class="hl">停工期間便沒有收入</b>。');
+  else if(s.emp==='var')L.push('收入每月不同，<b class="hl">應急錢需要預備多一點</b>。');
   if(s.work==='manual'||s.work==='field')L.push(s.work==='manual'?'體力工作受傷和勞損的機會較高。':'經常在外工作或駕駛，意外風險較高。');
-  else if(s.emp!=='self'&&L.length<3)L.push('如果公司有提供醫保，要留意轉工或退休後便沒有。');
+  else if(s.emp!=='self'&&s.cv)L.push(s.cCo?'公司醫保是僱主提供的福利，<b class="hl">轉工或退休後便沒有</b>。':'公司沒有提供醫保，<b class="hl">醫療開支要靠自己準備</b>。');
+  else L.push(s.work==='service'?'長時間站立走動，勞損比較常見。':'長時間久坐，頸椎和腰椎的毛病很常見。');
   $('script').innerHTML='<b>按你的情況，值得一起留意</b><ul>'+L.slice(0,3).map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul>';
 }
 function tagList(a){
@@ -846,12 +854,14 @@ function rWait(){
   $('waitSrc').textContent=(live?'專科門診及手術輪候時間為醫院管理局公布數字（'+(EXT.sopPeriod||EXT.opsPeriod)+'）；其他為一般參考情況。':'輪候時間為參考情景，因醫院聯網及病情分流而異。')+'如醫生評估為緊急個案，公立醫院會優先處理。';
 }
 function rFree(a){
+  $('frK').textContent=a.calm?'安心儲備':'重新定義儲蓄';$('frT').textContent=a.calm?'隨時可以動用的儲備':'「炒老闆魷魚」基金';
+  $('frL').textContent=a.calm?'遇上突發情況，手上有多少個月的開支可以應付？':'儲蓄不一定為了 65 歲退休，也可以為了隨時有底氣休息、轉跑道。';$('frS').textContent=a.calm?'想預備多少個月的開支':'想隨時可以停工多久';
   if(!a.exp){$('freedom').innerHTML=need('請先在「你的情況」填寫每月開支。');return;}
-  var h='<p class="big">'+money(a.free)+'<small>底氣金額</small></p>';
+  var h='<p class="big">'+money(a.free)+'<small>'+(a.calm?'儲備目標':'底氣金額')+'</small></p>';
   if(a.savF){var pct=a.free>0?Math.min(100,a.sav/a.free*100):100;
     h+='<div class="mrow"><div class="mrow-h"><span>現有流動儲蓄 '+money(a.sav)+'</span><b>'+Math.round(pct)+'%</b></div><div class="meter"><i style="width:'+pct+'%"></i></div></div>'+
-    (a.freeGap>0?'<p class="note">尚欠 <b class="num">'+money(a.freeGap)+'</b>。若分 3 年儲起，每月約 <b class="num">'+money(a.freeGap/36)+'</b>。</p>':'<p class="note">現有儲蓄已達到這個數目。下一步是確保這筆錢不會因疾病或意外而被動用。</p>');}
-  $('freedom').innerHTML=h+'<p class="note key">有了這筆錢，便可以隨時遞信休息、進修或轉換跑道，不必看人臉色。</p>';
+    (a.freeGap>0?'<p class="note">尚欠 <b class="num gap">'+money(a.freeGap)+'</b>。'+(a.deficit?'':'若分 3 年儲起，每月約 <b class="num">'+money(a.freeGap/36)+'</b>。')+'</p>':'<p class="note">現有儲蓄已達到這個數目。下一步是確保這筆錢不會因疾病或意外而被動用。</p>');}
+  $('freedom').innerHTML=h+'<p class="note key">'+(a.calm?'有了這筆錢，遇上突發情況也<b class="hl">不必急於變賣資產或向人借錢</b>。':'有了這筆錢，便可以隨時遞信休息、進修或轉換跑道，<b class="hl">不必看人臉色</b>。')+'</p>';
 }
 function rImpS(a){
   if(!a.has1){$('impactS').innerHTML=need('請先在「你的情況」填寫每月開支及流動儲蓄。');return;}
@@ -859,7 +869,7 @@ function rImpS(a){
   var own=Math.max(0,sav-used),draw=Math.max(0,used-sav),pl=Math.max(0,par-draw),ownM=burn>0?sav/burn:99;
   var h='<div class="mrow"><div class="mrow-h"><span>自己的儲蓄</span><b>'+money(own)+'</b></div><div class="meter"><i class="'+(own===0?'red':'')+'" style="width:'+(sav>0?own/sav*100:0)+'%"></i></div></div>'+
     '<div class="mrow"><div class="mrow-h"><span>父母的儲備</span><b>'+money(pl)+'</b></div><div class="meter"><i class="'+(draw>0?'amber':'')+'" style="width:'+(par>0?pl/par*100:0)+'%"></i></div></div>';
-  if(draw>0)h+='<p class="note bad">'+(sav>0?'自己的儲蓄在第 <b class="num">'+Math.max(1,Math.floor(ownM))+'</b> 個月用完。':'現時沒有儲蓄可以動用。')+'到第 '+m+' 個月，需要動用父母的儲備 <b class="num">'+money(Math.min(draw,par))+'</b>'+(par>0?'（約 '+Math.min(100,Math.round(draw/par*100))+'%）':'')+'。</p>';
+  if(draw>0)h+='<p class="note bad">'+(sav>0?'自己的儲蓄在<b class="hl r">第 '+Math.max(1,Math.floor(ownM))+' 個月用完</b>。':'現時沒有儲蓄可以動用。')+'到第 '+m+' 個月，需要動用父母的儲備 <b class="num gap">'+money(Math.min(draw,par))+'</b>'+(par>0?'（約 '+Math.min(100,Math.round(draw/par*100))+'%）':'')+'。</p>';
   else h+='<p class="note">每月開支連治療費用約 <b class="num">'+money(burn)+'</b>，現有儲蓄約可支持 <b class="num">'+ownM.toFixed(1)+'</b> 個月。</p>';
   $('impactS').innerHTML=h;
 }
@@ -870,7 +880,7 @@ function rImpF(a){
   var h='<div class="mrow"><div class="mrow-h"><span>家庭每月收入'+(s.cut?'（只餘伴侶收入）':'')+'</span><b>'+money(inc)+'</b></div><div class="meter"><i style="width:'+inc/mx*100+'%"></i></div></div>'+
     '<div class="mrow"><div class="mrow-h"><span>家庭每月開支</span><b>'+money(out)+'</b></div><div class="meter"><i class="'+(bal<0?'red':'amber')+'" style="width:'+out/mx*100+'%"></i></div></div>'+
     '<p class="big'+(bal<0?' red':'')+'">'+(bal<0?'−':'+')+money(Math.abs(bal))+'<small>每月'+(bal<0?'不敷':'盈餘')+'</small></p>';
-  if(bal<0)h+='<p class="note bad">'+(a.savF?'現有儲蓄約可支撐 <b class="num">'+(a.sav/-bal).toFixed(1)+'</b> 個月，之後':'儲蓄用完之後，')+(n(s.sinc)>0?'便要由伴侶獨力承擔，或者動用子女教育及退休的儲備。':'家庭便沒有收入來源。')+'未計治療及康復開支。</p>';
+  if(bal<0)h+='<p class="note bad">'+(a.savF?'現有儲蓄<b class="hl r">約可支撐 '+(a.sav/-bal).toFixed(1)+' 個月</b>，之後':'儲蓄用完之後，')+(n(s.sinc)>0?'便要由伴侶獨力承擔，或者動用子女教育及退休的儲備。':'家庭便沒有收入來源。')+'未計治療及康復開支。</p>';
   else if(s.cut)h+='<p class="note">停工後仍有盈餘，但未計治療及康復開支。</p>';
   $('impactF').innerHTML=h;
 }
@@ -895,9 +905,9 @@ function rDream(a){
   var h=a.goals.map(function(g){var take=Math.min(g.amt,left);left-=take;var pct=g.amt>0?(g.amt-take)/g.amt*100:0;
     return '<div class="mrow"><div class="mrow-h"><span>'+g.name+'（'+g.y+' 年後）'+(take>0?' <em>'+(pct<1?'全數動用':'動用 '+money(take))+'</em>':dream===2?' <em>原封不動</em>':'')+'</span><b>'+money(g.amt-take)+'</b></div><div class="meter"><i style="width:'+pct+'%"></i></div></div>';}).join('');
   if(!a.goals.length)h='<p class="note">請先在「人生里程碑」揀選目標。</p>';
-  else if(dream===1)h+='<p class="note bad">'+money(n(s.shock))+' 的開支，會由最接近的目標開始動用。'+(left>0?'所有目標儲備用盡後，仍欠 <b class="num">'+money(left)+'</b>。':'計劃多年的目標要推遲，甚至放棄。')+'</p>';
-  else if(dream===2)h+='<p class="note key">危疾賠償代為支付 '+money(n(s.shock))+'，各個目標的資金原封不動。保險是「夢想守護者」。</p>';
-  if(a.goals.length&&ciFact())h+='<p class="fine">'+ciFact()+'</p>';
+  else if(dream===1)h+='<p class="note bad">'+money(n(s.shock))+' 的開支，會由最接近的目標開始動用。'+(left>0?'所有目標儲備用盡後，仍欠 <b class="num">'+money(left)+'</b>。':'<b class="hl r">計劃多年的目標要推遲，甚至放棄</b>。')+'</p>';
+  else if(dream===2)h+='<p class="note key">危疾賠償代為支付 '+money(n(s.shock))+'，各個目標的資金<b class="hl">原封不動</b>。保險是「夢想守護者」。</p>';
+  if(a.goals.length&&ciFact()&&!a.senior)h+='<p class="fine">'+ciFact()+'</p>';
   $('dream').className='dream'+cls;$('dream').innerHTML=h;
 }
 function pyramid(a){
@@ -921,18 +931,18 @@ function flag(a){
 }
 function rAssess(a){
   $('st1').innerHTML=st(a.emS);$('st2').innerHTML=st(a.protS);$('st3').innerHTML=st(a.retS);$('st4').innerHTML=st(a.weS,a.topHeavy?'頭重腳輕':'');
-  $('r1').innerHTML=!a.has1?'請先在「你的情況」填寫每月開支及流動儲蓄。 <button type="button" class="lnk" data-open>立即填寫</button>':'現有儲蓄可應付 <b class="num">'+a.emM.toFixed(1)+'</b> 個月開支。建議儲備 <b class="num">'+money(a.exp*3)+'</b> 至 <b class="num">'+money(a.exp*6)+'</b>'+(a.unstable?'（收入不固定，建議以 6 個月為目標）':'')+'。'+(a.emGap>0?'距離 '+a.emT+' 個月目標尚欠 <b class="num">'+money(a.emGap)+'</b>。':'已達 '+a.emT+' 個月目標。');
+  $('r1').innerHTML=!a.has1?'請先在「你的情況」填寫每月開支及流動儲蓄。 <button type="button" class="lnk" data-open>立即填寫</button>':'現有儲蓄可應付 <b class="num">'+a.emM.toFixed(1)+'</b> 個月開支。建議儲備 <b class="num">'+money(a.exp*3)+'</b> 至 <b class="num">'+money(a.exp*6)+'</b>'+(a.unstable?'（收入不固定，建議以 6 個月為目標）':'')+'。'+(a.emGap>0?'距離 '+a.emT+' 個月目標尚欠 <b class="num gap">'+money(a.emGap)+'</b>。':'已達 '+a.emT+' 個月目標。');
   $('fCi').style.display=s.cCi?'':'none';$('fLi').style.display=s.cLi?'':'none';$('cvRow').hidden=!!s.cv;
   if(!a.has2)$('r2').innerHTML='<li><span></span><span>'+(a.inc?'勾選現有保障後，按「已核對，查看結果」。':'請先在「你的情況」填寫每月收入，再勾選現有保障。')+'</span></li>';
   else{
-    var med={ok:'已有個人醫療保障，不受轉工或退休影響。',warn:'只有公司醫保：離職或退休後保障便會終止，保額亦可能不足以應付私家醫院大額開支。',bad:'沒有住院醫療保障，住院及手術開支要自行承擔或輪候公立醫院。'}[a.medS];
+    var med={ok:'已有個人醫療保障，不受轉工或退休影響。',warn:'只有公司醫保：<b class="hl">離職或退休後保障便會終止</b>，保額亦可能不足以應付私家醫院大額開支。',bad:'沒有住院醫療保障，住院及手術開支要自行承擔或輪候公立醫院。'}[a.medS];
     var acc={ok:'已有個人意外保障。',warn:'未有個人意外保障。',bad:'工作性質受傷風險較高，但未有個人意外保障。'}[a.acS];
     $('r2').innerHTML=
       '<li>'+chip(1)+'<span>'+st(a.medS)+' '+med+'</span></li>'+
-      '<li>'+chip(3)+'<span>'+st(a.ciS)+' 建議 3 至 5 年年薪：<b class="num">'+money(a.ciLo)+'</b> 至 <b class="num">'+money(a.ciHi)+'</b>；現有 <b class="num">'+money(a.ciHave)+'</b>'+(a.ciGap>0?'，最少尚欠 <b class="num">'+money(a.ciGap)+'</b>。':'。')+(ciFact()?'<br><span class="fine">'+ciFact()+'</span>':'')+'</span></li>'+
-      '<li>'+chip(2)+'<span>'+st(a.liS)+' '+(a.liNa?'請填寫未償還負債及每月供養家人金額，以估算所需保額。':a.liNeed===0?'沒有負債及供養責任，暫時沒有人壽保障缺口。':'負債加 '+a.liYrs+' 年供養家人開支：<b class="num">'+money(a.liNeed)+'</b>；現有 <b class="num">'+money(a.liHave)+'</b>'+(a.liGap>0?'，尚欠 <b class="num">'+money(a.liGap)+'</b>。':'。'))+'</span></li>'+
+      '<li>'+chip(3)+'<span>'+st(a.ciS)+' 建議 3 至 5 年年薪：<b class="num">'+money(a.ciLo)+'</b> 至 <b class="num">'+money(a.ciHi)+'</b>；現有 <b class="num">'+money(a.ciHave)+'</b>'+(a.ciGap>0?(a.senior?'。這個年紀新投保危疾較貴，建議以醫療保障為先。':'，最少尚欠 <b class="num gap">'+money(a.ciGap)+'</b>。'):'。')+(ciFact()&&!a.senior?'<br><span class="fine">'+ciFact()+'</span>':'')+'</span></li>'+
+      '<li>'+chip(2)+'<span>'+st(a.liS)+' '+(a.liNa?'請填寫未償還負債及每月供養家人金額，以估算所需保額。':a.liNeed===0?'沒有負債及供養責任，暫時沒有人壽保障缺口。':'負債加 '+a.liYrs+' 年供養家人開支：<b class="num">'+money(a.liNeed)+'</b>；現有 <b class="num">'+money(a.liHave)+'</b>'+(a.liGap>0?'，尚欠 <b class="num gap">'+money(a.liGap)+'</b>。':'。'))+'</span></li>'+
       '<li>'+chip(4)+'<span>'+st(a.acS)+' '+acc+'</span></li>';}
-  $('r3').innerHTML=!a.has3?'請填寫'+(a.age?'':'年齡（在「你的情況」）及')+'期望每月退休生活費。':'距離退休還有 <b class="num">'+a.yrs+'</b> 年。退休後 '+a.retYears+' 年（至 90 歲）約需 <b class="num">'+money(a.retNeed)+'</b>；預計強積金屆時約值 <b class="num">'+money(a.mpfPV)+'</b>'+(a.othPV>0?'，其他退休儲備約值 <b class="num">'+money(a.othPV)+'</b>':'')+'（今日幣值），合共可應付約 <b class="num">'+Math.round(a.retCov*100)+'%</b>。'+(a.retGap>0?'缺口 <b class="num">'+money(a.retGap)+'</b>'+(a.retHard?'。單靠每月儲蓄較難補足，可以一起考慮：延後退休、調整退休生活費，或將現有資產轉為穩定的每月收入。':'，由現在開始每月約需額外儲蓄 <b class="num">'+money(a.retPmt)+'</b>。'):'');
+  $('r3').innerHTML=!a.has3?'請填寫'+(a.age?'':'年齡（在「你的情況」）及')+'期望每月退休生活費。':'距離退休還有 <b class="num">'+a.yrs+'</b> 年。退休後 '+a.retYears+' 年（至 90 歲）約需 <b class="num">'+money(a.retNeed)+'</b>；預計強積金屆時約值 <b class="num">'+money(a.mpfPV)+'</b>'+(a.othPV>0?'，其他退休儲備約值 <b class="num">'+money(a.othPV)+'</b>':'')+'（今日幣值），合共可應付約 <b class="num">'+Math.round(a.retCov*100)+'%</b>。'+(a.retGap>0?'缺口 <b class="num gap">'+money(a.retGap)+'</b>'+(a.retHard?'。單靠每月儲蓄較難補足，可以一起考慮：延後退休、調整退休生活費，或將現有資產轉為穩定的每月收入。':'，由現在開始每月約需額外儲蓄 <b class="num">'+money(a.retPmt)+'</b>。'):'');
   $('r4').innerHTML=!a.has4?'請先在「你的情況」填寫每月開支及流動儲蓄。 <button type="button" class="lnk" data-open>立即填寫</button>':'扣除 6 個月應急錢後，閒置資金約 <b class="num">'+money(a.idle)+'</b>；已投資資產佔流動資產 <b class="num">'+Math.round(a.invRatio*100)+'%</b>。'+(a.topHeavy?'<br>地基未穩便投資，屬於「頭重腳輕」，建議先補足保障和應急錢。':a.weS==='warn'?'<br>閒置資金超過一年開支，長期存放會被通脹蠶食，地基穩固後可逐步配置。':'');
   var p=pyramid(a),f=flag(a);$('pyr1').innerHTML=p;$('pyr2').innerHTML=p;$('flag1').innerHTML=f;$('flag2').innerHTML=f;
 }
@@ -941,13 +951,14 @@ function rPlan(a){
   var S=[];if(a.inc)S.push(['每月收入',money(a.inc)]);if(a.exp)S.push(['每月開支',money(a.exp)]);if(a.savF)S.push(['流動儲蓄',money(a.sav)]);
   if(n(s.mpf))S.push(['強積金結餘',money(n(s.mpf))]);if(a.inv)S.push(['已投資資產',money(a.inv)]);
   $('sum').innerHTML=S.map(function(x){return '<div><span>'+x[0]+'</span><b>'+x[1]+'</b></div>';}).join('');
-  $('budget').innerHTML=a.surplus==null?'':a.surplus>0?'<p class="note key">每月可動用金額（收入減開支）：<b class="num">'+money(a.surplus)+'</b>。以下各項可以按這個預算分階段處理，不需要一次過完成。坊間常用的參考是保障開支約佔收入一成，即每月約 <b class="num">'+money(a.inc*.1)+'</b>。</p>':'<p class="note warnbox">現時每月開支已相等於或超過收入。建議先檢視開支，再按次序處理以下項目。</p>';
-  var L=recs(a),top=L.slice(0,3),rest=L.slice(3),miss=[];
+  $('budget').innerHTML=a.surplus==null?'':a.surplus>0?(a.tight?'<p class="note key">每月可動用金額（收入減開支）：<b class="num">'+money(a.surplus)+'</b>，預算比較緊。<b class="hl">不需要一次過完成</b>：建議先做一至兩項，由保費較低、影響最大的開始；保額可以先買一部分，日後再加。</p>':'<p class="note key">每月可動用金額（收入減開支）：<b class="num">'+money(a.surplus)+'</b>。以下各項可以按這個預算<b class="hl">分階段處理，不需要一次過完成</b>。坊間常用的參考是保障開支約佔收入一成，即每月約 <b class="num">'+money(a.inc*.1)+'</b>。</p>'):'<p class="note warnbox">現時每月開支已相等於或超過收入。<b class="hl">建議先檢視開支</b>，再由保費較低、影響最大的一項開始。</p>';
+  var nTop=a.tight?2:3,L=recs(a),top=L.slice(0,nTop),rest=L.slice(nTop),miss=[],LOW={life:1,acc:1,ci:1};
+  function low(r){return a.tight&&LOW[r.id]&&!(r.id==='ci'&&a.senior)?' <span class="st ok">可由低保費方案開始</span>':'';}
   if(!a.has1)miss.push('每月開支及儲蓄');if(!a.has2)miss.push('現有保障');if(!a.has3)miss.push('退休期望');
   function pick(r){return '<label class="pick"><input type="checkbox" data-pk="'+r.id+'"'+(r.pick?' checked':'')+'><span>我想先處理</span></label>';}
   function share(r){return r.mo>0&&a.surplus>0?'<span class="fine" style="display:block">約佔每月可動用金額 '+Math.round(r.mo/a.surplus*100)+'%。</span>':'';}
   $('acts').innerHTML=(miss.length?'<p class="note todo no-print">尚未填寫：'+miss.join('、')+'。填寫後清單會更完整。</p>':'')+
-    (top.length?top.map(function(r,i){return '<div class="act mk-cat-'+r.cat+(r.pick?' picked':'')+'"><div class="act-n">'+(i+1)+'</div><div><h3>'+r.title+' '+chip(r.cat)+pick(r)+'</h3><p>'+r.why+share(r)+'</p><p class="how">'+r.how+'</p>'+(r.links.length?'<p class="more">'+r.links.map(function(l){return '<a href="'+l[1]+'" target="_blank" rel="noopener">'+l[0]+' ↗</a>';}).join('')+'</p>':'')+'</div></div>';}).join('')
+    (top.length?top.map(function(r,i){return '<div class="act mk-cat-'+r.cat+(r.pick?' picked':'')+'"><div class="act-n">'+(i+1)+'</div><div><h3>'+r.title+' '+chip(r.cat)+low(r)+pick(r)+'</h3><p>'+r.why+share(r)+'</p><p class="how">'+r.how+'</p>'+(r.links.length?'<p class="more">'+r.links.map(function(l){return '<a href="'+l[1]+'" target="_blank" rel="noopener">'+l[0]+' ↗</a>';}).join('')+'</p>':'')+'</div></div>';}).join('')
       :(miss.length?'':'<p class="note key">四桶金均已達標。建議每年檢視一次，並在結婚、置業、生育或轉工時更新。</p>'));
   $('laterBox').innerHTML=rest.length?'<h3 style="font-size:15px;margin-top:10px;color:var(--mk-deep)">其後可跟進</h3><ul class="later">'+rest.map(function(r){return '<li>'+chip(r.cat)+'<span><b>'+r.title+'</b>'+pick(r)+'</span></li>';}).join('')+'</ul>':'';
   $('b4').innerHTML=[
@@ -956,7 +967,7 @@ function rPlan(a){
     ['退休基石',a.retS,a.has3?'可應付退休所需約 '+Math.round(a.retCov*100)+'%':''],
     ['財富增值',a.weS,a.has4?(a.topHeavy?'地基未穩已投資':'閒置資金 '+money(a.idle)):'']
   ].map(function(x){return '<div><b>'+x[0]+' '+st(x[1])+'</b>'+(x[2]?'<p>'+x[2]+'</p>':'')+'</div>';}).join('');
-  var t=s.mind==='now'?(a.exp?'想隨時可以停工 '+n(s.mon)+' 個月，「底氣金額」為 <b class="num">'+money(a.free)+'</b>'+(a.savF?(a.freeGap>0?'，尚欠 '+money(a.freeGap):'，現有儲蓄已達標'):'')+'。':'')
+  var t=s.mind==='now'?(a.exp?''+(a.calm?'想預備 '+n(s.mon)+' 個月開支作儲備，目標':'想隨時可以停工 '+n(s.mon)+' 個月，「底氣金額」')+'為 <b class="num">'+money(a.free)+'</b>'+(a.savF?(a.freeGap>0?'，尚欠 '+money(a.freeGap):'，現有儲蓄已達標'):'')+'。':'')
     :(a.goals.length?a.goals.map(function(g){return g.name+' '+money(g.amt)+'（'+g.y+' 年後）';}).join('、')+'；每月儲蓄目標約 <b class="num">'+money(a.goalPmt)+'</b>（假設每年回報 '+n(s.gr)+'%）。':'');
   $('talk').innerHTML=t?'<p class="note" style="margin:0"><b>今日談到：</b>'+t+'</p>':'';$('talkCard').hidden=!t;
 }
