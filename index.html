@@ -190,6 +190,10 @@ input[type=range]{width:100%;accent-color:var(--mk-brand);height:28px;margin:2px
 .note.key{padding:10px 14px;border-radius:10px;background:var(--mk-brand-soft);border-left:4px solid var(--mk-brand)}
 .note.bad{padding:10px 14px;border-radius:10px;background:var(--mk-danger-soft);border-left:4px solid var(--mk-danger)}
 .fine{font-size:12.5px;color:var(--mk-muted);margin-top:8px}
+.fine a,.more a{color:var(--mk-brand-ink);font-weight:700}
+.more{font-size:13.5px;margin-top:4px;display:flex;flex-wrap:wrap;gap:4px 14px}
+.cost{margin-top:10px;padding:10px 14px;border-radius:10px;background:var(--mk-bg);font-size:14.5px}
+[hidden]{display:none!important}
 .st{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:1px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
 .st.ok{background:var(--mk-brand-soft);color:var(--mk-brand-ink)}
 .st.warn{background:var(--mk-warn-soft);color:var(--mk-warn)}
@@ -295,7 +299,7 @@ input[type=range]{width:100%;accent-color:var(--mk-brand);height:28px;margin:2px
 @page{size:A4 portrait;margin:12mm}
 @media print{
   body{background:#fff!important;font-size:10.5pt;line-height:1.45}
-  .mk-header,.band,#persona,#p-mind,#p-assess,.btnrow,.no-print{display:none!important}
+  .mk-header,.band,#persona,#p-mind,#p-assess,.btnrow,.no-print,.more{display:none!important}
   #p-plan{display:block!important}
   main{padding:0}.mk-wrap{padding:0;max-width:none}
   .card{border:0;padding:0;margin:0 0 10px;border-radius:0}
@@ -375,10 +379,15 @@ input[type=range]{width:100%;accent-color:var(--mk-brand);height:28px;margin:2px
         <button type="button" class="pill" data-v="tumour">懷疑腫瘤</button>
         <button type="button" class="pill" data-v="disc">椎間盤突出</button>
         <button type="button" class="pill" data-v="cataract">白內障</button>
+        <button type="button" class="pill" data-v="joint" id="jointPill" hidden>膝關節退化</button>
+      </div>
+      <div class="flds" id="cluBox" hidden style="grid-template-columns:minmax(0,280px)">
+        <label class="fld"><span>居住地區所屬的醫院聯網</span><select data-k="clu"><option value="">全港（顯示各聯網範圍）</option><option>港島東</option><option>港島西</option><option>九龍中</option><option>九龍東</option><option>九龍西</option><option>新界東</option><option>新界西</option></select></label>
       </div>
       <div id="wait"></div>
       <p class="note key">醫療保險買的不是奢侈，而是生病時<b>有得選擇</b>：可以早一點知道結果、早一點治療、少痛幾個月。</p>
-      <p class="fine">輪候時間為參考情景，因醫院聯網及病情分流而異；如醫生評估為緊急個案，公立醫院會優先處理。</p>
+      <p class="fine" id="waitSrc"></p>
+      <p class="fine no-print"><a href="https://hospitalinfohk.netlify.app/" target="_blank" rel="noopener">香港醫院指南：查看各醫院專科及輪候時間 ↗</a></p>
     </div>
 
     <!-- A2 Freedom Fund -->
@@ -567,7 +576,7 @@ input[type=range]{width:100%;accent-color:var(--mk-brand);height:28px;margin:2px
 <footer class="mk-footer">
   <p class="dis">本工具只供面談時作理財教育及初步需求分析之用，所有數字均為按輸入資料作出的簡化估算，並不構成任何保險或投資產品的要約、招攬或專業意見。實際保障需要、產品條款及保費，須經詳細財務需要分析後才能確定。投資涉及風險。</p>
   <p class="dis">估算假設：危疾保障參考 3 至 5 年年薪；人壽保障為未償還負債加供養家人開支（養育家庭 10 年，其他 5 年）；退休開支計至 90 歲，強積金按每年回報 4%、通脹 2.5% 推算，並假設繼續按月入供款（上限 $30,000 的 10%，自僱 5%）。</p>
-  <p class="dis">資料來源：公立醫院輪候時間參考醫院管理局公布的專科門診新症及白內障手術輪候數字（2025 至 2026 年），以及業界一般參考情況；私家醫療時間為一般情況，視乎醫院及醫生安排。</p>
+  <p class="dis">資料來源：專科門診新症、白內障及全關節置換手術輪候時間取自醫院管理局開放數據（每季更新）；磁力共振輪候及私家醫療時間為一般參考情況，視乎醫院及醫生安排。私家手術收費、癌症醫療費用及危疾賠償數字取自《個人保險賠償報告》，詳見「理賠數據解讀」。</p>
   <p class="mk-home-link"><a href="https://mkpa.netlify.app/" target="_blank" rel="noopener">MKPA 工具箱：更多實用工具 ↗</a></p>
   <p class="mk-copy">© <span class="mk-year">2026</span> Michael Koo Protection Alliance (MKPA). 版權所有。</p>
 </footer>
@@ -594,13 +603,13 @@ document.querySelectorAll('.mk-print-date').forEach(function(e){e.textContent=d.
 (function(){
 'use strict';
 /* ===== 預設值（分享連結只記同預設唔同嘅設定；唔記客人姓名）===== */
-var DEF={tab:'mind',fam:'single',sp:0,emp:'fixed',work:'desk',mind:'now',cond:'tumour',
+var DEF={tab:'mind',fam:'single',sp:0,emp:'fixed',work:'desk',mind:'now',cond:'tumour',clu:'',
   age:35,inc:40000,exp:15000,mon:6,sav:100000,med:10000,par:1000000,simM:24,
   hinc:70000,mort:18000,hexp:25000,cut:0,
   gr:3,g1:1,g1a:1500000,g1y:5,g2:1,g2a:300000,g2y:3,g3:0,g3a:1000000,g3y:15,g4:1,g4a:5000000,g4y:30,shock:1000000,
   cCo:1,cVh:0,cCi:0,cLi:0,cAc:0,ciAmt:0,liAmt:0,debt:0,sup:0,
   rAge:65,rExp:20000,mpf:300000,inv:0,risk:'bal'};
-var STR={tab:1,fam:1,emp:1,work:1,mind:1,cond:1,risk:1};
+var STR={tab:1,fam:1,emp:1,work:1,mind:1,cond:1,risk:1,clu:1};
 /* 每月供養家人金額嘅預設：跟家庭狀況轉（用家自己改過就唔郁）*/
 function supDef(){return ({single:0,couple:10000,family:20000,grown:5000})[s.fam]+(s.sp?8000:0);}
 var s={},dream=0; /* dream：0 未發生、1 被抽乾、2 有保障（唔記入連結）*/
@@ -614,12 +623,71 @@ var WAIT={
  tumour:[['專科門診首次診症',8,'半緊急新症目標 8 星期內；穩定新症可達數十星期',0.4,'1 至 3 天內'],
          ['磁力共振等影像檢查',65,'非緊急個案約 12 至 18 個月',0.15,'最快 24 小時有報告'],
          ['確診後安排治療',4,'按病情緩急安排',0.5,'數天內開始']],
- disc:[['骨科專科首次診症',34,'穩定新症中位數約 23 至 45 星期',0.4,'數天內'],
+ disc:[['骨科專科首次診症',34,'穩定新症中位數約 23 至 45 星期',0.4,'數天內',{sop:'骨科'}],
        ['磁力共振確定位置',65,'非緊急個案約 12 至 18 個月',0.15,'最快 24 小時有報告'],
        ['安排手術',12,'再排期，期間以止痛及物理治療為主',0.4,'3 天內可做微創手術']],
- cataract:[['眼科專科首次診症',40,'穩定新症中位數約 24 至 70 星期',0.4,'數天內'],
-           ['白內障手術',70,'輪候中位數約 7 至 25 個月',1.5,'約 1 至 2 星期內完成']]
+ cataract:[['眼科專科首次診症',40,'穩定新症中位數約 24 至 70 星期',0.4,'數天內',{sop:'眼科'}],
+           ['白內障手術',70,'輪候中位數約 7 至 25 個月',1.5,'約 1 至 2 星期內完成',{op:'cataract'}]],
+ /* 膝關節退化：只喺讀到醫管局即時數字先顯示（冇後備數字）*/
+ joint:[['骨科專科首次診症',34,'',0.4,'數天內',{sop:'骨科'}],
+        ['全關節置換手術',0,'',2,'約 1 至 2 星期內安排',{op:'joint'}]]
 };
+/* ===== 其他 MKPA 工具嘅數據（讀唔到就用上面嘅後備數字／唔顯示）=====
+   醫管局輪候：經「香港醫院指南」嘅 Netlify Function 轉送醫管局開放數據（每季更新）
+   理賠數字：直接載入「理賠數據解讀」嘅 data.js（window.CLAIMS，每年更新）*/
+var HOSP='https://hospitalinfohk.netlify.app/.netlify/functions/aed?src=',CLAIMS_JS='https://claims-report.netlify.app/data.js';
+var CLU=['港島東','港島西','九龍中','九龍東','九龍西','新界東','新界西'];
+var EXT={sop:null,sopPeriod:'',ops:{},opsPeriod:'',claims:null};
+function num(v){var m=/[\d.]+/.exec(String(v==null?'':v));return m?parseFloat(m[0]):NaN;}
+function ckey(c){return String(c||'').replace(/醫院聯網$/,'');}
+function dstr(v){var m=String(v||'').match(/(\d{4})-?(\d{2})-?(\d{2})/);return m?m[1]+' 年 '+(+m[2])+' 月':'';}
+function getJ(src){return fetch(HOSP+src).then(function(r){if(!r.ok)throw 0;return r.json();});}
+function loadExt(){
+  if(!window.fetch)return;
+  getJ('sopc').then(function(arr){var out={},from='',to='';
+    arr.forEach(function(x){var c=ckey(x.cluster);if(CLU.indexOf(c)<0)return;
+      var o=(out[c]=out[c]||{});o=(o[x.specialty]=o[x.specialty]||{});
+      if(x.Category==='穩定新症 - 中位數'){o.st=num(x.Value);from=x.date_id_from;to=x.date_id_to;}
+      else if(x.Category==='穩定新症 - 最長')o.mx=num(x.Value);});
+    var ok=CLU.some(function(c){return out[c]&&out[c]['骨科']&&out[c]['骨科'].st>0;});
+    if(ok){EXT.sop=out;EXT.sopPeriod=dstr(from)+'至 '+dstr(to);render();}
+  }).catch(function(){});
+  [['cataract','cataract'],['joint','totalJointReplacement']].forEach(function(x){
+    getJ(x[0]).then(function(j){var o={},p='';
+      (j[x[1]+'SurgeryPerformed']||[]).forEach(function(y){var c=ckey(y.cluster),m=num(y.medianWT);if(CLU.indexOf(c)<0||!(m>0))return;
+        o[c]={med:m,p90:num(y['90PctlWT'])};p=dstr(y.periodFrom)+'至 '+dstr(y.periodTo);});
+      if(Object.keys(o).length){EXT.ops[x[0]]=o;EXT.opsPeriod=p;render();}
+    }).catch(function(){});});
+  var sc=document.createElement('script');sc.src=CLAIMS_JS;sc.async=true;
+  sc.onload=function(){var C=window.CLAIMS;if(C&&C.meta&&C.critical&&C.critical[C.meta.latest]){EXT.claims=C;render();}};
+  document.head.appendChild(sc);
+}
+/* 一個步驟嘅公立輪候：有即時數據就用（揀咗聯網用該聯網，冇揀就用各聯網範圍），冇就用後備 */
+function liveStep(x){
+  var L=x[5],src=L&&(L.sop?EXT.sop:EXT.ops[L.op]);if(!src)return null;
+  var get=function(c){var d=src[c];if(!d)return null;d=L.sop?d[L.sop]:d;return d&&((L.sop?d.st:d.med)>0)?d:null;};
+  var unit=L.sop?' 星期':' 個月',k=L.sop?1:4.345,one=s.clu&&get(s.clu);
+  if(one){var v=L.sop?one.st:one.med,mx=L.sop?one.mx:one.p90;
+    return {w:v*k,t:s.clu+'聯網'+(L.sop?'穩定新症':'輪候')+'中位數 '+v+unit+(mx>0?(L.sop?'，最長 '+mx+unit:'；九成病人在 '+mx+unit+'內完成'):'')};}
+  var vs=CLU.map(get).filter(Boolean).map(function(d){return L.sop?d.st:d.med;});if(!vs.length)return null;
+  var lo=Math.min.apply(null,vs),hi=Math.max.apply(null,vs);
+  return {w:vs.reduce(function(a,b){return a+b;},0)/vs.length*k,t:'各聯網'+(L.sop?'穩定新症':'輪候')+'中位數 '+(lo===hi?lo:lo+' 至 '+hi)+unit};
+}
+/* 私家費用參考（理賠數據解讀嘅 costs）*/
+function costLine(cond){
+  var C=EXT.claims&&EXT.claims.costs;if(!C)return '';
+  function bill(name){var r=(C.fullBill2020||[]).filter(function(x){return x[0].indexOf(name)===0;})[0];return r?r[2]+r[3]:0;}
+  if(cond==='tumour'&&C.cancer2019){var lo=1e12,hi=0;C.cancer2019.forEach(function(x){if(x[5]){lo=Math.min(lo,x[5][0]);hi=Math.max(hi,x[5][1]);}});
+    return hi?'主要癌症估計每年醫療費用約 <b class="num">'+money(lo)+'</b> 至 <b class="num">'+money(hi)+'</b>（2019 年資料）。':'';}
+  var b=cond==='disc'?bill('椎板切除'):cond==='cataract'?bill('白內障'):0;
+  return b?'私家醫院'+(cond==='disc'?'脊椎椎板切除手術':'白內障日間手術')+'全單收費約 <b class="num">'+money(b)+'</b>（醫生費連醫院收費，2020 年資料）。':'';
+}
+/* 危疾賠償實況（理賠數據解讀最新一年）*/
+function ciFact(){
+  var C=EXT.claims;if(!C)return '';var y=C.meta.latest,d=C.critical[y];if(!d||!d.n||!d.avg)return '';
+  var mid=((d.male||[])[1]||0)+((d.male||[])[2]||0)+((d.female||[])[1]||0)+((d.female||[])[2]||0);
+  return y+' 年個人保險危疾賠償共 '+d.n.toLocaleString('en-US')+' 宗，平均每宗 <b class="num">'+money(d.avg)+'</b>'+(d.avgAge?'，平均年齡 '+d.avgAge+' 歲':'')+(mid?'，約 '+Math.round(mid/d.n*100)+'% 在 21 至 60 歲':'')+'。';
+}
 var GOALS=[[1,'置業首期'],[2,'結婚'],[3,'子女教育'],[4,'退休']];
 var CAT={med:1,life:2,ci:3,acc:4,save:5,inv:7};
 var CATN={1:'醫療',2:'人壽',3:'危疾',4:'意外',5:'儲蓄／退休',7:'投資'};
@@ -684,9 +752,15 @@ function calc(){
 }
 
 /* ===== 行動建議：按缺口嚴重程度排次序，頭 3 項係優先 ===== */
+var LINKS={'建立個人醫療保障':[['醫保對照','https://hkmedical-insurance.netlify.app/'],['自願醫保保費規劃','https://vhis-rate.netlify.app/']],
+  '為公司醫保加上個人保障':[['醫保對照','https://hkmedical-insurance.netlify.app/'],['自願醫保保費規劃','https://vhis-rate.netlify.app/']],
+  '補足危疾保障':[['醫保對照（危疾）','https://hkmedical-insurance.netlify.app/'],['理賠數據解讀','https://claims-report.netlify.app/']],
+  '補足人壽保障':[['理賠數據解讀','https://claims-report.netlify.app/']],
+  '加強退休儲備':[['積金羅盤','https://mpf-compass.netlify.app/']],
+  '讓閒置資金增值':[['定存息口通','https://bankratehk.netlify.app/'],['積金羅盤','https://mpf-compass.netlify.app/']]};
 function recs(a){
   var L=[],yr=n(s.inc)*12;
-  function add(score,cat,title,why,how){L.push({score:score,cat:cat,title:title,why:why,how:how});}
+  function add(score,cat,title,why,how){L.push({score:score,cat:cat,title:title,why:why,how:how,links:LINKS[title]||[]});}
   if(a.medS==='bad')add(100,CAT.med,'建立個人醫療保障','現時沒有任何住院醫療保障，一旦需要手術或住院，只能輪候公立醫院或動用儲蓄。','可考慮：自願醫保靈活計劃，保證續保至 100 歲，保費可扣稅。');
   else if(a.medS==='warn')add(70,CAT.med,'為公司醫保加上個人保障','公司醫保屬於僱主，保額一般有限，轉工、裁員或退休後便會終止，屆時年紀較大或已有病歷，再投保會較困難。','可考慮：自願醫保高自付額計劃（Top-up），以較低保費補足公司醫保以外的大額開支。');
   if(a.ciS!=='ok')add(a.ciS==='bad'?90:60,CAT.ci,'補足危疾保障','建議保額為 3 至 5 年年薪（'+money(a.ciLo)+' 至 '+money(a.ciHi)+'），現有 '+money(a.ciHave)+'，最少尚欠 '+money(a.ciGap)+'。這筆錢用來代替停工期間的收入。','可考慮：定期危疾（保費較低）或多功能儲蓄危疾（保障與儲蓄兼備）。');
@@ -713,12 +787,17 @@ function script(){
   $('script').innerHTML='<b>按你的情況，值得一起留意</b><ul>'+L.map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul>';
 }
 function rWait(){
-  var d=WAIT[s.cond],pub=0,pri=0;d.forEach(function(x){pub+=x[1];pri+=x[3];});
-  var h='<div class="wrow"><div class="wrow-h"><span>公立輪候</span><span class="num" style="color:var(--mk-danger)">約 '+wk(pub)+'</span></div><div class="wbar pub">'+
+  var hasJ=!!(EXT.ops.joint&&EXT.sop),cond=(s.cond==='joint'&&!hasJ)?'disc':s.cond,live=false;
+  $('jointPill').hidden=!hasJ;$('cluBox').hidden=!EXT.sop;
+  var d=WAIT[cond].map(function(x){var l=liveStep(x);if(l)live=true;return l?[x[0],l.w,l.t,x[3],x[4]]:x;}),pub=0,pri=0;
+  d.forEach(function(x){pub+=x[1];pri+=x[3];});
+  var c=costLine(cond);
+  $('wait').innerHTML='<div class="wrow"><div class="wrow-h"><span>公立輪候</span><span class="num" style="color:var(--mk-danger)">約 '+wk(pub)+'</span></div><div class="wbar pub">'+
     d.map(function(x){return '<i style="width:'+(x[1]/pub*100)+'%" title="'+x[0]+'"></i>';}).join('')+'</div></div>'+
     '<div class="wrow"><div class="wrow-h"><span>私家醫療</span><span class="num" style="color:var(--mk-brand-ink)">約 '+wk(pri)+'</span></div><div class="wbar pri" style="width:'+Math.max(2.5,pri/pub*100)+'%"><i style="width:100%"></i></div></div>'+
-    '<ul class="wsteps">'+d.map(function(x){return '<li><b>'+x[0]+'</b><span class="p1">公立：'+x[2]+'</span><span class="p2">私家：'+x[4]+'</span></li>';}).join('')+'</ul>';
-  $('wait').innerHTML=h;
+    '<ul class="wsteps">'+d.map(function(x){return '<li><b>'+x[0]+'</b><span class="p1">公立：'+x[2]+'</span><span class="p2">私家：'+x[4]+'</span></li>';}).join('')+'</ul>'+
+    (c?'<p class="cost">私家醫療快，但費用不輕：'+c+'</p>':'');
+  $('waitSrc').textContent=(live?'專科門診及手術輪候時間為醫院管理局公布數字（'+(EXT.sopPeriod||EXT.opsPeriod)+'）；其他為一般參考情況。':'輪候時間為參考情景，因醫院聯網及病情分流而異。')+'如醫生評估為緊急個案，公立醫院會優先處理。';
 }
 function rFree(a){
   var pct=a.free>0?Math.min(100,n(s.sav)/a.free*100):100;
@@ -766,6 +845,7 @@ function rDream(a){
   if(!a.goals.length)h='<p class="note">請先在「人生里程碑」揀選目標。</p>';
   else if(dream===1)h+='<p class="note bad">'+money(n(s.shock))+' 的開支，會由最接近的目標開始動用。'+(left>0?'所有目標儲備用盡後，仍欠 <b class="num">'+money(left)+'</b>。':'計劃多年的目標要推遲，甚至放棄。')+'</p>';
   else if(dream===2)h+='<p class="note key">危疾賠償代為支付 '+money(n(s.shock))+'，各個目標的資金原封不動。保險是「夢想守護者」。</p>';
+  if(a.goals.length&&ciFact())h+='<p class="fine">'+ciFact()+'</p>';
   $('dream').className='dream'+cls;$('dream').innerHTML=h;
 }
 function pyramid(a){
@@ -796,7 +876,7 @@ function rAssess(a){
   var acc={ok:'已有個人意外保障。',warn:'未有個人意外保障。',bad:'工作性質受傷風險較高，但未有個人意外保障。'}[a.acS];
   $('r2').innerHTML=
     '<li>'+chip(1)+'<span>'+st(a.medS,ST_TXT[a.medS])+' '+med+'</span></li>'+
-    '<li>'+chip(3)+'<span>'+st(a.ciS,ST_TXT[a.ciS])+' 建議 3 至 5 年年薪：<b class="num">'+money(a.ciLo)+'</b> 至 <b class="num">'+money(a.ciHi)+'</b>；現有 <b class="num">'+money(a.ciHave)+'</b>'+(a.ciGap>0?'，最少尚欠 <b class="num">'+money(a.ciGap)+'</b>。':'。')+'</span></li>'+
+    '<li>'+chip(3)+'<span>'+st(a.ciS,ST_TXT[a.ciS])+' 建議 3 至 5 年年薪：<b class="num">'+money(a.ciLo)+'</b> 至 <b class="num">'+money(a.ciHi)+'</b>；現有 <b class="num">'+money(a.ciHave)+'</b>'+(a.ciGap>0?'，最少尚欠 <b class="num">'+money(a.ciGap)+'</b>。':'。')+(ciFact()?'<br><span class="fine">'+ciFact()+'</span>':'')+'</span></li>'+
     '<li>'+chip(2)+'<span>'+st(a.liS,ST_TXT[a.liS])+' 負債加 '+a.liYrs+' 年供養家人開支：<b class="num">'+money(a.liNeed)+'</b>；現有 <b class="num">'+money(a.liHave)+'</b>'+(a.liGap>0?'，尚欠 <b class="num">'+money(a.liGap)+'</b>。':'。')+'</span></li>'+
     '<li>'+chip(4)+'<span>'+st(a.acS,ST_TXT[a.acS])+' '+acc+'</span></li>';
   $('r3').innerHTML='距離退休還有 <b class="num">'+a.yrs+'</b> 年。退休後 '+a.retYears+' 年（至 90 歲）約需 <b class="num">'+money(a.retNeed)+'</b>；預計強積金屆時約值 <b class="num">'+money(a.mpfPV)+'</b>（今日幣值），可應付約 <b class="num">'+Math.round(a.retCov*100)+'%</b>。'+(a.retGap>0?'缺口 <b class="num">'+money(a.retGap)+'</b>，由現在開始每月約需額外儲蓄 <b class="num">'+money(a.retPmt)+'</b>。':'');
@@ -808,7 +888,7 @@ function rPlan(a){
   $('tags').innerHTML=[F[s.fam]+(s.sp?'・供養父母':''),E[s.emp],W[s.work],(n(s.age)||35)+' 歲'].map(function(t){return '<span class="tag">'+t+'</span>';}).join('');
   $('sum').innerHTML=[['每月收入',money(n(s.inc))],['每月開支',money(n(s.exp))],['流動儲蓄',money(n(s.sav))],['強積金結餘',money(n(s.mpf))],['已投資資產',money(a.inv)]].map(function(x){return '<div><span>'+x[0]+'</span><b>'+x[1]+'</b></div>';}).join('');
   var L=recs(a),top=L.slice(0,3),rest=L.slice(3);
-  $('acts').innerHTML=top.length?top.map(function(r,i){return '<div class="act mk-cat-'+r.cat+'"><div class="act-n">'+(i+1)+'</div><div><h3>'+r.title+' '+chip(r.cat)+'</h3><p>'+r.why+'</p><p class="how">'+r.how+'</p></div></div>';}).join(''):'<p class="note key">四桶金均已達標。建議每年檢視一次，並在結婚、置業、生育或轉工時更新。</p>';
+  $('acts').innerHTML=top.length?top.map(function(r,i){return '<div class="act mk-cat-'+r.cat+'"><div class="act-n">'+(i+1)+'</div><div><h3>'+r.title+' '+chip(r.cat)+'</h3><p>'+r.why+'</p><p class="how">'+r.how+'</p>'+(r.links.length?'<p class="more">'+r.links.map(function(l){return '<a href="'+l[1]+'" target="_blank" rel="noopener">'+l[0]+' ↗</a>';}).join('')+'</p>':'')+'</div></div>';}).join(''):'<p class="note key">四桶金均已達標。建議每年檢視一次，並在結婚、置業、生育或轉工時更新。</p>';
   $('laterBox').innerHTML=rest.length?'<h3 style="font-size:15px;margin-top:10px;color:var(--mk-deep)">其後可跟進</h3><ul class="later">'+rest.map(function(r){return '<li>'+chip(r.cat)+'<span><b>'+r.title+'</b>：'+r.why+'</span></li>';}).join('')+'</ul>':'';
   $('b4').innerHTML=[
     ['第一桶 應急錢',a.emS,'可應付 '+a.emM.toFixed(1)+' 個月開支'+(a.emGap>0?'，距 '+a.emT+' 個月目標尚欠 '+money(a.emGap):'')],
@@ -840,8 +920,10 @@ function load(){
     for(var k in d)if(k in DEF){ /* 只收預設入面有嘅設定，文字設定要係已知選項 */
       if(STR[k]){if(typeof d[k]==='string'&&/^[a-z]{2,10}$/.test(d[k]))s[k]=d[k];}
       else if(typeof d[k]==='number'&&isFinite(d[k]))s[k]=d[k];}
+    if(typeof d.clu==='string')s.clu=d.clu; /* 聯網名係中文，下面會對白名單 */
   }catch(e){}
   if(!WAIT[s.cond])s.cond=DEF.cond;
+  if(s.clu&&CLU.indexOf(s.clu)<0)s.clu='';
   ['tab','fam','emp','work','mind','risk'].forEach(function(k){if(!document.querySelector('[data-v="'+s[k]+'"],[data-tab="'+s[k]+'"],option[value="'+s[k]+'"]'))s[k]=DEF[k];});
 }
 var goalsBuilt=false;
@@ -878,7 +960,7 @@ $('playS').onclick=function(){clearInterval(timer);s.simM=0;render();
   timer=setInterval(function(){if(s.simM>=24){clearInterval(timer);return;}s.simM++;render();},220);};
 window.addEventListener('hashchange',function(){reset();load();render(true);});
 
-load();render(true);
+load();render(true);loadExt();
 })();
 </script>
 
