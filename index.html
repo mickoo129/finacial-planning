@@ -414,13 +414,14 @@ body[data-tab="plan"] #p-plan,body[data-tab="test"] #p-test,body[data-tab="bk"] 
 .bar.inc{background:var(--mk-brand)}
 .bar.brk{background:var(--mk-danger);background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.28) 0 5px,transparent 5px 10px)}
 .bar.fix{background:var(--mk-brand-ink);background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.22) 0 5px,transparent 5px 10px)}
-.goalrow .lane-t{height:46px;background:none}
-.gm{position:absolute;top:0;transform:translateX(-50%);text-align:center;white-space:nowrap;font-size:12px}
-.gm i{display:block;width:14px;height:14px;margin:0 auto;border-radius:50%;background:var(--mk-cat-5);border:3px solid #fff;box-shadow:0 0 0 1px var(--mk-cat-5)}
-.gm b{display:block;font-weight:700;color:var(--mk-cat-5-ink);margin-top:2px}
-.gm.alt b{margin-top:16px}
-.gm.brk i{background:var(--mk-danger);box-shadow:0 0 0 1px var(--mk-danger)}.gm.brk b{color:var(--mk-danger);text-decoration:line-through}
-.gm.fix i{background:var(--mk-brand-ink);box-shadow:0 0 0 1px var(--mk-brand-ink)}.gm.fix b{color:var(--mk-brand-ink)}
+.goalrow .lane-t{background:none;min-height:22px}
+.gm{position:absolute;z-index:2;width:20px;height:20px;margin-left:-10px;border-radius:50%;background:var(--mk-cat-5-ink);color:#fff;font:700 12px/20px var(--mk-num);text-align:center}
+.gm.brk{background:var(--mk-danger)}.gm.fix{background:var(--mk-brand-ink)}
+.glg{display:flex;flex-wrap:wrap;gap:6px 8px}
+.gl{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--mk-line);border-radius:999px;padding:1px 10px 1px 3px;font-size:13px;background:#fff}
+.gl i{font:700 11.5px/18px var(--mk-num);font-style:normal;width:18px;height:18px;border-radius:50%;background:var(--mk-cat-5-ink);color:#fff;text-align:center;flex:none}
+.gl.brk{color:var(--mk-danger);border-color:#F1B9B9;text-decoration:line-through}.gl.brk i{background:var(--mk-danger)}
+.gl.fix{color:var(--mk-brand-ink)}.gl.fix i{background:var(--mk-brand-ink)}
 .axis .lane-t{height:34px;background:none;border-top:2px solid var(--mk-line);border-radius:0}
 .tk{position:absolute;top:4px;font:600 12.5px var(--mk-num);color:var(--mk-muted);white-space:nowrap}
 .tk:nth-child(2){transform:translateX(-50%)}.tk.r{transform:translateX(-100%)}
@@ -436,7 +437,7 @@ body[data-tab="plan"] #p-plan,body[data-tab="test"] #p-test,body[data-tab="bk"] 
 @media (max-width:600px){.lane{grid-template-columns:78px minmax(0,1fr);gap:6px}.lane-l{font-size:12px}.gm{font-size:11px}.tk{font-size:11px}}
 @media print{
   #p-plan,#p-test,#p-bk{display:none!important}
-  .lane{margin-top:4px}.lane-t{height:14px}.lane-l{font-size:8.5pt}.goalrow .lane-t{height:34px}
+  .lane{margin-top:4px}.lane-t{height:14px}.lane-l{font-size:8.5pt}.gm{width:14px;height:14px;margin-left:-7px;font-size:8pt;line-height:14px}.gl{font-size:8.5pt}
   .want{font-size:10pt;padding:4px 0}
 }
 </style>
@@ -803,8 +804,14 @@ function timeline(a,withEv){
       return '<i class="bar '+(prot?'fix':'brk')+'" style="left:'+x(f)+'%;width:'+Math.max(1.2,x(t)-x(f))+'%"></i>';}).join('');
     return '<div class="lane"><span class="lane-l">'+l.label+'</span><div class="lane-t">'+base+br+'</div></div>';}).join('');
   var gs=a.goals.filter(function(g){return g.age>=a.age&&g.age<=end;}).sort(function(p,q){return p.age-q.age;});
-  var grow=gs.length?'<div class="lane goalrow"><span class="lane-l">想做的事</span><div class="lane-t">'+gs.map(function(g,i){var h=I.hit(g);
-    return '<span class="gm'+(h?(prot?' fix':' brk'):'')+(i%2?' alt':'')+'" style="left:'+x(g.age)+'%"><i></i><b>'+esc(g.name)+'</b></span>';}).join('')+'</div></div>':'';
+  /* 想做的事：時間線上只放編號圓點（同一年齡或者太近就向下疊），名稱放喺下面嘅清單，咁幾多個都唔會重疊 */
+  var rowsX=[],grow='';
+  if(gs.length){
+    var dots=gs.map(function(g,i){var px=x(g.age),r=0;while(rowsX[r]!=null&&px-rowsX[r]<3.2)r++;rowsX[r]=px;
+      var h=I.hit(g);g._c=h?(prot?' fix':' brk'):'';
+      return '<span class="gm'+g._c+'" style="left:'+px+'%;top:'+(r*24)+'px">'+(i+1)+'</span>';}).join('');
+    grow='<div class="lane goalrow"><span class="lane-l">想做的事</span><div class="lane-t" style="height:'+(rowsX.length*24)+'px">'+dots+'</div></div>'+
+      '<div class="lane"><span class="lane-l"></span><div class="glg">'+gs.map(function(g,i){return '<span class="gl'+g._c+'"><i>'+(i+1)+'</i>'+g.age+' 歲 '+esc(g.name)+'</span>';}).join('')+'</div></div>';}
   var ticks=[[a.age,a.age+' 歲'],[a.rAge,a.rAge+' 歲停止工作'],[end,end+' 歲']];
   var axis='<div class="lane axis"><span class="lane-l"></span><div class="lane-t">'+ticks.map(function(t,i){return '<span class="tk'+(i===2?' r':'')+'" style="left:'+x(t[0])+'%">'+t[1]+'</span>';}).join('')+
     (withEv&&a.ev&&EV[a.ev].age?'<span class="evm" style="left:'+x(a.E)+'%"><b>'+a.E+' 歲</b></span>':'')+'</div></div>';
