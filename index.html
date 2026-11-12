@@ -483,7 +483,15 @@ body[data-tab="plan"] #p-plan,body[data-tab="test"] #p-test,body[data-tab="bk"] 
 .itin.chk{border:0;padding:0;min-height:0;background:none;color:var(--mk-ink);font-size:14px}
 .itin.chk input{width:18px;height:18px;accent-color:var(--mk-brand)}
 .want .num{font-size:15px}
-@media print{.it{padding:4px 8px}.it p{font-size:9pt!important}.its{gap:4px}.how table{font-size:9pt}}
+@media print{ /* 總結要兩頁內印完 */
+  .it{padding:3px 8px;break-inside:avoid}.it p{font-size:8.5pt!important;margin-top:1px!important;line-height:1.35}
+  .its{gap:4px;grid-template-columns:1fr 1fr;margin-top:4px}
+  .how{margin-top:4px}.how table{font-size:8.5pt}.how td{padding:2px 0}.how td small{font-size:8pt;display:inline;margin-left:6px}
+  #p-sum .lead,#fcCard .pill[aria-pressed="false"]{display:none!important}
+  #p-sum .pyr svg{max-width:170px}
+  .fdet p,.combo p,.combo li{font-size:9pt!important;line-height:1.4}.combo{gap:6px}.combo h3{font-size:10pt}
+  .mk-ecard{margin-top:8px;padding:8px 12px}.mk-footer p{font-size:7.5pt;line-height:1.35;margin:3px 0}
+}
 </style>
 </head>
 <body data-tab="plan">
@@ -642,7 +650,6 @@ body[data-tab="plan"] #p-plan,body[data-tab="test"] #p-test,body[data-tab="bk"] 
     <button type="button" class="mk-print-btn" onclick="window.print()">列印<span class="mk-long"> / 存 PDF</span></button>
     <button type="button" class="btn ghost" id="resetAll">重設全部資料</button>
   </div>
-  <p class="fine no-print" style="margin:0 0 8px">提示：分享連結會包含以上金額及選項（不含姓名），傳送前請先確認客人同意。</p>
 </section>
 
 <div class="mk-ecard">
