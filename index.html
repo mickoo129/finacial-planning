@@ -539,6 +539,41 @@ body[data-tab="plan"] #p-plan,body[data-tab="test"] #p-test,body[data-tab="bk"] 
   .attn li,.sumline{font-size:9.5pt;line-height:1.45}#sumAttnCard{padding:6px 10px!important;border:1px solid #F1D9A6!important}
   #p-sum .tline{margin-top:4px}
 }
+
+/* ===== 2026-11 第七版：所有事放同一條時間線、每件事一隻色，下面一個表對照 ===== */
+.evp{--c:var(--mk-cat-7)}
+.evp[aria-pressed="true"]{background:#fff;border-color:var(--c);color:var(--mk-ink);box-shadow:inset 0 0 0 1px var(--c)}
+.evp[aria-pressed="false"]{opacity:.6}.evp[aria-pressed="false"] .mk-dot{background:#C8CDCF}
+.evp .mk-dot{margin-right:6px}
+.bar.brk.ev-ill{--c:var(--mk-cat-3)}.bar.brk.ev-acc{--c:var(--mk-cat-4)}.bar.brk.ev-job{--c:var(--mk-cat-8)}.bar.brk.ev-die{--c:var(--mk-cat-2)}.bar.brk.ev-long{--c:var(--mk-cat-5)}
+.bar.brk[class*="ev-"]{background:var(--c);background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.3) 0 5px,transparent 5px 10px)}
+.evm.ev-op{--c:var(--mk-cat-1-ink)}.evm.ev-ill{--c:var(--mk-cat-3-ink)}.evm.ev-acc{--c:var(--mk-cat-4-ink)}.evm.ev-job{--c:var(--mk-cat-8-ink)}.evm.ev-die{--c:var(--mk-cat-2-ink)}
+.evm[class*="ev-"]{border-left-color:var(--c)}.evm[class*="ev-"] b{color:var(--c)}
+.evlg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px;font-size:13px;color:var(--mk-muted)}
+.evlg span{display:inline-flex;align-items:center;gap:6px}.evlg i{display:inline-block;width:16px;height:8px;border-radius:3px;background:var(--c)}
+.ertbl{margin-top:14px;border-top:2px solid var(--mk-deep)}
+.er{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1.35fr) minmax(0,1.25fr) minmax(0,1.35fr);gap:14px;padding:12px 4px 12px 12px;border-bottom:1px solid var(--mk-line);border-left:4px solid var(--c);font-size:14.5px;line-height:1.55}
+.er-hd{border-left:4px solid transparent;font-size:12.5px;font-weight:700;color:var(--mk-muted);padding-top:8px;padding-bottom:8px}
+.er-n b{display:flex;align-items:center;gap:7px;font-size:16px;color:var(--ci)}
+.er-n .evset{margin-top:6px;font-size:13.5px}
+.er-l{display:none}
+.er p{margin:0}
+.er-amt{display:block;font:700 22px var(--mk-num);color:var(--ci);line-height:1.2}
+.er-i{margin-top:4px!important;font-size:13.5px;color:var(--mk-ink)}
+.er-hl{color:var(--ci)}
+.er .how{margin-top:4px}.er .how .rcp{font-size:13px}
+.er-s select{width:100%;height:40px;border:1px solid var(--mk-line);border-radius:8px;background:#fff;padding:0 8px;font:500 14.5px var(--mk-sans);color:var(--mk-ink);outline:0;box-shadow:none}
+.er-s select:focus{border-color:var(--mk-brand)}
+.er-s .itin{display:flex;flex-wrap:wrap;margin-top:8px;font-size:13px;color:var(--mk-ink)}
+.er-s .itin input[type=text]{width:140px;height:36px;border:1px solid var(--mk-line);border-radius:8px;padding:0 8px;font:600 15px var(--mk-num);color:var(--mk-ink);outline:0;box-shadow:none;background:#fff}
+.er-s .itin input[type=text]:focus{border-color:var(--mk-brand)}
+.er-r{margin-top:6px!important;font-size:13px;color:var(--mk-muted)}
+.er-s .note{margin-top:6px;padding:6px 10px;font-size:13.5px}
+@media (max-width:899px){
+  .er{grid-template-columns:1fr;gap:8px}.er-hd{display:none}
+  .er-l{display:block;font-size:12px;font-weight:700;color:var(--mk-muted)}
+}
+#opBox{margin-top:16px}
 </style>
 </head>
 <body data-tab="plan">
@@ -616,12 +651,12 @@ body[data-tab="plan"] #p-plan,body[data-tab="test"] #p-test,body[data-tab="bk"] 
 <section class="panel" id="p-test">
   <div class="card">
     <h2>如果計劃中途遇上這些事？</h2>
-    <p class="lead">揀一件或幾件事。每件事會分開看：<b class="hl">有多常發生、需要多少錢、對你的計劃有甚麼影響</b>，以及這筆錢打算從哪裡來。</p>
+    <p class="lead">以下是一般人一生中可能遇到的事，<b class="hl">每件事一種顏色</b>，標在你的時間線上；下面的表逐件對照有多常發生、需要多少錢，以及這筆錢打算從哪裡來。不想看的可以在這裡關掉。</p>
     <div class="pills" id="evPills" style="margin-top:10px"></div>
     <div id="tl2"></div>
-    <div id="evCards"></div>
-    <div id="opHold" hidden>
-    <div id="opBox">
+    <div class="ertbl" id="evTbl"></div>
+    <div id="opBox" class="opw" hidden>
+      <h3 class="sub">要做手術：公立與私家要等多久</h3>
       <div class="pills" data-set="cond">
         <button type="button" class="pill" data-v="cataract">白內障</button>
         <button type="button" class="pill" data-v="joint" id="jointPill" hidden>膝關節退化</button>
@@ -633,7 +668,6 @@ body[data-tab="plan"] #p-plan,body[data-tab="test"] #p-test,body[data-tab="bk"] 
       </div>
       <div id="wait"></div>
       <p class="fine" id="waitSrc"></p>
-    </div>
     </div>
     <div class="btnrow nav"><button type="button" class="btn ghost" data-go="plan">← 我的計劃</button><button type="button" class="btn" data-go="bk">下一步：四桶金 →</button></div>
   </div>
@@ -734,11 +768,11 @@ document.querySelectorAll('.mk-print-date').forEach(function(e){e.textContent=d.
 <script>
 (function(){
 'use strict';
-/* ===== 概念（第六版）=====
+/* ===== 概念（第七版）=====
    由客人「想過點嘅人生」畫時間線 → 壓力測試（可以同時幾件事）睇邊段受影響、問「筆錢從邊度嚟」→ 四桶金按計劃計出每桶要幾多、已有幾多。
    分享連結只記同預設唔同嘅設定；唔記客人姓名。*/
 var DEF={tab:'plan',age:0,rAge:65,lv:'',lvAmt:0,inc:0,dp:'',kAge:-1,pAge:0,fam:0,debt:0,emp:'fixed',job:'office',gl:[],
-  e_op:0,e_ill:0,e_acc:0,e_job:0,e_die:0,e_long:0,e_infl:0,          /* 揀咗邊幾件事 */
+  e_op:1,e_ill:1,e_acc:1,e_job:1,e_die:1,e_long:1,e_infl:1,          /* 揀咗邊幾件事 */
   g_op:0,g_ill:0,g_acc:0,g_job:0,g_die:0,d_ill:24,d_acc:6,d_job:6,   /* 幾歲發生、停工幾多個月 */
   s_op:0,s_ill:0,s_acc:0,s_job:0,s_die:0,s_long:0,s_infl:0,          /* 筆錢從邊度嚟：1 借、2 自己儲蓄、3 保險／已有安排、4 未想過 */
   h_em:0,h_ci:0,h_li:0,h_ac:0,h_sv:0,hv:'',                                 /* 已有：金額／有冇 */
@@ -822,8 +856,10 @@ var GPRE=['置業或換樓','結婚','子女升學','海外升學','移民','創
 var JOBS=[['office','辦公室文職'],['prof','專業人士（會計、法律、工程、資訊科技等）'],['mgr','管理層'],['sales','銷售、地產、保險'],['retail','零售、餐飲及服務'],['tech','技術及維修'],['build','建築及體力工作'],['drive','運輸及駕駛'],['gov','公務員及紀律部隊'],['medic','醫護'],['edu','教育'],['free','自由工作、創作'],['home','家庭主婦／主夫'],['ret','已退休']];
 var RISKY={tech:1,build:1,drive:1};
 /* 壓力測試嘅事：it = 應付呢件事嘅支撐；g = 可以揀幾歲發生；d = 可以揀停工幾多個月 */
-var EV={op:{n:'要做手術',it:['med'],g:1},ill:{n:'大病要停工',it:['em','med','ci'],g:1,d:[6,12,24,36]},acc:{n:'意外受傷要停工',it:['em','ac'],g:1,d:[3,6,12]},job:{n:'失去工作',it:['em'],g:1,d:[3,6,12]},
-  die:{n:'比預期早離開',it:['li'],g:1},long:{n:'活到 100 歲',it:['an','mpf']},infl:{n:'物價不斷上升',it:['sv','inv']}};
+var EV={op:{n:'要做手術',it:['med'],g:1,c:1},ill:{n:'大病要停工',it:['em','med','ci'],g:1,d:[6,12,24,36],c:3},acc:{n:'意外受傷要停工',it:['em','ac'],g:1,d:[3,6,12],c:4},job:{n:'失去工作',it:['em'],g:1,d:[3,6,12],c:8},
+  die:{n:'比預期早離開',it:['li'],g:1,c:2},long:{n:'活到 100 歲',it:['an','mpf'],c:5},infl:{n:'物價不斷上升',it:['sv','inv'],c:7}};
+/* 預設發生年齡：按工作年期分開擺，唔會疊埋一齊；早離開預設今日 */
+var EOFF={job:.15,acc:.35,ill:.55};
 var EVK=['op','ill','acc','job','die','long','infl'],Q1=['op','ill','acc','job','die'],Q2=['long','infl'];
 var SRC1={1:'向銀行、家人或朋友借',2:'用自己的儲蓄',3:'由保險賠償',4:'未想過'},SRC2={2:'強積金及自己的儲蓄',1:'靠子女或家人',3:'年金等每月固定收入',4:'未想過'};
 var HVS={em:'應急現金',med:'醫療',ci:'危疾',ac:'意外',li:'人壽',mpf:'強積金',an:'年金',sv:'儲蓄計劃',inv:'投資'};
@@ -882,7 +918,8 @@ function calc(){
   a.T={em:a.unstable?a.emHi:a.emLo,ci:a.inc?a.ciLo:a.ciEst,li:a.liNeed,ac:a.lv*6,sv:a.gCost};
   /* 壓力測試：每件事分開計，唔會將唔同時間嘅事加埋 */
   a.evs=EVK.filter(function(k){return s['e_'+k];}).map(function(k){
-    var d=EV[k],E=d.g?Math.min(k==='die'?89:Math.max(age,a.rAge-1),Math.max(age,n(s['g_'+k])||(k==='die'?age:Math.min(age+10,a.rAge-1)))):0,m=d.d?(d.d.indexOf(s['d_'+k])>=0?s['d_'+k]:d.d[1]):0;
+    var d=EV[k],cap=k==='die'||k==='op'?89:Math.max(age,a.rAge-1),def=k==='die'?age:k==='op'?age+Math.max(5,Math.round(a.workY*.8)):age+Math.max(1,Math.round(a.workY*EOFF[k]));
+    var E=d.g?Math.min(cap,Math.max(age,n(s['g_'+k])||Math.min(cap,def))):0,m=d.d?(d.d.indexOf(s['d_'+k])>=0?s['d_'+k]:d.d[1]):0;
     var o={k:k,E:E,m:m,rows:[],cost:0,tot:'合共'};
     function r(l,dt,v){o.rows.push([l,dt,v]);}
     if(k==='op'){var b=opBill();if(b)r('私家醫院手術全單收費',{cataract:'白內障日間手術',disc:'脊椎椎板切除手術'}[s.cond]+'，醫生費連醫院收費（2020 年資料）',b);o.tot='私家醫院約';}
@@ -937,15 +974,14 @@ function lanes(a){
 }
 /* 揀咗嘅事加埋一齊：邊啲時段受影響、時間軸終點、標記 */
 function impact(a){
-  var B={},end=90,cut=null,marks=[];
-  function add(k,f,t){(B[k]=B[k]||[]).push([f,t]);}
-  a.evs.forEach(function(o){var E=o.E;
-    if(o.k==='ill'||o.k==='acc'||o.k==='job'){['inc','live','sp','kids','par'].forEach(function(x){add(x,E,E+o.m/12);});marks.push([E,{ill:'大病',acc:'意外',job:'失業'}[o.k]]);}
-    if(o.k==='op')marks.push([E,'手術']);
-    if(o.k==='die'){add('inc',E,a.rAge);add('sp',E,200);add('kids',E,200);add('par',E,200);cut=E;marks.push([E,'離開']);}
-    if(o.k==='long'){end=100;add('ret',90,100);}
-    if(o.k==='infl')add('ret',a.rAge,90);});
-  return {B:B,end:end,cut:cut,marks:marks,delay:0};
+  var B={},end=90,marks=[];
+  function add(l,f,t,k){(B[l]=B[l]||[]).push([f,t,k]);}
+  a.evs.forEach(function(o){var E=o.E,k=o.k;
+    if(k==='ill'||k==='acc'||k==='job'){['inc','live','sp','kids','par'].forEach(function(x){add(x,E,E+o.m/12,k);});marks.push([E,{ill:'大病',acc:'意外',job:'失業'}[k],k]);}
+    if(k==='op')marks.push([E,'手術',k]);
+    if(k==='die'){['sp','kids','par'].forEach(function(x){add(x,E,200,k);});marks.push([E,'離開',k]);}
+    if(k==='long'){end=100;add('ret',90,100,k);}});
+  return {B:B,end:end,cut:null,marks:marks,delay:0};
 }
 function timeline(a,withEv){
   if(!a.ok)return '<p class="note todo">填寫年齡，便會畫出你的時間線。</p>';
@@ -958,7 +994,7 @@ function timeline(a,withEv){
     if(dl&&l.k==='inc')ext='<i class="bar ext" style="left:'+x(a.rAge)+'%;width:'+(x(a.rAge+dl)-x(a.rAge))+'%"></i>';
     if(dl&&l.k==='ret')ext='<i class="bar brk" style="left:'+x(a.rAge)+'%;width:'+(x(a.rAge+dl)-x(a.rAge))+'%"></i>';
     var br=(I.B[l.k]||[]).map(function(b){var f=Math.max(b[0],l.from),t=Math.min(b[1],to);if(t<=f)return '';
-      return '<i class="bar brk" style="left:'+x(f)+'%;width:'+Math.max(1.2,x(t)-x(f))+'%"></i>';}).join('');
+      return '<i class="bar brk ev-'+b[2]+'" style="left:'+x(f)+'%;width:'+Math.max(1.2,x(t)-x(f))+'%"></i>';}).join('');
     return '<div class="lane"><span class="lane-l">'+l.label+'</span><div class="lane-t">'+base+br+ext+'</div></div>';}).join('');
   /* 想做的事：時間線上只放編號圓點（同一年齡或者太近就向下疊），名稱放喺下面嘅清單 */
   var gs=a.goals.filter(function(g){return g.age>=a.age&&g.age<=end;}).sort(function(p,q){return p.age-q.age;}),rowsX=[],grow='';
@@ -971,7 +1007,7 @@ function timeline(a,withEv){
   var ticks=[[a.age,a.age+' 歲'],[a.rAge,a.rAge+' 歲停止工作'],[end,end+' 歲']];
   var mk=I.marks.slice().sort(function(p,q){return p[0]-q[0];}),h=34+(mk.length?mk.length*16:0);
   var axis='<div class="lane axis"><span class="lane-l"></span><div class="lane-t" style="height:'+h+'px">'+ticks.map(function(t,i){return '<span class="tk'+(i===2?' r':'')+'" style="left:'+x(t[0])+'%">'+t[1]+'</span>';}).join('')+
-    mk.map(function(m,i){return '<span class="evm" style="left:'+x(m[0])+'%"><b style="bottom:'+((mk.length-1-i)*16-2)+'px">'+m[0]+' 歲 '+m[1]+'</b></span>';}).join('')+'</div></div>';
+    mk.map(function(m,i){return '<span class="evm ev-'+m[2]+'" style="left:'+x(m[0])+'%"><b style="bottom:'+((mk.length-1-i)*16-2)+'px">'+m[0]+' 歲 '+m[1]+'</b></span>';}).join('')+'</div></div>';
   return '<div class="tline">'+rows+grow+axis+'</div>';
 }
 function engine(a,open){
@@ -1029,7 +1065,7 @@ function rGoals(){ /* 清單只喺增減時重畫，避免打字時跳走 */
 function durTxt(m){return m>=12?(m/12)+' 年':m+' 個月';}
 function yrsTxt(y){return y<1?Math.max(1,Math.round(y*12))+' 個月':(Math.round(y*10)/10)+' 年';}
 /* 有多常發生：用「理賠數據解讀」嘅數字；讀唔到就只講概念 */
-function facts(k,a){
+function facts(k,a,one){
   var C=EXT.claims,y=C&&C.meta&&C.meta.latest,H=C&&C.hk,f=[];
   if(k==='ill'){if(H&&H.cancerRisk)f.push('香港<b class="hl">'+H.cancerRisk.men+'、'+H.cancerRisk.women+'</b>，一生中會患上癌症。');
     var c=ciFact();if(c)f.push(c);
@@ -1052,9 +1088,10 @@ function facts(k,a){
     f.push('計劃原本只計到 90 歲。');}
   if(k==='infl')f.push('這不是會不會發生，而是一定會發生。以每年 2.5% 計，<b class="hl">物價大約 28 年便會翻一倍</b>。');
   if(k==='op'){var hb=H&&H.hospByAge2025,g=hb&&hb.filter(function(x){var p=x[0].split('-');return a.ok&&(p[1]?a.age>=+p[0]&&a.age<=+p[1]:a.age>=parseInt(p[0],10));})[0];
+    if(H&&H.uncovered)f.push('約 <b class="hl">'+H.uncovered.pct+'% 香港人</b>沒有僱主醫療福利，亦沒有自己買醫療保險，入住私家醫院須全數自付。');
     if(g)f.push('香港 '+g[0].replace('+',' 歲或以上').replace('-',' 至 ')+(g[0].indexOf('+')<0?' 歲':'')+'人士，一年內住院的約有 <b class="hl">'+g[1].toLocaleString('en-US')+' 人</b>（2025 年）。');
-    if(H&&H.uncovered)f.push('約 '+H.uncovered.pct+'% 香港人沒有僱主醫療福利，亦沒有自己買醫療保險，入住私家醫院須全數自付。');
     if(!f.length)f.push('年紀愈大，需要做手術的機會愈高。');}
+  if(one)return '<p>'+(f[0]||'')+'</p>';
   return '<ul class="fct">'+f.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';
 }
 function receipt(o,a){
@@ -1093,31 +1130,40 @@ function haveLine(o){
     :'<p class="note warnbox">已有約 '+big(o.have)+'，應付這件事<b class="hl r">仍差約 '+big(o.cost-o.have)+'</b>。</p>';
 }
 function rTest(a){
-  $('evPills').innerHTML=EVK.map(function(k){return '<button type="button" class="pill evp" data-ev="'+k+'" aria-pressed="'+!!s['e_'+k]+'">'+EV[k].n+'</button>';}).join('');
-  $('tl2').innerHTML='';
+  $('evPills').innerHTML=EVK.map(function(k){return '<button type="button" class="pill evp" data-ev="'+k+'" aria-pressed="'+!!s['e_'+k]+'" style="--c:var(--mk-cat-'+EV[k].c+')"><i class="mk-dot"></i>'+EV[k].n+'</button>';}).join('');
+  $('tl2').innerHTML=!a.ok?'<p class="note todo">先在「我的計劃」填寫年齡，便會在你的時間線上標出這些事。</p>':a.evs.length?timeline(a,true)+
+    '<div class="evlg">'+a.evs.filter(function(o){return o.k!=='infl';}).map(function(o){return '<span style="--c:var(--mk-cat-'+EV[o.k].c+')"><i></i>'+EV[o.k].n+(EV[o.k].g?'（'+o.E+' 歲）':'')+'</span>';}).join('')+'</div>':'';
   var key=a.ok+'|'+!!a.lv+'|'+a.age+'|'+a.rAge+'|'+a.evs.map(function(o){return o.k+o.ans;}).join(',');
   if(rTest.key!==key){rTest.key=key;
-    var hold=$('opHold');if($('opBox').parentNode!==hold)hold.appendChild($('opBox'));
-    $('evCards').innerHTML=!a.evs.length?'<p class="note">揀上面一件或幾件事開始。</p>':a.evs.map(function(o,i){var k=o.k,d=EV[k],SRC=k==='long'||k==='infl'?SRC2:SRC1;
-      var set=a.ok&&d.g?'<div class="evset"><label>發生在 <input type="number" data-k="g_'+k+'" min="'+a.age+'" max="'+(k==='die'?89:a.rAge-1)+'" value="'+o.E+'" inputmode="numeric"> 歲</label>'+
-        (d.d?'<label>停工 <select data-k="d_'+k+'">'+d.d.map(function(m){return '<option value="'+m+'"'+(m===o.m?' selected':'')+'>'+durTxt(m)+'</option>';}).join('')+'</select></label>':'')+'</div>':'';
-      return '<div class="evc" id="evc-'+k+'"><div class="evc-h"><h3>'+d.n+'</h3>'+set+'</div>'+
-        '<div class="evg"><div class="evs"><h4><i>1</i>有多常發生？</h4><div id="evf-'+k+'"></div></div>'+
-        '<div class="evs"><h4><i>2</i>'+(k==='op'?'私家醫院要多少錢？':'需要多少錢？')+'</h4><div id="evr-'+k+'"></div></div>'+
-        '<div class="evs"><h4><i>3</i>對你的計劃有甚麼影響？</h4><div id="evi-'+k+'"></div></div></div>'+
-        (k!=='op'&&a.ok?'<div class="evt" id="evt-'+k+'"></div>':'')+
-        (k==='op'?'<div class="evs opw"><h4>公立與私家要等多久</h4><div id="opSlot"></div></div>':'')+
-        '<div class="evq"><b>'+(k==='long'||k==='infl'?'停止工作之後的生活費，你打算從哪裡來？':'如果真的發生，這筆錢你打算從哪裡來？')+'</b>'+
-        '<div class="pills">'+SRCO[k].map(function(v){return '<button type="button" class="pill" data-src="'+v+'" data-ek="'+k+'" aria-pressed="'+(o.ans===v)+'">'+SRC[v]+'</button>';}).join('')+'</div>'+
-        (o.ans?'<p class="note '+(o.ans===3?'key':'warnbox')+'">'+(SRC===SRC2?ANS2:ANS)[o.ans]+'</p>':'')+
-        (o.hk&&AMT[o.hk]?'<label class="itin"><span>'+HQ[o.hk]+'</span><input type="text" data-m data-k="h_'+o.hk+'" inputmode="numeric" placeholder="可留空"></label>':'')+
-        '<div id="evh-'+k+'"></div></div></div>';}).join('');
-    $$('#evCards [data-k]').forEach(fmtIn);
-    if(a.on.op){$('opSlot').appendChild($('opBox'));}
+    $('evTbl').innerHTML=!a.evs.length?'<p class="note">在上面揀選想看的事。</p>':'<div class="er er-hd"><div>如果……</div><div>有多常發生？</div><div>需要多少錢？</div><div>這筆錢打算從哪裡來？</div></div>'+
+      a.evs.map(function(o){var k=o.k,d=EV[k],SRC=k==='long'||k==='infl'?SRC2:SRC1;
+        var set=a.ok&&d.g?'<div class="evset"><label><input type="number" data-k="g_'+k+'" min="'+a.age+'" max="'+(k==='die'||k==='op'?89:a.rAge-1)+'" value="'+o.E+'" inputmode="numeric"> 歲</label>'+
+          (d.d?'<label>停工 <select data-k="d_'+k+'">'+d.d.map(function(m){return '<option value="'+m+'"'+(m===o.m?' selected':'')+'>'+durTxt(m)+'</option>';}).join('')+'</select></label>':'')+'</div>':'';
+        return '<div class="er" style="--c:var(--mk-cat-'+d.c+');--ci:var(--mk-cat-'+d.c+'-ink)">'+
+          '<div class="er-n"><b><i class="mk-dot"></i>'+d.n+'</b>'+set+'</div>'+
+          '<div class="er-f"><span class="er-l">有多常發生？</span><div id="erf-'+k+'"></div></div>'+
+          '<div class="er-c"><span class="er-l">需要多少錢？</span><div id="era-'+k+'"></div><details class="how"><summary>怎樣計？</summary><div id="err-'+k+'"></div></details></div>'+
+          '<div class="er-s"><span class="er-l">這筆錢打算從哪裡來？</span><select data-k="s_'+k+'"><option value="0">請選擇</option>'+SRCO[k].map(function(v){return '<option value="'+v+'"'+(o.ans===v?' selected':'')+'>'+SRC[v]+'</option>';}).join('')+'</select>'+
+            (o.hk&&AMT[o.hk]?'<label class="itin"><span>'+HQ[o.hk]+'</span><input type="text" data-m data-k="h_'+o.hk+'" inputmode="numeric" placeholder="可留空"></label>':'')+
+            '<div id="erh-'+k+'"></div></div></div>';}).join('');
+    $$('#evTbl [data-k]').forEach(fmtIn);
   }
-  a.evs.forEach(function(o){var k=o.k;$('evf-'+k).innerHTML=facts(k,a);$('evr-'+k).innerHTML=receipt(o,a);$('evi-'+k).innerHTML=effect(o,a);$('evh-'+k).innerHTML=haveLine(o);
-    if($('evt-'+k)){var b=Object.create(a);b.evs=[o];b.hits=o.hits;$('evt-'+k).innerHTML=timeline(b,true)+'<p class="fine tlk"><i></i>紅色：'+(k==='long'?'計劃以外多出來的年期':k==='infl'?'生活費因物價上升而增加的時段':k==='die'?'收入停止、家人失去依靠的時段':'沒有工作收入的時段')+'</p>';}});
-  if(a.on.op)rWait();
+  a.evs.forEach(function(o){var k=o.k;
+    $('erf-'+k).innerHTML=facts(k,a,true);
+    $('era-'+k).innerHTML=(o.cost&&(a.lv||k==='op'||k==='die')?'<b class="er-amt">'+(k==='op'?'私家約 ':'')+(o.cost<1e5?money(o.cost):big(o.cost))+'</b>':'<span class="fine">'+(k==='die'&&!o.rows.length?'暫時沒有人依靠你，亦沒有負債':'揀選生活水平後便會計算')+'</span>')+'<p class="er-i">'+impactLine(o,a)+'</p>';
+    $('err-'+k).innerHTML=receipt(o,a);
+    $('erh-'+k).innerHTML=(o.ans?'<p class="er-r">'+(k==='long'||k==='infl'?ANS2:ANS)[o.ans]+'</p>':'')+haveLine(o);});
+  $('opBox').hidden=!(a.on.op);if(a.on.op)rWait();
+}
+/* 表入面每件事一句影響（短）*/
+function impactLine(o,a){
+  var gn=o.hits.map(function(g){return '「'+esc(g.name)+'」';}).join('、');
+  if(o.k==='ill'||o.k==='acc'||o.k==='job')return '<b class="er-hl">'+durTxt(o.m)+'沒有工作收入</b>，生活費照樣要付。'+(gn?'如果用儲蓄支付，'+gn+'的錢要先拿出來用。':'');
+  if(o.k==='die')return o.rows.length?'家人'+(o.yr?'仍要生活 <b class="er-hl">'+o.yr+' 年</b>':'')+(a.debt?(o.yr?'，':'')+'按揭仍然要供':'')+'。':'';
+  if(o.k==='op')return '公立要等，私家要付錢。分別在於<b class="er-hl">要等多久、有沒有得選擇</b>（見下面）。';
+  if(o.k==='long')return '儲蓄和強積金<b class="er-hl">用一年少一年</b>，計劃原本只計到 90 歲。';
+  if(o.k==='infl')return '到 '+a.rAge+' 歲，今日 '+money(a.rlv)+' 的退休生活，<b class="er-hl">每月要 '+money(a.rlv*(o.f||1))+'</b>；這是退休 '+a.retY+' 年合共要多付的金額。';
+  return '';
 }
 var STT={ok:['ok','足夠'],part:['warn','未足夠'],unk:['unk','已有，未確認是否足夠'],want:['warn','未有安排'],na:['na','未填'],none:['na','暫時不需要']};
 var BST={ok:'足夠',warn:'未足夠／未有安排',unk:'已有，未確認',na:'未填'};
@@ -1223,7 +1269,7 @@ function rSum(a){
       var SRC=o.k==='long'||o.k==='infl'?SRC2:SRC1,res=o.ans?SRC[o.ans]:'<span class="fine">未回答</span>';
       if(o.have&&o.cost)res+='<br>'+(o.have>=o.cost?st('ok','足以應付'):st('warn','仍差 '+big(o.cost-o.have)));
       else if(o.ans===1||o.ans===4)res+='<br>'+st('warn','未有安排');else if(o.ans===3)res+='<br>'+st('unk','未確認金額');
-      return '<tr><td><b>'+EV[o.k].n+'</b>'+(EV[o.k].g&&a.ok?'<small>'+o.E+' 歲'+(o.m?'，停工 '+durTxt(o.m):'')+'</small>':'')+'</td><td class="num">'+(o.cost?big(o.cost):'—')+'</td><td>'+res+'</td></tr>';}).join('')+'</tbody></table>';
+      return '<tr><td><b style="--c:var(--mk-cat-'+EV[o.k].c+')"><i class="mk-dot"></i> '+EV[o.k].n+'</b>'+(EV[o.k].g&&a.ok?'<small>'+o.E+' 歲'+(o.m?'，停工 '+durTxt(o.m):'')+'</small>':'')+'</td><td class="num">'+(o.cost?big(o.cost):'—')+'</td><td>'+res+'</td></tr>';}).join('')+'</tbody></table>';
   $('sumBk').innerHTML='<table class="stbl"><thead><tr><th>支撐</th><th>需要</th><th>已有</th></tr></thead><tbody>'+BK.map(function(b){
       return '<tr class="bkr"><td colspan="3">'+b.name+' '+st(a.bS[b.id],BST[a.bS[b.id]])+'</td></tr>'+b.it.map(function(i){var S=STT[a.iS[i]],h=n(s['h_'+i]),t=a.T[i];
         var need=AMT[i]?(t?big(t):'—'):'<span class="fine">'+{med:'住院及手術',an:'退休每月收入',inv:'長線增長',mpf:'長線累積'}[i]+'</span>';
