@@ -403,6 +403,7 @@ body[data-tab="test"]{--tab:var(--mk-cat-2);--tab-ink:var(--mk-cat-2-ink);--tab-
 body[data-tab="bk"]{--tab:var(--mk-cat-3);--tab-ink:var(--mk-cat-3-ink);--tab-soft:var(--mk-cat-3-soft)}
 body[data-tab="plan"] #p-plan,body[data-tab="test"] #p-test,body[data-tab="bk"] #p-bk{display:block}
 .pill.addg{border-style:dashed;color:var(--mk-brand-ink);font-size:14px;min-height:34px;padding:5px 12px}
+.gfam{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--mk-muted);margin-top:-2px}.gfam input{width:18px;height:18px;accent-color:var(--mk-brand)}
 .grow{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,.8fr) minmax(0,1.2fr) 40px;gap:8px;align-items:end;margin-top:8px}
 .gdel{height:42px;border:1px solid var(--mk-line);border-radius:8px;background:#fff;font-size:20px;color:var(--mk-muted);cursor:pointer}
 @media (max-width:600px){.grow{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px}.grow>label:first-child{grid-column:1/-1}}
@@ -756,7 +757,7 @@ body[data-tab="plan"] #p-plan,body[data-tab="test"] #p-test,body[data-tab="bk"] 
 
 <footer class="mk-footer">
   <p class="dis">本工具只供面談時作理財教育及初步需求分析之用，所有數字均為按假設及所選項目作出的簡化估算，並不構成任何保險或投資產品的要約、招攬或專業意見。實際保障需要、產品條款及保費，須經詳細財務需要分析後才能確定。投資涉及風險。</p>
-  <p class="dis">估算假設：生活費為假設數字，可自行修改；退休後生活費按現時七成計；計劃計至 90 歲，全部以今日幣值表示（「物價不斷上升」一項為將來的金額）；子女供養至 22 歲，父母至 90 歲（未填年齡分別作 15 年及 20 年）；危疾保障參考 3 至 5 年年薪；人壽保障為未償還按揭及負債，加家用及開支乘以家人仍需依靠的年期（伴侶作 10 年），再加未完成的心願；通脹假設每年 2.5%；停工時間可自行選擇；「要遲多久才可以停止工作」為示意，按所涉金額相當於多少年生活費計算；應急資金、意外按停工半年生活費計算。</p>
+  <p class="dis">估算假設：生活費為假設數字，可自行修改；退休後生活費按現時七成計；計劃計至 90 歲，全部以今日幣值表示（「物價不斷上升」一項為將來的金額）；子女供養至 22 歲，父母至 90 歲（未填年齡分別作 15 年及 20 年）；危疾保障參考 3 至 5 年年薪；人壽保障為未償還按揭及負債，加家用及開支乘以家人仍需依靠的年期（伴侶作 10 年），再加為家人準備的心願（例如子女升學）；通脹假設每年 2.5%；停工時間可自行選擇；「要遲多久才可以停止工作」為示意，按所涉金額相當於多少年生活費計算；應急資金、意外按停工半年生活費計算。</p>
   <p class="dis">資料來源：專科門診新症、白內障及全關節置換手術輪候時間取自醫院管理局開放數據（每季更新）；磁力共振輪候及私家醫療時間為一般參考情況，視乎醫院及醫生安排。私家手術收費、癌症醫療費用、危疾、意外及身故賠償數字取自《個人保險賠償報告》；患癌機會、平均預期壽命、住院人數及醫療保障覆蓋率取自醫院管理局香港癌症資料統計中心及政府統計處，詳見「理賠數據解讀」。</p>
   <p class="mk-home-link"><a href="https://mkpa.netlify.app/" target="_blank" rel="noopener">MKPA 工具箱：更多實用工具 ↗</a></p>
   <p class="mk-copy">© <span class="mk-year">2026</span> Michael Koo Protection Alliance (MKPA). 版權所有。</p>
@@ -922,14 +923,15 @@ function calc(){
   a.yP=dp.indexOf('parents')>=0?(n(s.pAge)?Math.max(0,90-n(s.pAge)):20):0; /* 父母供到 90 歲；未填當 20 年 */
   a.yS=dp.indexOf('partner')>=0?a.workY:0;
   a.depY=Math.max(a.yK,a.yP,a.yS?10:0); /* 人壽：家人仲要靠你幾多年（伴侶當 10 年）*/
-  a.goals=(s.gl||[]).filter(function(g){return g&&g[0];}).map(function(g,i){return {i:i,name:g[0],age:n(g[1]),cost:n(g[2])};});
+  a.goals=(s.gl||[]).filter(function(g){return g&&g[0];}).map(function(g,i){return {i:i,name:g[0],age:n(g[1]),cost:n(g[2]),fam:isFam(g)};});
+  a.gFam=a.goals.reduce(function(t,g){return t+(g.fam?g.cost:0);},0); /* 人壽只計為家人準備嘅心願（用家：人唔喺度，創業、旅行唔會再發生）*/
   a.gCost=a.goals.reduce(function(t,g){return t+g.cost;},0);
   a.cLive=a.lv*12*a.workY;a.cRet=a.rlv*12*a.retY;a.planCost=a.cLive+a.cRet+a.gCost;
   a.unstable=s.emp!=='fixed';a.risky=!!RISKY[s.job];
   /* 四桶金：如果今日發生需要幾多（全部由計劃推出嚟）*/
   a.emLo=a.lv*3;a.emHi=a.lv*6;
   a.ciLo=a.inc*36;a.ciHi=a.inc*60;a.ciEst=a.lv?a.lv*24+minCancer():0; /* 危疾：3–5 年年薪；未填收入就用最低估算 */
-  a.liFam=a.famAmt*12*a.depY;a.liNeed=a.debt+a.liFam+(a.hh?a.gCost:0);
+  a.liFam=a.famAmt*12*a.depY;a.liNeed=a.debt+a.liFam+(a.hh?a.gFam:0);
   a.T={em:a.unstable?a.emHi:a.emLo,ci:a.inc?a.ciLo:a.ciEst,li:a.liNeed,ac:a.lv*6,sv:a.gCost};
   /* 壓力測試：每件事分開計，唔會將唔同時間嘅事加埋 */
   a.evs=EVK.filter(function(k){return s['e_'+k];}).map(function(k){
@@ -944,11 +946,11 @@ function calc(){
     if(k==='acc'){r('停工期間的生活費',money(a.lv)+' × '+m+' 個月',a.lv*m);r('治療及復康開支','視乎傷勢，未計入',null);o.hit=function(g){return g.age>=E&&g.age<=E+2;};}
     if(k==='job'){r('沒有收入期間的生活費',money(a.lv)+' × '+m+' 個月',a.lv*m);o.hit=function(g){return g.age>=E&&g.age<=E+1;};}
     if(k==='die'){o.yr=Math.max(a.yK?age+a.yK-E:0,a.yP?age+a.yP-E:0,a.yS?Math.min(10,Math.max(0,a.rAge-E)):0);if(o.yr<0)o.yr=0;
-      var ga=a.hh?a.goals.filter(function(g){return g.age>E&&g.cost;}):[];o.gAfter=ga.reduce(function(t,g){return t+g.cost;},0);
+      var ga=a.hh?a.goals.filter(function(g){return g.fam&&g.age>=E&&g.cost;}):[];o.gAfter=ga.reduce(function(t,g){return t+g.cost;},0);
       if(a.debt)r('未供完的按揭及負債','',a.debt);
       if(o.yr&&a.famAmt)r('家人的生活費',money(a.famAmt)+' × 12 個月 × '+o.yr+' 年',a.famAmt*12*o.yr);
-      if(o.gAfter)r('之後想為家人做的事',ga.map(function(g){return esc(g.name);}).join('、'),o.gAfter);
-      o.hit=function(g){return g.age>E;};}
+      if(o.gAfter)r('為家人準備的心願',ga.map(function(g){return esc(g.name);}).join('、'),o.gAfter);
+      o.hit=function(g){return g.fam&&g.age>=E;};}
     if(k==='long')r('多活 10 年的生活費',money(a.rlv)+' × 12 個月 × 10 年',a.rlv*120);
     if(k==='infl'){o.f=Math.pow(1.025,a.workY);o.tot='退休 '+a.retY+' 年合共要多付';
       r('到 '+a.rAge+' 歲時，每月生活費',money(a.rlv)+' 的生活，屆時要 '+o.f.toFixed(1)+' 倍',a.rlv*o.f);
@@ -1076,12 +1078,16 @@ function rPlan(a){
   var out=a.ok?a.goals.filter(function(g){return !(g.age>=a.age&&g.age<=90);}).length:0;
   $('gWarn').innerHTML=out?'<p class="note todo">有 '+out+' 件想做的事未填年齡，或者年齡不在 '+a.age+' 至 90 歲之間，暫時未能放上時間線。</p>':'';
 }
+/* 為家人準備嘅心願：客人可以自己剔；未剔過就按預設（子女升學、海外升學、留給下一代）*/
+var FAMG=['子女升學','海外升學','留給下一代'];
+function isFam(g){return g[3]===1||g[3]===0?g[3]===1:FAMG.indexOf(g[0])>=0;}
 function rGoals(){ /* 清單只喺增減時重畫，避免打字時跳走 */
   $('gList').innerHTML=(s.gl||[]).map(function(g,i){
     return '<div class="grow" data-i="'+i+'"><label class="fld"><span>想做的事</span><input type="text" data-g="0" maxlength="14" value="'+esc(g[0]||'')+'" placeholder="例如：開咖啡店"></label>'+
       '<label class="fld"><span>大約幾歲</span><input type="number" data-g="1" min="18" max="100" inputmode="numeric" value="'+(g[1]||'')+'"></label>'+
       '<label class="fld"><span>大約費用（可留空）</span><input type="text" data-g="2" inputmode="numeric" value="'+(g[2]?Number(g[2]).toLocaleString('en-US'):'')+'"></label>'+
-      '<button type="button" class="gdel" data-del="'+i+'" aria-label="移除">×</button></div>';}).join('');
+      '<button type="button" class="gdel" data-del="'+i+'" aria-label="移除">×</button>'+
+      '<label class="gfam"><input type="checkbox" data-g="3"'+(isFam(g)?' checked':'')+'>這是為家人準備的（如果我不在，家人仍需要這筆錢）</label></div>';}).join('');
 }
 function durTxt(m){return m>=12?(m/12)+' 年':m+' 個月';}
 function yrsTxt(y){return y<1?Math.max(1,Math.round(y*12))+' 個月':(Math.round(y*10)/10)+' 年';}
@@ -1215,7 +1221,7 @@ function target(i,a){
   if(i==='med')return '住院及手術費用，確保生病時有得選擇';
   if(i==='ci')return a.inc?big(a.ciLo)+' 至 '+big(a.ciHi)+'（3 至 5 年年薪）':'3 至 5 年年薪'+(a.ciEst?'。未填收入；最少要應付兩年生活費及治療開支，約 '+big(a.ciEst):'')+' <button type="button" class="lnk no-print" data-go="plan">填寫每月收入</button>';
   if(i==='li'){if(!a.liNeed)return '暫時沒有人依靠你，亦沒有負債';
-    return big(a.liNeed)+'（'+[a.debt?'按揭及負債 '+big(a.debt):'',a.liFam?'家用 '+money(a.famAmt)+' × 12 個月 × '+a.depY+' 年':'',a.hh&&a.gCost?'未完成的心願 '+big(a.gCost):''].filter(Boolean).join(' ＋ ')+'）';}
+    return big(a.liNeed)+'（'+[a.debt?'按揭及負債 '+big(a.debt):'',a.liFam?'家用 '+money(a.famAmt)+' × 12 個月 × '+a.depY+' 年':'',a.hh&&a.gFam?'為家人準備的心願 '+big(a.gFam):''].filter(Boolean).join(' ＋ ')+'）';}
   if(i==='ac')return a.lv?'停工半年的生活費約 '+big(a.lv*6)+'，另加治療開支':'停工期間的生活費及治療開支';
   if(i==='sv')return a.gCost?'想做的事合共 '+big(a.gCost)+'，按年期分階段準備':a.goals.length?'為想做的事按年期分階段準備（未填費用）':'為將來幾年要用的錢準備專款';
   if(i==='an')return a.ok&&a.lv?'退休後每月 '+money(a.rlv)+'，共 '+a.retY+' 年；每月固定收入活多久領多久':'退休後每月的固定收入';
@@ -1332,7 +1338,7 @@ function load(){
   var m=/[#&]s=([\w-]+)/.exec(location.hash);if(!m)return;
   try{var d=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));
     for(var k in d)if(k in DEF){ /* 只收預設入面有嘅設定，文字要過白名單 */
-      if(k==='gl'){if(Array.isArray(d.gl))s.gl=d.gl.slice(0,12).filter(Array.isArray).map(function(g){return [String(g[0]||'').slice(0,14),n(g[1]),n(g[2])];});}
+      if(k==='gl'){if(Array.isArray(d.gl))s.gl=d.gl.slice(0,12).filter(Array.isArray).map(function(g){var r=[String(g[0]||'').slice(0,14),n(g[1]),n(g[2])];if(g[3]===0||g[3]===1)r.push(g[3]);return r;});}
       else if(k==='clu'){if(CLU.indexOf(d[k])>=0)s.clu=d[k];}
       else if(STR[k]){if(typeof d[k]==='string'&&/^[a-z0-9,]{0,60}$/.test(d[k]))s[k]=d[k];}
       else if(typeof d[k]==='number'&&isFinite(d[k]))s[k]=d[k];}
@@ -1347,7 +1353,7 @@ document.addEventListener('input',function(e){var t=e.target,D=t.dataset||{},k=D
   if(D.dp){var p=lst(s.dp,{partner:1,kids:1,parents:1}).filter(function(x){return x!==D.dp;});if(t.checked)p.push(D.dp);s.dp=p.join(',');render();return;}
   if(D.hv){var hv=lst(s.hv,HVS).filter(function(x){return x!==D.hv;});if(t.checked)hv.push(D.hv);s.hv=hv.join(',');render();return;}
   if(D.g!=null){var row=t.closest('.grow'),i=+row.dataset.i,g=s.gl[i];if(!g)return;
-    g[+D.g]=D.g==='0'?t.value.slice(0,14):D.g==='2'?+(t.value.replace(/[^\d]/g,''))||0:n(t.value);render();return;}
+    g[+D.g]=D.g==='3'?(t.checked?1:0):D.g==='0'?t.value.slice(0,14):D.g==='2'?+(t.value.replace(/[^\d]/g,''))||0:n(t.value);render();return;}
   if(!k)return;
   if(STR[k])s[k]=t.value;
   else if(D.m!=null){var raw=t.value.replace(/[^\d]/g,'');s[k]=raw===''?0:+raw;}
