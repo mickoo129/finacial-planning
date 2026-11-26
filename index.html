@@ -574,6 +574,19 @@ body[data-tab="plan"] #p-plan,body[data-tab="test"] #p-test,body[data-tab="bk"] 
   .er-l{display:block;font-size:12px;font-weight:700;color:var(--mk-muted)}
 }
 #opBox{margin-top:16px}
+
+/* ===== 2026-11 第七版試用後修改 ===== */
+.more10{position:absolute;right:4px;top:50%;transform:translateY(-50%);font:700 11.5px var(--mk-sans);color:var(--mk-cat-5-ink);background:#fff;border:1px solid var(--mk-cat-5);border-radius:999px;padding:0 8px;white-space:nowrap;line-height:17px}
+.dienote{margin-top:6px}
+.evm b{line-height:17px}
+@media (max-width:600px){
+  .evm b{font-size:11px}
+  .er{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 4px 10px 10px}
+  .er-n{grid-column:1}.er-c{grid-column:1 / -1}.er-f{grid-column:1 / -1;font-size:13px;color:var(--mk-muted)}.er-s{grid-column:1 / -1}
+  .er-f .er-l,.er-c .er-l{display:none}
+  .er-amt{font-size:20px}.er-i{font-size:13px}
+  .er-n .evset{margin-top:4px}
+}
 </style>
 </head>
 <body data-tab="plan">
@@ -741,7 +754,7 @@ body[data-tab="plan"] #p-plan,body[data-tab="test"] #p-test,body[data-tab="bk"] 
 
 <footer class="mk-footer">
   <p class="dis">本工具只供面談時作理財教育及初步需求分析之用，所有數字均為按假設及所選項目作出的簡化估算，並不構成任何保險或投資產品的要約、招攬或專業意見。實際保障需要、產品條款及保費，須經詳細財務需要分析後才能確定。投資涉及風險。</p>
-  <p class="dis">估算假設：生活費為假設數字，可自行修改；退休後生活費按現時七成計；計劃計至 90 歲，全部以今日幣值表示；子女供養至 22 歲，父母至 90 歲（未填年齡分別作 15 年及 20 年）；危疾保障參考 3 至 5 年年薪；人壽保障為未償還按揭及負債，加家用及開支乘以家人仍需依靠的年期（伴侶作 10 年），再加未完成的心願；通脹假設每年 2.5%；停工時間可自行選擇；「要遲多久才可以停止工作」為示意，按所涉金額相當於多少年生活費計算；應急資金、意外按停工半年生活費計算。</p>
+  <p class="dis">估算假設：生活費為假設數字，可自行修改；退休後生活費按現時七成計；計劃計至 90 歲，全部以今日幣值表示（「物價不斷上升」一項為將來的金額）；子女供養至 22 歲，父母至 90 歲（未填年齡分別作 15 年及 20 年）；危疾保障參考 3 至 5 年年薪；人壽保障為未償還按揭及負債，加家用及開支乘以家人仍需依靠的年期（伴侶作 10 年），再加未完成的心願；通脹假設每年 2.5%；停工時間可自行選擇；「要遲多久才可以停止工作」為示意，按所涉金額相當於多少年生活費計算；應急資金、意外按停工半年生活費計算。</p>
   <p class="dis">資料來源：專科門診新症、白內障及全關節置換手術輪候時間取自醫院管理局開放數據（每季更新）；磁力共振輪候及私家醫療時間為一般參考情況，視乎醫院及醫生安排。私家手術收費、癌症醫療費用、危疾、意外及身故賠償數字取自《個人保險賠償報告》；患癌機會、平均預期壽命、住院人數及醫療保障覆蓋率取自醫院管理局香港癌症資料統計中心及政府統計處，詳見「理賠數據解讀」。</p>
   <p class="mk-home-link"><a href="https://mkpa.netlify.app/" target="_blank" rel="noopener">MKPA 工具箱：更多實用工具 ↗</a></p>
   <p class="mk-copy">© <span class="mk-year">2026</span> Michael Koo Protection Alliance (MKPA). 版權所有。</p>
@@ -941,11 +954,14 @@ function calc(){
     else o.cost=o.rows.reduce(function(t,x){return t+(x[2]||0);},0);
     o.yrs=a.lv?o.cost/(a.lv*12):0;
     o.ans=s['s_'+k]||0;o.hk=(HAVE[k]||{})[o.ans]||'';o.have=o.hk&&AMT[o.hk]?n(s['h_'+o.hk]):0;
+    /* 答保險：同四桶金用同一個需要金額（危疾 3–5 年年薪、人壽按今日計），唔會同一頁出兩個「仍差」；答儲蓄就同呢件事比 */
+    o.need=(o.hk==='ci'||o.hk==='li'||o.hk==='ac')&&a.T[o.hk]?a.T[o.hk]:o.cost;o.gap=o.have&&o.need>o.have?o.need-o.have:0;
+    o.none=k==='die'&&!o.rows.length; /* 冇人靠、冇負債：唔使問錢從邊度嚟 */
     o.hits=o.hit?a.goals.filter(function(g){return g.age>=age&&o.hit(g);}):[];
     return o;});
   a.on={};a.evs.forEach(function(o){a.on[o.k]=o;});
   a.delay=0;
-  a.hits=a.goals.filter(function(g){return a.evs.some(function(o){return o.hits.indexOf(g)>=0;});});
+  a.hits=a.goals.filter(function(g){return a.evs.some(function(o){return o.k!=='die'&&o.hits.indexOf(g)>=0;});});
   /* 每項支撐嘅狀態：只由客人自己講嘅嘢決定。
      有填金額 → 同需要比較（足夠／未足夠）；剔咗「已經有」或者答「由保險賠償」但冇講金額 → 已有，未確認；
      自己答「借錢」或者「未想過」→ 未有安排；其餘 → 未填。系統唔會自己估足唔足夠。*/
@@ -974,14 +990,13 @@ function lanes(a){
 }
 /* 揀咗嘅事加埋一齊：邊啲時段受影響、時間軸終點、標記 */
 function impact(a){
-  var B={},end=90,marks=[];
+  var B={},end=90,marks=[],lg=0; /* 早離開唔畫喺呢度；活到 100 歲唔拉長時間軸，只喺退休行尾加「＋10 年」 */
   function add(l,f,t,k){(B[l]=B[l]||[]).push([f,t,k]);}
   a.evs.forEach(function(o){var E=o.E,k=o.k;
     if(k==='ill'||k==='acc'||k==='job'){['inc','live','sp','kids','par'].forEach(function(x){add(x,E,E+o.m/12,k);});marks.push([E,{ill:'大病',acc:'意外',job:'失業'}[k],k]);}
     if(k==='op')marks.push([E,'手術',k]);
-    if(k==='die'){['sp','kids','par'].forEach(function(x){add(x,E,200,k);});marks.push([E,'離開',k]);}
-    if(k==='long'){end=100;add('ret',90,100,k);}});
-  return {B:B,end:end,cut:null,marks:marks,delay:0};
+    if(k==='long')lg=1;});
+  return {B:B,end:end,cut:null,marks:marks,delay:0,long:lg};
 }
 function timeline(a,withEv){
   if(!a.ok)return '<p class="note todo">填寫年齡，便會畫出你的時間線。</p>';
@@ -995,7 +1010,8 @@ function timeline(a,withEv){
     if(dl&&l.k==='ret')ext='<i class="bar brk" style="left:'+x(a.rAge)+'%;width:'+(x(a.rAge+dl)-x(a.rAge))+'%"></i>';
     var br=(I.B[l.k]||[]).map(function(b){var f=Math.max(b[0],l.from),t=Math.min(b[1],to);if(t<=f)return '';
       return '<i class="bar brk ev-'+b[2]+'" style="left:'+x(f)+'%;width:'+Math.max(1.2,x(t)-x(f))+'%"></i>';}).join('');
-    return '<div class="lane"><span class="lane-l">'+l.label+'</span><div class="lane-t">'+base+br+ext+'</div></div>';}).join('');
+    var more=I.long&&l.k==='ret'?'<span class="more10">活到 100 歲：多 10 年 →</span>':'';
+    return '<div class="lane"><span class="lane-l">'+l.label+'</span><div class="lane-t">'+base+br+ext+more+'</div></div>';}).join('');
   /* 想做的事：時間線上只放編號圓點（同一年齡或者太近就向下疊），名稱放喺下面嘅清單 */
   var gs=a.goals.filter(function(g){return g.age>=a.age&&g.age<=end;}).sort(function(p,q){return p.age-q.age;}),rowsX=[],grow='';
   if(gs.length){
@@ -1005,9 +1021,9 @@ function timeline(a,withEv){
     grow='<div class="lane goalrow"><span class="lane-l">想做的事</span><div class="lane-t" style="height:'+(rowsX.length*24)+'px">'+dots+'</div></div>'+
       '<div class="lane"><span class="lane-l"></span><div class="glg">'+gs.map(function(g,i){return '<span class="gl'+g._c+'"><i>'+(i+1)+'</i>'+g.age+' 歲 '+esc(g.name)+'</span>';}).join('')+'</div></div>';}
   var ticks=[[a.age,a.age+' 歲'],[a.rAge,a.rAge+' 歲停止工作'],[end,end+' 歲']];
-  var mk=I.marks.slice().sort(function(p,q){return p[0]-q[0];}),h=34+(mk.length?mk.length*16:0);
+  var mk=I.marks.slice().sort(function(p,q){return p[0]-q[0];}),h=30+(mk.length?mk.length*19:0);
   var axis='<div class="lane axis"><span class="lane-l"></span><div class="lane-t" style="height:'+h+'px">'+ticks.map(function(t,i){return '<span class="tk'+(i===2?' r':'')+'" style="left:'+x(t[0])+'%">'+t[1]+'</span>';}).join('')+
-    mk.map(function(m,i){return '<span class="evm ev-'+m[2]+'" style="left:'+x(m[0])+'%"><b style="bottom:'+((mk.length-1-i)*16-2)+'px">'+m[0]+' 歲 '+m[1]+'</b></span>';}).join('')+'</div></div>';
+    mk.map(function(m,i){return '<span class="evm ev-'+m[2]+'" style="left:'+x(m[0])+'%"><b style="bottom:'+((mk.length-1-i)*19+2)+'px'+(x(m[0])>62?';left:auto;right:4px':'')+'">'+m[0]+' 歲 '+m[1]+'</b></span>';}).join('')+'</div></div>';
   return '<div class="tline">'+rows+grow+axis+'</div>';
 }
 function engine(a,open){
@@ -1088,8 +1104,8 @@ function facts(k,a,one){
     f.push('計劃原本只計到 90 歲。');}
   if(k==='infl')f.push('這不是會不會發生，而是一定會發生。以每年 2.5% 計，<b class="hl">物價大約 28 年便會翻一倍</b>。');
   if(k==='op'){var hb=H&&H.hospByAge2025,g=hb&&hb.filter(function(x){var p=x[0].split('-');return a.ok&&(p[1]?a.age>=+p[0]&&a.age<=+p[1]:a.age>=parseInt(p[0],10));})[0];
-    if(H&&H.uncovered)f.push('約 <b class="hl">'+H.uncovered.pct+'% 香港人</b>沒有僱主醫療福利，亦沒有自己買醫療保險，入住私家醫院須全數自付。');
     if(g)f.push('香港 '+g[0].replace('+',' 歲或以上').replace('-',' 至 ')+(g[0].indexOf('+')<0?' 歲':'')+'人士，一年內住院的約有 <b class="hl">'+g[1].toLocaleString('en-US')+' 人</b>（2025 年）。');
+    if(H&&H.uncovered)f.push('約 '+H.uncovered.pct+'% 香港人沒有僱主醫療福利，亦沒有自己買醫療保險，入住私家醫院須全數自付。');
     if(!f.length)f.push('年紀愈大，需要做手術的機會愈高。');}
   if(one)return '<p>'+(f[0]||'')+'</p>';
   return '<ul class="fct">'+f.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';
@@ -1121,18 +1137,24 @@ var ANS2={2:'儲蓄和強積金是一筆過的錢，<b class="hl">用一年少�
   1:'子女屆時也有自己的家庭和開支。<b class="hl">不想成為他們的負擔，便要自己先有安排</b>。',
   3:'每月固定收入<b class="hl">活多久領多久</b>，是應付長命和通脹最直接的方法。下一步可以看看金額是否足夠。',
   4:'退休可以長達二三十年。<b class="hl">下一步可以看看這段時間的生活費一般怎樣安排</b>。'};
+var ANSK={die:{1:'家人失去你的收入後，<b class="hl">向銀行借未必批得到</b>；向親友借，亦不是維持十多年生活的辦法。',
+  2:'儲蓄是為將來準備的錢，金額一般<b class="hl">遠低於家人往後多年的生活費和按揭</b>；用了，原本的計劃也要停下來。'},
+  job:{2:'儲蓄原本有其他用途。<b class="hl">失業期間動用了，那些事便要推遲</b>，而且不知道要多久才找到工作。'}};
+function ansTxt(k,v){return (ANSK[k]&&ANSK[k][v])||(k==='long'||k==='infl'?ANS2:ANS)[v];}
 function haveLine(o){
   if(!o.hk)return '';
   if(!AMT[o.hk])return '<p class="note key">已有'+HVS[o.hk]+'保障。可以再看看保障範圍，例如是否包括私家醫院全單。</p>';
-  if(!o.have)return '<p class="fine">填上大約金額（可以留空），便可以看到是否足夠應付這件事。</p>';
-  if(!o.cost)return '';
-  return o.have>=o.cost?'<p class="note key">已有約 '+big(o.have)+'，<b class="hl">足以應付這件事</b>。</p>'
-    :'<p class="note warnbox">已有約 '+big(o.have)+'，應付這件事<b class="hl r">仍差約 '+big(o.cost-o.have)+'</b>。</p>';
+  if(!o.have)return '<p class="fine">填上大約金額（可以留空），便可以看到是否足夠。</p>';
+  if(!o.need)return '';
+  var base=o.need!==o.cost?(o.hk==='ci'?'危疾保障一般以 3 至 5 年年薪計，最少約 ':o.hk==='li'?'按你今天的情況，人壽保障需要約 ':'需要約 ')+big(o.need)+'；':'';
+  return o.have>=o.need?'<p class="note key">已有約 '+big(o.have)+'。'+base+'<b class="hl">足以應付</b>。</p>'
+    :'<p class="note warnbox">已有約 '+big(o.have)+'。'+base+'<b class="hl r">仍差約 '+big(o.gap)+'</b>。</p>';
 }
 function rTest(a){
   $('evPills').innerHTML=EVK.map(function(k){return '<button type="button" class="pill evp" data-ev="'+k+'" aria-pressed="'+!!s['e_'+k]+'" style="--c:var(--mk-cat-'+EV[k].c+')"><i class="mk-dot"></i>'+EV[k].n+'</button>';}).join('');
   $('tl2').innerHTML=!a.ok?'<p class="note todo">先在「我的計劃」填寫年齡，便會在你的時間線上標出這些事。</p>':a.evs.length?timeline(a,true)+
-    '<div class="evlg">'+a.evs.filter(function(o){return o.k!=='infl';}).map(function(o){return '<span style="--c:var(--mk-cat-'+EV[o.k].c+')"><i></i>'+EV[o.k].n+(EV[o.k].g?'（'+o.E+' 歲）':'')+'</span>';}).join('')+'</div>':'';
+    (a.on.die?'<p class="fine dienote">「比預期早離開」不畫在時間線上，因為它和其他事不會同時發生；它的影響見下表。</p>':'')+
+    '<div class="evlg">'+a.evs.filter(function(o){return o.k!=='infl'&&o.k!=='die';}).map(function(o){return '<span style="--c:var(--mk-cat-'+EV[o.k].c+')"><i></i>'+EV[o.k].n+(EV[o.k].g?'（'+o.E+' 歲）':'')+'</span>';}).join('')+'</div>':'';
   var key=a.ok+'|'+!!a.lv+'|'+a.age+'|'+a.rAge+'|'+a.evs.map(function(o){return o.k+o.ans;}).join(',');
   if(rTest.key!==key){rTest.key=key;
     $('evTbl').innerHTML=!a.evs.length?'<p class="note">在上面揀選想看的事。</p>':'<div class="er er-hd"><div>如果……</div><div>有多常發生？</div><div>需要多少錢？</div><div>這筆錢打算從哪裡來？</div></div>'+
@@ -1143,26 +1165,28 @@ function rTest(a){
           '<div class="er-n"><b><i class="mk-dot"></i>'+d.n+'</b>'+set+'</div>'+
           '<div class="er-f"><span class="er-l">有多常發生？</span><div id="erf-'+k+'"></div></div>'+
           '<div class="er-c"><span class="er-l">需要多少錢？</span><div id="era-'+k+'"></div><details class="how"><summary>怎樣計？</summary><div id="err-'+k+'"></div></details></div>'+
-          '<div class="er-s"><span class="er-l">這筆錢打算從哪裡來？</span><select data-k="s_'+k+'"><option value="0">請選擇</option>'+SRCO[k].map(function(v){return '<option value="'+v+'"'+(o.ans===v?' selected':'')+'>'+SRC[v]+'</option>';}).join('')+'</select>'+
-            (o.hk&&AMT[o.hk]?'<label class="itin"><span>'+HQ[o.hk]+'</span><input type="text" data-m data-k="h_'+o.hk+'" inputmode="numeric" placeholder="可留空"></label>':'')+
+          (o.none?'<div class="er-s"><span class="fine">暫時不需要準備這一項。</span>':'<div class="er-s"><span class="er-l">這筆錢打算從哪裡來？</span><select data-k="s_'+k+'"><option value="0">請選擇</option>'+SRCO[k].map(function(v){return '<option value="'+v+'"'+(o.ans===v?' selected':'')+'>'+SRC[v]+'</option>';}).join('')+'</select>'+
+            '')+(!o.none&&o.hk&&AMT[o.hk]?'<label class="itin"><span>'+HQ[o.hk]+'</span><input type="text" data-m data-k="h_'+o.hk+'" inputmode="numeric" placeholder="可留空"></label>':'')+
             '<div id="erh-'+k+'"></div></div></div>';}).join('');
     $$('#evTbl [data-k]').forEach(fmtIn);
   }
   a.evs.forEach(function(o){var k=o.k;
     $('erf-'+k).innerHTML=facts(k,a,true);
-    $('era-'+k).innerHTML=(o.cost&&(a.lv||k==='op'||k==='die')?'<b class="er-amt">'+(k==='op'?'私家約 ':'')+(o.cost<1e5?money(o.cost):big(o.cost))+'</b>':'<span class="fine">'+(k==='die'&&!o.rows.length?'暫時沒有人依靠你，亦沒有負債':'揀選生活水平後便會計算')+'</span>')+'<p class="er-i">'+impactLine(o,a)+'</p>';
+    $('era-'+k).innerHTML=(o.cost&&(a.lv||k==='op'||k==='die')?'<b class="er-amt">'+evAmt(o,a)+'</b>':'<span class="fine">'+(k==='die'&&!o.rows.length?'暫時沒有人依靠你，亦沒有負債':'揀選生活水平後便會計算')+'</span>')+'<p class="er-i">'+impactLine(o,a)+'</p>';
     $('err-'+k).innerHTML=receipt(o,a);
-    $('erh-'+k).innerHTML=(o.ans?'<p class="er-r">'+(k==='long'||k==='infl'?ANS2:ANS)[o.ans]+'</p>':'')+haveLine(o);});
+    $('erh-'+k).innerHTML=o.none?'':(o.ans?'<p class="er-r">'+ansTxt(k,o.ans)+'</p>':'')+haveLine(o);});
   $('opBox').hidden=!(a.on.op);if(a.on.op)rWait();
 }
 /* 表入面每件事一句影響（短）*/
+/* 「需要多少錢」大數字：物價一項講每月（將來金額），其他講今日幣值 */
+function evAmt(o,a){if(o.k==='infl')return '每月 '+money(a.rlv*(o.f||1));return (o.k==='op'?'私家約 ':'')+(o.cost<1e5?money(o.cost):big(o.cost));}
 function impactLine(o,a){
   var gn=o.hits.map(function(g){return '「'+esc(g.name)+'」';}).join('、');
   if(o.k==='ill'||o.k==='acc'||o.k==='job')return '<b class="er-hl">'+durTxt(o.m)+'沒有工作收入</b>，生活費照樣要付。'+(gn?'如果用儲蓄支付，'+gn+'的錢要先拿出來用。':'');
   if(o.k==='die')return o.rows.length?'家人'+(o.yr?'仍要生活 <b class="er-hl">'+o.yr+' 年</b>':'')+(a.debt?(o.yr?'，':'')+'按揭仍然要供':'')+'。':'';
   if(o.k==='op')return '公立要等，私家要付錢。分別在於<b class="er-hl">要等多久、有沒有得選擇</b>（見下面）。';
   if(o.k==='long')return '儲蓄和強積金<b class="er-hl">用一年少一年</b>，計劃原本只計到 90 歲。';
-  if(o.k==='infl')return '到 '+a.rAge+' 歲，今日 '+money(a.rlv)+' 的退休生活，<b class="er-hl">每月要 '+money(a.rlv*(o.f||1))+'</b>；這是退休 '+a.retY+' 年合共要多付的金額。';
+  if(o.k==='infl')return '今日每月 '+money(a.rlv)+' 的退休生活，到 '+a.rAge+' 歲時<b class="er-hl">要多付約 '+Math.round(((o.f||1)-1)*100)+'%</b>（這是將來的金額）。'+(a.retY?'退休 '+a.retY+' 年合共多付約 '+big(o.cost)+'。':'');
   return '';
 }
 var STT={ok:['ok','足夠'],part:['warn','未足夠'],unk:['unk','已有，未確認是否足夠'],want:['warn','未有安排'],na:['na','未填'],none:['na','暫時不需要']};
@@ -1200,6 +1224,10 @@ function attnItems(a){var L=[];
     if(x==='part')L.push([0,t-h,'<b>'+HVS[i]+'</b>：需要約 '+big(t)+'，已有約 '+big(h)+'，<b class="hl r">仍差約 '+big(t-h)+'</b>']);
     if(x==='want')L.push([1,t,'<b>'+HVS[i]+'</b>：你選了「'+(a.why[i]||'')+'」，即是<b class="hl r">未有安排</b>'+(t?'；需要約 '+big(t):'')]);
     if(x==='unk')L.push([2,t,'<b>'+HVS[i]+'</b>：已有，但<b class="hl">未確認是否足夠</b>'+(AMT[i]&&t?'（需要約 '+big(t)+'）':'')]);});});
+  a.evs.forEach(function(o){if(o.none||o.ans!==2||o.k==='long'||o.k==='infl'||!o.cost)return;
+    var nm='<b>'+EV[o.k].n+'</b>：打算用自己的儲蓄應付約 '+big(o.cost);
+    if(!o.have)L.push([1.5,o.cost,nm+'，<b class="hl r">未確認儲蓄是否足夠</b>，而且這筆儲蓄原本有其他用途']);
+    else if(o.gap)L.push([0,o.gap,nm+'，已有約 '+big(o.have)+'，<b class="hl r">仍差約 '+big(o.gap)+'</b>']);});
   return L.sort(function(p,q){return p[0]-q[0]||q[1]-p[1];}).slice(0,5);
 }
 function attnHtml(a){
@@ -1266,10 +1294,10 @@ function rSum(a){
   $('sumAttn').innerHTML=attnHtml(a);
   $('sumEvBox').hidden=!a.evs.length;
   $('sumEv').innerHTML='<table class="stbl"><thead><tr><th>如果發生</th><th>需要</th><th>你的打算</th></tr></thead><tbody>'+a.evs.map(function(o){
-      var SRC=o.k==='long'||o.k==='infl'?SRC2:SRC1,res=o.ans?SRC[o.ans]:'<span class="fine">未回答</span>';
-      if(o.have&&o.cost)res+='<br>'+(o.have>=o.cost?st('ok','足以應付'):st('warn','仍差 '+big(o.cost-o.have)));
-      else if(o.ans===1||o.ans===4)res+='<br>'+st('warn','未有安排');else if(o.ans===3)res+='<br>'+st('unk','未確認金額');
-      return '<tr><td><b style="--c:var(--mk-cat-'+EV[o.k].c+')"><i class="mk-dot"></i> '+EV[o.k].n+'</b>'+(EV[o.k].g&&a.ok?'<small>'+o.E+' 歲'+(o.m?'，停工 '+durTxt(o.m):'')+'</small>':'')+'</td><td class="num">'+(o.cost?big(o.cost):'—')+'</td><td>'+res+'</td></tr>';}).join('')+'</tbody></table>';
+      var SRC=o.k==='long'||o.k==='infl'?SRC2:SRC1,res=o.none?'<span class="fine">暫時不需要</span>':o.ans?SRC[o.ans]:'<span class="fine">未回答</span>';
+      if(o.have&&o.need)res+='<br>'+(o.gap?st('warn','仍差 '+big(o.gap)):st('ok','足以應付'))+(o.need!==o.cost?'<small>'+(o.hk==='ci'?'危疾以 3 年年薪計':o.hk==='li'?'人壽以今天的情況計':'')+'</small>':'');
+      else if(o.ans===1||o.ans===4)res+='<br>'+st('warn','未有安排');else if(o.ans===3)res+='<br>'+st('unk','未確認金額');else if(o.ans===2&&o.cost&&o.k!=='long'&&o.k!=='infl')res+='<br>'+st('unk','未確認儲蓄');
+      return '<tr><td><b style="--c:var(--mk-cat-'+EV[o.k].c+')"><i class="mk-dot"></i> '+EV[o.k].n+'</b>'+(EV[o.k].g&&a.ok?'<small>'+o.E+' 歲'+(o.m?'，停工 '+durTxt(o.m):'')+'</small>':'')+'</td><td class="num">'+(o.cost?evAmt(o,a):'—')+'</td><td>'+res+'</td></tr>';}).join('')+'</tbody></table>';
   $('sumBk').innerHTML='<table class="stbl"><thead><tr><th>支撐</th><th>需要</th><th>已有</th></tr></thead><tbody>'+BK.map(function(b){
       return '<tr class="bkr"><td colspan="3">'+b.name+' '+st(a.bS[b.id],BST[a.bS[b.id]])+'</td></tr>'+b.it.map(function(i){var S=STT[a.iS[i]],h=n(s['h_'+i]),t=a.T[i];
         var need=AMT[i]?(t?big(t):'—'):'<span class="fine">'+{med:'住院及手術',an:'退休每月收入',inv:'長線增長',mpf:'長線累積'}[i]+'</span>';
@@ -1277,6 +1305,7 @@ function rSum(a){
   $('pyr2').innerHTML=pyramid(a);
   $('fcPills').innerHTML=BK.map(function(b){return '<button type="button" class="pill" data-v="'+b.id+'" aria-pressed="'+(s.fc===b.id)+'">'+b.name+'</button>';}).join('');
   $('focus').innerHTML=s.fc&&a.bS[s.fc]?detail(s.fc,a):'';
+  $('fcCard').classList.toggle('no-print',!s.fc);
 }
 function fmtIn(e){var k=e.dataset.k,v=s[k];
   if(e.tagName==='SELECT'){e.value=v;return;}
