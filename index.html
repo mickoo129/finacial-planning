@@ -421,7 +421,9 @@ body[data-tab="plan"] #p-plan,body[data-tab="test"] #p-test,body[data-tab="bk"] 
 .gl{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--mk-line);border-radius:999px;padding:1px 10px 1px 3px;font-size:13px;background:#fff}
 .gl i{font:700 11.5px/18px var(--mk-num);font-style:normal;width:18px;height:18px;border-radius:50%;background:var(--mk-cat-5-ink);color:#fff;text-align:center;flex:none}
 .gl.brk{color:var(--mk-danger);border-color:#F1B9B9;text-decoration:line-through}.gl.brk i{background:var(--mk-danger)}
-.gl.fix{color:var(--mk-brand-ink)}.gl.fix i{background:var(--mk-brand-ink)}
+.gl.fix{color:var(--mk-brand-ink)}
+.gl{position:relative;z-index:3}.gm.aff{background:#D99A1C}.gl.aff{border-color:#F1D9A6;background:var(--mk-warn-soft)}.gl.aff i{background:#D99A1C}
+.gl small{color:var(--mk-warn);font-size:12px;margin-left:2px}.gl:not(.aff) small{color:var(--mk-muted)}.gl.fix i{background:var(--mk-brand-ink)}
 .axis .lane-t{height:34px;background:none;border-top:2px solid var(--mk-line);border-radius:0}
 .tk{position:absolute;top:4px;font:600 12.5px var(--mk-num);color:var(--mk-muted);white-space:nowrap}
 .tk:nth-child(2){transform:translateX(-50%)}.tk.r{transform:translateX(-100%)}
@@ -950,7 +952,7 @@ function calc(){
     if(k==='long')r('多活 10 年的生活費',money(a.rlv)+' × 12 個月 × 10 年',a.rlv*120);
     if(k==='infl'){o.f=Math.pow(1.025,a.workY);o.tot='退休 '+a.retY+' 年合共要多付';
       r('到 '+a.rAge+' 歲時，每月生活費',money(a.rlv)+' 的生活，屆時要 '+o.f.toFixed(1)+' 倍',a.rlv*o.f);
-      o.cost=a.rlv*(o.f-1)*12*a.retY;o.hit=function(g){return g.age>=age+10;};}
+      o.cost=a.rlv*(o.f-1)*12*a.retY;}
     else o.cost=o.rows.reduce(function(t,x){return t+(x[2]||0);},0);
     o.yrs=a.lv?o.cost/(a.lv*12):0;
     o.ans=s['s_'+k]||0;o.hk=(HAVE[k]||{})[o.ans]||'';o.have=o.hk&&AMT[o.hk]?n(s['h_'+o.hk]):0;
@@ -1016,10 +1018,13 @@ function timeline(a,withEv){
   var gs=a.goals.filter(function(g){return g.age>=a.age&&g.age<=end;}).sort(function(p,q){return p.age-q.age;}),rowsX=[],grow='';
   if(gs.length){
     var dots=gs.map(function(g,i){var px=x(g.age),r=0;while(rowsX[r]!=null&&px-rowsX[r]<3.2)r++;rowsX[r]=px;
-      g._c=withEv&&a.hits.indexOf(g)>=0?' brk':'';
+      var why=withEv?a.evs.filter(function(o){return o.k!=='die'&&o.hits.indexOf(g)>=0;}).map(function(o){return o.E+' 歲'+{ill:'大病',acc:'意外',job:'失業'}[o.k];}):[];
+      g._c=why.length?' aff':'';
+      var up=withEv&&a.on.infl?Math.round((Math.pow(1.025,g.age-a.age)-1)*100):0;
+      g._w=(why.length?'：受 '+why.join('、')+' 影響，準備的錢可能要先拿出來用，或者要推遲':'')+(up>=10&&g.cost?(why.length?'；':'：')+'到時費用約貴 '+up+'%':up>=10?(why.length?'；':'：')+'到時要多付約 '+up+'%':'');
       return '<span class="gm'+g._c+'" style="left:'+px+'%;top:'+(r*24)+'px">'+(i+1)+'</span>';}).join('');
     grow='<div class="lane goalrow"><span class="lane-l">想做的事</span><div class="lane-t" style="height:'+(rowsX.length*24)+'px">'+dots+'</div></div>'+
-      '<div class="lane"><span class="lane-l"></span><div class="glg">'+gs.map(function(g,i){return '<span class="gl'+g._c+'"><i>'+(i+1)+'</i>'+g.age+' 歲 '+esc(g.name)+'</span>';}).join('')+'</div></div>';}
+      '<div class="lane"><span class="lane-l"></span><div class="glg">'+gs.map(function(g,i){return '<span class="gl'+g._c+'"><i>'+(i+1)+'</i>'+g.age+' 歲 '+esc(g.name)+(g._w?'<small>'+g._w+'</small>':'')+'</span>';}).join('')+'</div></div>';}
   var ticks=[[a.age,a.age+' 歲'],[a.rAge,a.rAge+' 歲停止工作'],[end,end+' 歲']];
   var mk=I.marks.slice().sort(function(p,q){return p[0]-q[0];}),h=30+(mk.length?mk.length*19:0);
   var axis='<div class="lane axis"><span class="lane-l"></span><div class="lane-t" style="height:'+h+'px">'+ticks.map(function(t,i){return '<span class="tk'+(i===2?' r':'')+'" style="left:'+x(t[0])+'%">'+t[1]+'</span>';}).join('')+
@@ -1182,7 +1187,7 @@ function rTest(a){
 function evAmt(o,a){if(o.k==='infl')return '每月 '+money(a.rlv*(o.f||1));return (o.k==='op'?'私家約 ':'')+(o.cost<1e5?money(o.cost):big(o.cost));}
 function impactLine(o,a){
   var gn=o.hits.map(function(g){return '「'+esc(g.name)+'」';}).join('、');
-  if(o.k==='ill'||o.k==='acc'||o.k==='job')return '<b class="er-hl">'+durTxt(o.m)+'沒有工作收入</b>，生活費照樣要付。'+(gn?'如果用儲蓄支付，'+gn+'的錢要先拿出來用。':'');
+  if(o.k==='ill'||o.k==='acc'||o.k==='job')return '<b class="er-hl">'+durTxt(o.m)+'沒有工作收入</b>，生活費照樣要付。'+(gn?'同期想做的'+gn+'，準備的錢可能要先拿出來用，或者要推遲。':'');
   if(o.k==='die')return o.rows.length?'家人'+(o.yr?'仍要生活 <b class="er-hl">'+o.yr+' 年</b>':'')+(a.debt?(o.yr?'，':'')+'按揭仍然要供':'')+'。':'';
   if(o.k==='op')return '公立要等，私家要付錢。分別在於<b class="er-hl">要等多久、有沒有得選擇</b>（見下面）。';
   if(o.k==='long')return '儲蓄和強積金<b class="er-hl">用一年少一年</b>，計劃原本只計到 90 歲。';
